@@ -1,0 +1,23 @@
+version: '3.7'
+
+services:
+    webapp-server:
+      build:
+        context: .
+        dockerfile: Dockerfile
+      command: npm run dev
+      image: myapp-server-img
+      container_name: myapp-node-express
+      volumes:
+       - .:/usr/src/app
+       - /usr/src/app/node_modules
+      ports:
+        - "8080:8080"
+      depends_on:
+        - mongo
+      env_file: .env
+    mongo:
+      image: mongo
+      container_name: myapp-mongodb
+      ports:
+        - "27017:27017"
