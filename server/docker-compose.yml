@@ -12,12 +12,6 @@ services:
        - .:/usr/src/app
        - /usr/src/app/node_modules
       ports:
-        - "8080:8080"
-      depends_on:
-        - mongo
-      env_file: .env
-    mongo:
-      image: mongo
-      container_name: myapp-mongodb
-      ports:
-        - "27017:27017"
+       - "8080:8080"
+      env_file: 
+       - .env
