@@ -9,9 +9,9 @@ const options = {
   useUnifiedTopology: true,
 };
 
-mongoose.connect(process.env.ATLAS_URI, options);
+mongoose.connect(process.env.ATLAS_CITY1_URI, options);
 const db = mongoose.connection;
-db.on('error', console.error.bind(console, 'Mongodb Connection Error: ' + process.env.ATLAS_URI));
+db.on('error', console.error.bind(console, 'Mongodb Connection Error: ' + process.env.ATLAS_CITY1_URI));
 db.once('open', () => {
      console.log('MongoDB Connection Successful');
 });
