@@ -1,15 +1,17 @@
-// Sample Post.model.js
+// Mongoose schema that represents a Post.
+
 const mongoose = require('mongoose');
 const postSchema = new mongoose.Schema({
-   title: {
+   description: {
        type: String,
        required: true
    },
-   body: {
-       type: String
+   created: {
+       type: Date,
+       required: true
    },
-   author: {
-       type: String
+   is_valid: {
+       type: Boolean
    }
 });
 
