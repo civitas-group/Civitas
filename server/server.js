@@ -10,6 +10,7 @@ const bodyParser = require('body-parser');
 
 // Routes
 const postRouter = require('./src/routes/post.router');
+const signUpRouter = require('./src/routes/signup.router');
 
 require('./src/database');
 
@@ -26,8 +27,7 @@ app.use(
 app.use(bodyParser.json());
 
 app.use('/posts', postRouter);
-
-
+app.use('/signup', signUpRouter);
 
 // listen
 app.listen(PORT, function () {
