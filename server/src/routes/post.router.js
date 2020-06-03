@@ -1,4 +1,4 @@
-//Sample Post update handling
+// Sample Post update handling
 
 const express = require('express');
 const postRouter = express.Router();

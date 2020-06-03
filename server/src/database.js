@@ -7,6 +7,7 @@ dotenv.config();
 const options = {
   useNewUrlParser: true,
   useUnifiedTopology: true,
+  useCreateIndex: true,
 };
 
 mongoose.connect(process.env.ATLAS_CITY1_URI, options);
