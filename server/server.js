@@ -10,7 +10,6 @@ app.use(express.json());
 const bodyParser = require('body-parser');
 
 // Routes
-const baseRouter = require('./src/routes/base.router');
 const postRouter = require('./src/routes/post.router');
 const signUpRouter = require('./src/routes/signup.router');
 
@@ -31,7 +30,6 @@ app.use(
 );
 
 app.use(bodyParser.json());
-app.use('/', baseRouter);
 app.use('/api/posts', postRouter);
 app.use('/api/signup', signUpRouter);
 
