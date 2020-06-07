@@ -11,6 +11,11 @@ const accountSchema = new mongoose.Schema({
        type: String,
        required: true
    },
+   email: {
+       type: String,
+       required: true,
+	   unique: true
+   },
    group_ids: [{
        type: mongoose.ObjectId,
        ref: "Group"
