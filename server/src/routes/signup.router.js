@@ -10,8 +10,9 @@ signUpRouter.post("/regular", (req, res, next) => {
     let newAccount = {
         username: req.body.username,
         password: req.body.password,
+		email: req.body.email,
         group_ids: req.body.group_ids,
-        is_supervisor: req.body.is_supervisor,
+        is_supervisor: 0,
         managed_group_ids: req.body.managed_group_ids
       }
 
@@ -36,8 +37,9 @@ signUpRouter.post("/admin", (req, res, next) => {
    Account.create({
     username: req.body.username,
     password: req.body.password,
+	email: req.body.email,
     group_ids: req.body.group_ids,
-    is_supervisor: req.body.is_supervisor,
+    is_supervisor: 1,
     managed_group_ids: req.body.managed_group_ids
    }, function(err, result) {
     if(err){
