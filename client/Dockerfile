@@ -1,4 +1,4 @@
-#  Dockerfile for Node Express Backend api (development)
+#  Dockerfile for React Frontend
 
 FROM node:14.3.0
 
@@ -17,6 +17,6 @@ RUN npm install
 COPY . .
 
 # Exports
-EXPOSE 8080
+EXPOSE 3000
 
 CMD ["npm","start"]

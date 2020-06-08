@@ -1,0 +1,22 @@
+version: '3.7'
+
+services:
+  backend:
+    build: ./server/
+    command: npm run dev
+    volumes:
+      - /server/usr/src/app
+    ports:
+      - "8080:8080"
+    env_file: server/.env
+  frontend:
+    build: ./client/
+    command: npm start
+    volumes:
+      - /client/usr/src/app
+    ports:
+      - "3000:3000"
+    env_file: client/.env
+    depends_on:
+      - backend
+    tty: true

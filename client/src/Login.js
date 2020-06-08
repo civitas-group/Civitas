@@ -11,7 +11,7 @@ class Login extends Component {
   render() {
     return (
       <Container className="App">
-        <h2>Sign In</h2>
+        <h2 style={{textAlign:"left"}}>Sign In</h2>
         <Form className="form">
           <Col>
             <FormGroup>
