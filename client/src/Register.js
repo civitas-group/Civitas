@@ -13,7 +13,14 @@ import {
 } from "reactstrap";
 import "./Register.css";
 
-
+class RegisterAdmin extends Component {
+  render(){
+    return (
+      <h1>ADMIN</h1>
+    )
+  }
+  
+}
 class Register extends Component {
   constructor(props) {
     super(props);
@@ -108,6 +115,8 @@ class Register extends Component {
     const { email, username, password } = this.state;
 
     return (  
+      <div>
+      <h1 style={{textAlign:"center"}}>{this.props.type}</h1>
       <Container className="App">
         <h2 style={{textAlign:"left"}}>Register</h2>
       <Alert isOpen={this.state.validate.userExists} color="danger">
@@ -190,8 +199,12 @@ class Register extends Component {
           <Button>Submit</Button>
         </Form>
       </Container>
+      </div>
     );
   }
 }
 
-export default Register;
+export {
+  RegisterAdmin,
+  Register,
+} 
