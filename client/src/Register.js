@@ -13,14 +13,6 @@ import {
 } from "reactstrap";
 import "./Register.css";
 
-class RegisterAdmin extends Component {
-  render(){
-    return (
-      <h1>ADMIN</h1>
-    )
-  }
-  
-}
 class Register extends Component {
   constructor(props) {
     super(props);
@@ -204,7 +196,4 @@ class Register extends Component {
   }
 }
 
-export {
-  RegisterAdmin,
-  Register,
-} 
+export default Register;
