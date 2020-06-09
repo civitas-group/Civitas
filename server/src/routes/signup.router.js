@@ -21,17 +21,36 @@ signUpRouter.post("/regular", (req, res, next) => {
       };
       
       bcrypt.genSalt(10,(err,salt) => {
-        if(err) throw err;
+        if(err){
+          res.status(400).send({
+            success: false,
+            error: err.message
+          });
+          return;
+        }
         bcrypt.hash(newAccount.password, salt,(err, hash) => {
-          if(err) throw err;
+          if(err){
+            res.status(400).send({
+              success: false,
+              error: err.message
+            });
+            return;
+          }
           newAccount.password = hash;
           //newAccount.save()
           Account.create(newAccount, function(err, result){
-            if(err) throw err;
+            if(err){
+              res.status(400).send({
+                success: false,
+                error: err.message
+              });
+              return;
+            }
             // sign the token
             jwt.sign(
               // payload info
-              {username:result.id,
+              { 
+                username:result.id,
                 email:result.email
               },
               process.env.JWT_SECRET,
@@ -79,9 +98,21 @@ signUpRouter.post("/regular", (req, res, next) => {
 /* Create an admin user account */
 signUpRouter.post("/admin", (req, res, next) => {
   bcrypt.genSalt(10,(err,salt) => {
-    if(err) throw err;
+    if(err){
+      res.status(400).send({
+        success: false,
+        error: err.message
+      });
+      return;
+    }
     bcrypt.hash(req.body.password, salt,(err, hash) => {
-      if(err) throw err;
+      if(err){
+        res.status(400).send({
+          success: false,
+          error: err.message
+        });
+        return;
+      }
       Account.create({
         username: req.body.username,
         password: hash,
@@ -90,9 +121,17 @@ signUpRouter.post("/admin", (req, res, next) => {
         is_supervisor: 1,
         managed_group_ids: req.body.managed_group_ids
        }, function(err, result) {
+        if(err){
+          res.status(400).send({
+            success: false,
+            error: err.message
+          });
+          return;
+        }
         jwt.sign(
           // payload info
-          {username:result.id,
+          { 
+            username:result.id,
             email:result.email
           },
           process.env.JWT_SECRET,
