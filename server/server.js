@@ -12,6 +12,7 @@ const bodyParser = require('body-parser');
 // Routes
 const postRouter = require('./src/routes/post.router');
 const signUpRouter = require('./src/routes/signup.router');
+const authRouter = require('./src/routes/auth.router');
 
 const SESSION_DURATION = 1000 * 60 * 60// 1 hour
 
@@ -32,7 +33,7 @@ app.use(
 app.use(bodyParser.json());
 app.use('/api/posts', postRouter);
 app.use('/api/signup', signUpRouter);
-
+app.use('/api/authorize',authRouter);
 
 // listen
 app.listen(PORT, function () {
