@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import {
   Container, Col, Form,
   FormGroup, Label, Input,
-  Button, FormText
+  Button
 } from 'reactstrap';
 import './Login.css';
 

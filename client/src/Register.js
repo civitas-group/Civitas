@@ -1,4 +1,4 @@
-import React, { Component, useState } from "react";
+import React, { Component } from "react";
 import {
   Container,
   Col,
@@ -7,10 +7,10 @@ import {
   Label,
   Input,
   Button,
-  FormText,
   FormFeedback,
   Alert
 } from "reactstrap";
+import { Redirect } from 'react-router';
 import "./Register.css";
 
 class Register extends Component {
@@ -20,15 +20,16 @@ class Register extends Component {
       email: "",
       username: "",
       password: "",
-	  password2: "",
+	    password2: "",
       validate: {
         emailState: "",
-		userExists: false,
-		passMatch: true,
+        userExists: false,
+        passMatch: true,
+        registerSuccess: false
       }
     };
     this.handleChange = this.handleChange.bind(this);
-	this.submitForm = this.submitForm.bind(this);
+	  this.submitForm = this.submitForm.bind(this);
   }
 
   validateEmail(e) {
@@ -64,51 +65,55 @@ class Register extends Component {
             "is_supervisor": 0
         })
     };
-	//fetch('http://' + process.env.host + ':8080/api/signup/regular', requestOptions)
-    fetch('http://localhost:8080/api/signup/regular', requestOptions)
+    //fetch('http://' + process.env.host + ':8080/api/signup/regular', requestOptions)
+    let apiurl = 'http://localhost:8080/api/signup/' + this.props.usertype;
+    fetch(apiurl, requestOptions)
         .then(async response => {
-            const data = await response.json();
-			const { validate } = this.state;
-			
-            // check for error response
-            if (!response.ok) {
-                // get error message from body or default to response status
-				console.log('There was an error!', data['error'], data.message, response.status);
-                const error = (data && data.message) || response.status;
-				
-				
-				
-				if (data['error'].includes('E11000')) {
-				  validate.emailState = "has-danger";
-				  validate.userExists = true;
-				} else {
-				  validate.emailState = "has-success";
-				  validate.userExists = this.state.validate.userExists;
-				}
-				this.setState({ validate });
-				console.log(this.state.validate.emailState);
+          const data = await response.json();
+          const { validate } = this.state;
+    
+          // check for error response
+          if (!response.ok) {
+              // get error message from body or default to response status
+            console.log('There was an error!', data['error'], data.message, response.status);
+      
+            if (data['error'].includes('E11000')) {
+              validate.emailState = "has-danger";
+              validate.userExists = true;
+            } else {
+              validate.emailState = "has-success";
+              validate.userExists = this.state.validate.userExists;
             }
-			else{
-				  validate.emailState = "has-success";
-				  validate.userExists = false;
-				  this.setState({ validate });
-				  //return (<Redirect to={"/home"} />)
-			}
+            this.setState({ validate });
+            console.log(this.state.validate.emailState);
+          }
+          // Ok response
+          else {
+              validate.emailState = "has-success";
+              validate.userExists = false;
+              validate.registerSuccess = true;
+              localStorage.setItem('token', data['token']);
+              this.setState({ validate });
+              console.log('set token:', data['token']);
+              //return (<Redirect to={"/home"} />)
+          }
         })
         .catch(error => {
-            console.log('There was an error!', error);
-			const { validate } = this.state;
-		    validate.emailState = "has-danger";
-		    validate.userExists = this.state.validate.userExists;
-			this.setState({ validate });
+          console.log('There was an error!', error);
+          const { validate } = this.state;
+          validate.emailState = "has-danger";
+          validate.userExists = this.state.validate.userExists;
+          this.setState({ validate });
         });
   }
   render() {
     const { email, username, password } = this.state;
-
+    if (this.state.validate.registerSuccess === true){
+      return (<Redirect to="/home" />);
+    }
     return (  
       <div>
-      <h1 style={{textAlign:"center"}}>{this.props.type}</h1>
+      <h1 style={{textAlign:"center"}}>{this.props.usertype}</h1>
       <Container className="App">
         <h2 style={{textAlign:"left"}}>Register</h2>
       <Alert isOpen={this.state.validate.userExists} color="danger">
@@ -117,7 +122,7 @@ class Register extends Component {
         <Form className="form" onSubmit={(e) => this.submitForm(e)}>
           <Col>
             <FormGroup>
-              <Label class="btn-flat">Email</Label>
+              <Label className="btn-flat">Email</Label>
               <Input
                 type="email"
                 name="email"
@@ -158,12 +163,12 @@ class Register extends Component {
                 placeholder="********"
                 value={password}
                 onChange={(e) => {
-					const {  validate } = this.state;
-					validate.passMatch = (e['target']['value'] === this.state.validate.password2);
-					this.setState({ validate });
-					this.handleChange(e)
-				}}
-				//onChange = { console.log('e') }
+                  const {  validate } = this.state;
+                  validate.passMatch = (e['target']['value'] === this.state.validate.password2);
+                  this.setState({ validate });
+                  this.handleChange(e)
+                }}
+				        //onChange = { console.log('e') }
               />
             </FormGroup>
           </Col>
@@ -177,15 +182,14 @@ class Register extends Component {
                 placeholder="*********"
                 invalid={!this.state.validate.passMatch}
                 onChange={(e) => {
-					console.log(e['target']['value']);
-					const { validate } = this.state;
-					validate.password2 = e['target']['value'];
-					validate.passMatch = (e['target']['value'] === this.state.password);
-					this.setState({ validate });
-					this.handleChange(e)
-				}}
+                  const { validate } = this.state;
+                  validate.password2 = e['target']['value'];
+                  validate.passMatch = (e['target']['value'] === this.state.password);
+                  this.setState({ validate });
+                  this.handleChange(e)
+                }}
               />
-			  <FormFeedback>Passwords don't match.</FormFeedback>
+			      <FormFeedback>Passwords don't match.</FormFeedback>
             </FormGroup>
           </Col>
           <Button>Submit</Button>

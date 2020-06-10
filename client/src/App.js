@@ -3,7 +3,7 @@ import AppNavbar from './components/AppNavbar';
 import Register from './Register';
 import Login from './Login';
 import Home from './Home';
-import { BrowserRouter as Router, Route, Switch, Link } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css'
 import './App.css';
 
@@ -32,8 +32,8 @@ function App() {
     <div>
         <Switch>
             <Route exact path="/register" component={RegAdminCheck} />
-            <Route exact path="/register/admin" render={(props) => <Register {...props} type="admin"/>} />
-            <Route exact path="/register/regular" render={(props) => <Register {...props} type="regular"/>} />
+            <Route exact path="/register/admin" render={(props) => <Register {...props} usertype="admin"/>} />
+            <Route exact path="/register/regular" render={(props) => <Register {...props} usertype="regular"/>} />
             <Route exact path="/login" component={Login} />
 			      <Route exact path="/home" component={Home} />
         </Switch>
