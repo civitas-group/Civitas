@@ -12,7 +12,6 @@ const bcrypt = require('bcryptjs');
 /* Create a regular user account */
 signUpRouter.post("/regular", (req, res, next) => {
     let newAccount = {
-       // no @ for username
         username: req.body.username,
         password: req.body.password,
 		    email: req.body.email,
@@ -52,7 +51,8 @@ signUpRouter.post("/regular", (req, res, next) => {
               // payload info
               { 
                 username:result.username,
-                email:result.email
+                email:result.email,
+                is_supervisor: 0
               },
               process.env.JWT_SECRET,
               // token expires 1 hour
@@ -132,8 +132,9 @@ signUpRouter.post("/admin", (req, res, next) => {
         jwt.sign(
           // payload info
           { 
-            username:result.username,
-            email:result.email
+            username:result.id,
+            email:result.email,
+            is_supervisor:1
           },
           process.env.JWT_SECRET,
           // token expires 1 hour

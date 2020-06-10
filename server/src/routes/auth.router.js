@@ -5,6 +5,40 @@ var Account = require('../models/account.model');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 
+authRouter.post('/', verifyToken, (req, res) => {  
+    jwt.verify(req.token, process.env.JWT_SECRET, (err, authData) => {
+      if(err) {
+        res.sendStatus(403);
+      } else {
+        res.json({
+          validated: 1,
+        });
+      }
+    });
+  });
+  
+  
+  function verifyToken(req, res, next) {
+    // Get auth header value
+    const bearerHeader = req.headers['authorization'];
+    // Check if bearer is undefined
+    if(typeof bearerHeader !== 'undefined') {
+      // Split at the space
+      const bearer = bearerHeader.split(' ');
+      // Get token from array
+      const bearerToken = bearer[1];
+      // Set the token
+      req.token = bearerToken;
+      // Next middleware
+      next();
+    } else {
+      // Forbidden
+      res.sendStatus(403);
+    }
+  
+  }
+  
+  
 authRouter.post('/admin_login', (req,res) =>{
     // check '@' string
     const username_email = req.body.user_or_email;    ;
@@ -69,7 +103,8 @@ authRouter.post('/admin_login', (req,res) =>{
                         // payload info
                         { 
                           username:user.username,
-                          email:user.email
+                          email:user.email,
+                          is_supervisor:user.is_supervisor
                         },
                         process.env.JWT_SECRET,
                         // token expires 1 hour
