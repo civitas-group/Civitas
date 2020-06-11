@@ -12,6 +12,7 @@ import {
 } from "reactstrap";
 import { Redirect } from 'react-router';
 import "./Register.css";
+import axios from 'axios';
 
 class Register extends Component {
   constructor(props) {
@@ -31,6 +32,7 @@ class Register extends Component {
     this.handleChange = this.handleChange.bind(this);
 	  this.submitForm = this.submitForm.bind(this);
   }
+  
 
   validateEmail(e) {
     const emailRex = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
@@ -53,20 +55,36 @@ class Register extends Component {
   };
 
   submitForm(e) {
+    let is_supervisor = 0;
+    if (this.props.usertype === 'admin'){
+      is_supervisor = 1;
+    }
+
     e.preventDefault();
     console.log(`Email: ${this.state.email}`);
     const requestOptions = {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-            "username": this.state.username,
-            "password": this.state.password,
-            "email": this.state.email,
-            "is_supervisor": 0
+          "username": this.state.username,
+          "password": this.state.password,
+          "email": this.state.email,
+          "is_supervisor": is_supervisor
         })
     };
+    const requestOptionsAxios = {
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        "username": this.state.username,
+        "password": this.state.password,
+        "email": this.state.email,
+        "is_supervisor": is_supervisor
+      })
+  };
     //fetch('http://' + process.env.host + ':8080/api/signup/regular', requestOptions)
     let apiurl = 'http://localhost:8080/api/signup/' + this.props.usertype;
+    
+    //axios.post(apiurl, requestOptionsAxios)
     fetch(apiurl, requestOptions)
         .then(async response => {
           const data = await response.json();
@@ -75,7 +93,8 @@ class Register extends Component {
           // check for error response
           if (!response.ok) {
               // get error message from body or default to response status
-            console.log('There was an error!', data['error'], data.message, response.status);
+            console.log('There was an error!', data['error'], data.message, 
+              response.status);
       
             if (data['error'].includes('E11000')) {
               validate.emailState = "has-danger";
@@ -89,12 +108,15 @@ class Register extends Component {
           }
           // Ok response
           else {
+              //localStorage.setItem('token', data['token']);
+              const { cookies } = this.props;
+              cookies.set('token', data['token'], 
+                { path: '/', sameSite: true,});
               validate.emailState = "has-success";
               validate.userExists = false;
               validate.registerSuccess = true;
-              localStorage.setItem('token', data['token']);
-              this.setState({ validate });
-              console.log('set token:', data['token']);
+              
+              this.setState({ validate });              
               //return (<Redirect to={"/home"} />)
           }
         })

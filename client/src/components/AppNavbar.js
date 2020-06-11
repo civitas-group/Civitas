@@ -4,7 +4,6 @@ import React, { Component } from 'react';
 import {
     Collapse,
     Navbar,
-    NavbarToggler, 
     NavbarBrand,
     Nav,
     NavItem,
@@ -20,11 +19,6 @@ class AppNavbar extends Component {
         }
     }
 
-    toggle = () => {
-        this.setState({
-            isOpen: !this.state.isOpen
-        })
-    }
 
     render() {
         return (
@@ -33,7 +27,6 @@ class AppNavbar extends Component {
                 <Navbar color="dark" dark expand="lg" className="mb-5">
                     <Container>
                         <NavbarBrand href="/">Civitas</NavbarBrand>
-                        <NavbarToggler onClick={this.toggle} />
                         <Collapse isOpen={this.state.isOpen} navbar/>
                             <Nav className="ml-auto" navbar>
                                 <NavItem>
