@@ -3,6 +3,7 @@ const authRouter = express.Router();
 var Account = require('../models/account.model');
 // After the user logins, a JWT token is signed to grant user access.
 const jwt = require('jsonwebtoken');
+var jwt_decode = require('jwt-decode');
 const bcrypt = require('bcryptjs');
 
 authRouter.post('/', verifyToken, (req, res) => {  
@@ -10,33 +11,33 @@ authRouter.post('/', verifyToken, (req, res) => {
       if(err) {
         res.sendStatus(403);
       } else {
-        res.json({
-          validated: 1,
-        });
+
+        var decoded = jwt_decode(req.token);
+        res.json(decoded);
       }
     });
   });
   
   
-  function verifyToken(req, res, next) {
-    // Get auth header value
-    const bearerHeader = req.headers['authorization'];
-    // Check if bearer is undefined
-    if(typeof bearerHeader !== 'undefined') {
-      // Split at the space
-      const bearer = bearerHeader.split(' ');
-      // Get token from array
-      const bearerToken = bearer[1];
-      // Set the token
-      req.token = bearerToken;
-      // Next middleware
-      next();
-    } else {
-      // Forbidden
-      res.sendStatus(403);
-    }
-  
+function verifyToken(req, res, next) {
+  // Get auth header value
+  const bearerHeader = req.headers['authorization'];
+  // Check if bearer is undefined
+  if(typeof bearerHeader !== 'undefined') {
+    // Split at the space
+    const bearer = bearerHeader.split(' ');
+    // Get token from array
+    const bearerToken = bearer[1];
+    // Set the token
+    req.token = bearerToken;
+    // Next middleware
+    next();
+  } else {
+    // Forbidden
+    res.sendStatus(403);
   }
+
+}
   
   
 authRouter.post('/admin_login', (req,res) =>{
