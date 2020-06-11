@@ -1,49 +1,48 @@
 import React, { Component } from 'react';
-import axios from 'axios';
+import authorizeUser from './Auth'
+import { Redirect } from 'react-router';
 
 class Home extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      validUser: 0,
+      signOut: false,
+      userInfo: {}
     }
   };
   async componentDidMount() {
-    let token = localStorage.getItem('token');
-    let fulltoken = 'Bearer ' + token;
-    localStorage.setItem('token', token);
-    console.log('home access fulltoken:', fulltoken)
-    axios.post(
-      'http://localhost:8080/api/authorize',
-      { example: 'data' },
-      { headers: { 'Content-Type': 'application/json', 
-                   'authorization': fulltoken, 
-                   'Access-Control-Allow-Origin': 'http://localhost:3000/*' } }
-    ).then((response) => {
-        console.log(response)
-        let { validUser } = this.state;
-        validUser = 1;
-        this.setState({ validUser });
-      })
-      .catch((error) => {
-        // Error
-        console.log(error)
-        if (error.response) {
-            console.log('Request was made, server responded with status code outside 2xx', 
-              error.response)
-        } else if (error.request) {
-            console.log('The request was made but no response was received', 
-              error.request)
-        } else {
-            console.log('Error', error.message);
+    const { cookies } = this.props;
+    let token = cookies.get('token');
+    await authorizeUser(token)
+      .then(result => {
+        console.log(result)
+        if (result){
+          this.setState({ userInfo: result.data });      
         }
-        console.log("fulltoken", fulltoken);
-      });
+      })
+      .catch(error => {
+        this.setState({ signOut: true });  
+      })
+
   }
   render() {
+    const { cookies } = this.props;
+    console.log("cookies:", cookies.get('token'));
+    console.log(this.state.userInfo)
+    if (this.state.signOut === true){
+      return (<Redirect to="/" />);
+    }
+    //cookies.set('toke', 'Ross', { path: '/', sameSite: true,});
+    //console.log("cookies1:", cookies.get('name'));
+    
     return (
-      
-		  <h1>User is valid: {this.state.validUser}</h1>
+      <div>
+      <button onClick={() => {cookies.remove('token'); 
+        this.setState({ signOut: true });}}>Logout</button>
+		  <h4>Username: {this.state.userInfo.username}</h4>
+      <h4>Email: {this.state.userInfo.email}</h4>
+      <h4>Is supervisor?: {this.state.userInfo.is_supervisor ? <p>Yes</p> : <p>No</p> }</h4>
+      </div>
     );
   }
 }

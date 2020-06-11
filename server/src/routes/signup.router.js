@@ -56,7 +56,7 @@ signUpRouter.post("/regular", (req, res, next) => {
               },
               process.env.JWT_SECRET,
               // token expires 1 hour
-              {expiresIn:7200},
+              {expiresIn:3600000},
               // call-back
               (err,token) => {
                 if(err){
@@ -66,6 +66,12 @@ signUpRouter.post("/regular", (req, res, next) => {
                   });
                 }
                 else {
+                  res.cookie('token', token, {
+                    maxAge: 60 * 60 * 1000, // 1 hour
+                    httpOnly: true,
+                    secure: true,
+                    sameSite: true,
+                })
                   res.status(201).send({
                       token:token,
                       success: true,
@@ -78,22 +84,6 @@ signUpRouter.post("/regular", (req, res, next) => {
          });
       });
     }) 
-    /*
-    Account.create(newAccount, function(err, result) {
-    if(err){
-        res.status(400).send({
-          success: false,
-          error: err.message
-        });
-    } else {
-        res.status(201).send({
-            success: true,
-            data: result,
-            message: "Account created successfully"
-        });
-    }
-    });
-    */
 });
 
 /* Create an admin user account */
@@ -132,13 +122,13 @@ signUpRouter.post("/admin", (req, res, next) => {
         jwt.sign(
           // payload info
           { 
-            username:result.id,
+            username:result.username,
             email:result.email,
             is_supervisor:1
           },
           process.env.JWT_SECRET,
           // token expires 1 hour
-          {expiresIn:7200},
+          {expiresIn:3600000},
           // call-back
           (err,token) => {
             if(err){
@@ -148,6 +138,12 @@ signUpRouter.post("/admin", (req, res, next) => {
               });
             }
             else {
+              res.cookie('token', token, {
+                maxAge: 60 * 60 * 1000, // 1 hour
+                httpOnly: true,
+                secure: true,
+                sameSite: true,
+              })
               res.status(201).send({
                   token:token,
                   success: true,
@@ -160,29 +156,6 @@ signUpRouter.post("/admin", (req, res, next) => {
       });
     });
   });
-  /*
-   Account.create({
-    username: req.body.username,
-    password: req.body.password,
-	  email: req.body.email,
-    group_ids: req.body.group_ids,
-    is_supervisor: 1,
-    managed_group_ids: req.body.managed_group_ids
-   }, function(err, result) {
-    if(err){
-        res.status(400).send({
-          success: false,
-          error: err.message
-        });
-    } else {
-        res.status(201).send({
-            success: true,
-            data: result,
-            message: "Account created successfully"
-        });
-    } 
-  });
-  */
 });
 
 module.exports = signUpRouter;

@@ -1,4 +1,6 @@
 import React, { Component } from 'react';
+import { connect } from 'react-redux'
+import { withCookies } from 'react-cookie';
 import AppNavbar from './components/AppNavbar';
 import Register from './Register';
 import Login from './Login';
@@ -8,6 +10,7 @@ import 'bootstrap/dist/css/bootstrap.min.css'
 import './App.css';
 
 class RegAdminCheck extends Component {
+
   render() {
 
     return ( 
@@ -23,24 +26,38 @@ class RegAdminCheck extends Component {
   }
 }
 
-function App() {
+class App extends Component {
+  render() {
   return (
     <Router>
     <div className="App">
-      <AppNavbar />
+      <AppNavbar cookies={this.props.cookies}/>
     </div>
     <div>
         <Switch>
             <Route exact path="/register" component={RegAdminCheck} />
-            <Route exact path="/register/admin" render={(props) => <Register {...props} usertype="admin"/>} />
-            <Route exact path="/register/regular" render={(props) => <Register {...props} usertype="regular"/>} />
+            <Route exact path="/register/admin" 
+              render={() => (<Register usertype="admin" 
+              cookies={this.props.cookies} />)} />
+            <Route exact path="/register/regular" 
+              render={() => (<Register usertype="regular" 
+              cookies={this.props.cookies}/>)} />
             <Route exact path="/login" component={Login} />
-			      <Route exact path="/home" component={Home} />
+            <Route exact path="/home" 
+              render={() => (<Home cookies={this.props.cookies}/>)}
+              />
         </Switch>
     </div>
     </Router>
 	
   );
+  }
 }
 
-export default App;
+const mapStateToProps = (state, ownProps) => ({
+  count: state,
+  cookies: ownProps.cookies,
+});
+
+//export default connect(mapStateToProps)(App);
+export default withCookies(connect(mapStateToProps, null)(App));
