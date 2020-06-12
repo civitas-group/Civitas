@@ -2,9 +2,10 @@ import React, { Component } from 'react';
 import {
   Container, Col, Form,
   FormGroup, Label, Input,
-  Button, Alert
+  Button, Alert, Spinner
 } from 'reactstrap';
 import { Redirect } from 'react-router';
+import { connect } from 'react-redux'
 import './Login.css';
 
 class Login extends Component {
@@ -16,7 +17,8 @@ class Login extends Component {
       login_result: {
         login_success: false,
         error: ""
-      }
+      },
+      loading: false
     };
     this.handleChange = this.handleChange.bind(this);
 	  this.submitForm = this.submitForm.bind(this);
@@ -32,7 +34,17 @@ class Login extends Component {
   };
 
   submitForm(e) {
+    
     e.preventDefault();
+    if (this.state.email_username === '') {
+      this.setState({
+        login_result: {
+          error: "Please enter your email or username."
+        }
+      })
+      return;
+    }
+    this.setState({loading: true})
     const requestOptions = {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -46,11 +58,15 @@ class Login extends Component {
     fetch(apiurl, requestOptions).then(async response => {
       const data = await response.json();
       const { login_result } = this.state;
-
+      this.setState({loading: false})
       // check for errors
       if (!response.ok) {
         console.log('There was an error!', data['error'], data.message, response.status);
-        login_result.error = data['error'];
+        if ('msg' in data){
+          login_result.error = data['msg'];
+        } else {
+          login_result.error = 'An unknown error has occurred. Please try again.';
+        }
         this.setState({ login_result });
         console.log(this.state.login_result);
       } else {
@@ -59,9 +75,11 @@ class Login extends Component {
 
         login_result.login_success = true;
         this.setState({ login_result });
+        this.props.dispatch({ type: 'LOGIN' });
       }
     })
     .catch(error => {
+      this.setState({loading: false})
       console.log('There was an error!', error);
       const { login_result } = this.state;
       login_result.error = error;
@@ -77,18 +95,17 @@ class Login extends Component {
     }
     return (
       <Container className="App">
-        <h2 style={{textAlign:"left"}}>Sign In</h2>
         <Alert isOpen={this.state.login_result.error !== ""} color="danger">
           {this.state.login_result.error}
         </Alert>
         <Form className="form" onSubmit={(e) => this.submitForm(e)}>
           <Col>
             <FormGroup>
-              <Label>Email/Username</Label>
               <Input
                 type="email_username"
                 name="email_username"
                 id="example_email_username"
+                placeholder="Email or Username"
                 onChange={(e) => {
                   this.handleChange(e);
                 }}
@@ -98,22 +115,31 @@ class Login extends Component {
           </Col>
           <Col>
             <FormGroup>
-              <Label for="examplePassword">Password</Label>
               <Input
                 type="password"
                 name="password"
                 id="examplePassword"
+                placeholder="Password"
                 onChange={(e) => {
                   this.handleChange(e);
                 }}
               />
             </FormGroup>
           </Col>
+          <div>
+          { this.state.loading ? <Spinner 
+          style={{ width: '1rem', height: '1rem' }} /> : null }
+          </div>
           <Button>Submit</Button>
+          
         </Form>
       </Container>
     );
   }
 }
+const mapStateToProps = (state) => ({
+  logged_in: state.logged_in
+});
+export default connect(mapStateToProps)(Login);
 
-export default Login;
+//export default Login;

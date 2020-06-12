@@ -1,51 +1,137 @@
-import React, { Component } from 'react';
+import React, { useState } from 'react';
+import { Button, Modal, ModalHeader, ModalBody, Form,
+  Navbar, NavbarBrand, Container, ButtonDropdown, ButtonGroup,
+  DropdownItem, DropdownToggle, DropdownMenu } from 'reactstrap';
+import { connect } from 'react-redux'
+import Register from '../Register'
+import Login from '../Login'
 
 
-import {
-    Collapse,
-    Navbar,
-    NavbarBrand,
-    Nav,
-    NavItem,
-    NavLink,
-    Container
-} from 'reactstrap';
+const AppNavbar = (props) => {
 
-class AppNavbar extends Component {
-    constructor(props){
-        super(props);
-        this.state = {
-            isOpen: false
-        }
+  const [modal, setModal] = useState(false);
+  const [dropdownOpen, setDropdown] = useState(false);
+  const [type, setType] = useState(false);
+  const [typeText, setTypeText] = useState(false);
+
+  const toggle = () => setModal(!modal);
+  const toggleDropdown = () => setDropdown(!dropdownOpen);
+  const toggleLogin = () => {
+    setType('login');
+    setTypeText('Login');
+    setModal(!modal);
+  }
+  const toggleRegAdmin = () => {
+    setType('admin');
+    setTypeText('Register as Administrator');
+    setModal(!modal);
+  }
+  const toggleRegRegular = () => {
+    setType('regular');
+    setTypeText('Register as Regular User');
+    setModal(!modal);
+  }
+  function NavButtons() {
+    if (!props.logged_in) {    
+      return (
+      <ButtonGroup>
+        <ButtonDropdown isOpen={dropdownOpen} toggle={toggleDropdown}>
+          <DropdownToggle caret>
+            Register
+          </DropdownToggle>
+          <DropdownMenu>
+            <DropdownItem onClick={toggleRegAdmin}>Register as Admin User</DropdownItem>
+            <DropdownItem onClick={toggleRegRegular}>Register as Regular User</DropdownItem>
+          </DropdownMenu>
+        </ButtonDropdown>
+        <Button onClick={toggleLogin}>Login</Button>
+      </ButtonGroup>)
+    } else {
+      return (
+        <ButtonGroup>
+          <Button>Groups</Button>
+          <ButtonDropdown isOpen={dropdownOpen} toggle={toggleDropdown}>
+          <DropdownToggle caret>
+            Settings
+          </DropdownToggle>
+          <DropdownMenu>
+            <DropdownItem>Profile</DropdownItem>
+            <DropdownItem 
+            onClick={() => {
+              props.dispatch({ type: 'LOGOUT' });
+              props.cookies.remove('token');
+            }}>Logout</DropdownItem>
+          </DropdownMenu>
+        </ButtonDropdown>
+        </ButtonGroup>)
     }
+  }
+  function NavButtonsLoggedIn() {
+    return (
+        <ButtonGroup>
+          <Button>Groups</Button>
+          <ButtonDropdown isOpen={dropdownOpen} toggle={toggleDropdown}>
+          <DropdownToggle caret>
+            Settings
+          </DropdownToggle>
+          <DropdownMenu>
+            <DropdownItem>Profile</DropdownItem>
+            <DropdownItem 
+            onClick={() => {
+              props.dispatch({ type: 'LOGOUT' });
+              props.cookies.remove('token');
+            }}>Logout</DropdownItem>
+          </DropdownMenu>
+        </ButtonDropdown>
+        </ButtonGroup>)
+  }
+  function NavButtonsLoggedOut() {
+    return (
+      <ButtonGroup>
+        <ButtonDropdown isOpen={dropdownOpen} toggle={toggleDropdown}>
+          <DropdownToggle caret>
+            Register
+          </DropdownToggle>
+          <DropdownMenu>
+            <DropdownItem onClick={toggleRegAdmin}>Register as Admin User</DropdownItem>
+            <DropdownItem onClick={toggleRegRegular}>Register as Regular User</DropdownItem>
+          </DropdownMenu>
+        </ButtonDropdown>
+        <Button onClick={toggleLogin}>Login</Button>
+      </ButtonGroup>)
+  }
 
+  return (
+    <div> 
+      <Navbar color="dark" dark expand="lg" className="mb-5">
+          <Container>
+              <NavbarBrand href="/">Civitas</NavbarBrand>
+              {props.logged_in ? <NavButtonsLoggedIn/> : <NavButtonsLoggedOut /> }
+          </Container> 
+          <Form inline onSubmit={(e) => e.preventDefault()}>
 
-    render() {
-        return (
+        </Form>
 
-            <div>
-                <Navbar color="dark" dark expand="lg" className="mb-5">
-                    <Container>
-                        <NavbarBrand href="/">Civitas</NavbarBrand>
-                        <Collapse isOpen={this.state.isOpen} navbar/>
-                            <Nav className="ml-auto" navbar>
-                                <NavItem>
-                                    <NavLink href="/login">Login</NavLink>
-                                </NavItem>
-                            </Nav>
-                            <Nav className="ml-auto" navbar>
-                                <NavItem>
-                                    <NavLink href="/register">Register</NavLink>
-                                </NavItem>
-                            </Nav>
-                    </Container> 
+        <Modal isOpen={modal && !props.logged_in} toggle={toggle} style={{opacity:"0.9"}}>
+          <ModalHeader toggle={toggle}>{typeText}</ModalHeader>
+          <ModalBody>
+            {type==='login' ? <Login cookies={props.cookies}/> : 
+            <Register usertype={type} cookies={props.cookies}/>}
 
-                </Navbar>
-            </div>
+          </ModalBody>
+        </Modal>
+      </Navbar>
 
-        )
-
-    }
+    </div>
+  );
 }
 
-export default AppNavbar;
+
+const mapStateToProps = (state) => ({
+  logged_in: state.logged_in
+});
+
+//export default connect(mapStateToProps)(App);
+export default connect(mapStateToProps)(AppNavbar);
+
+//export default AppNavbar;
