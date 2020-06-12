@@ -3,6 +3,8 @@
 const express = require('express');
 const postRouter = express.Router();
 const Post = require('../models/post.model'); // post model
+// test the authentication middleware
+const authMiddleware = require('../middleware/auth');
 
 /* Get all Posts */
 postRouter.get('/', (req, res, next) => {
@@ -38,11 +40,12 @@ postRouter.get("/:post_id", (req, res, next) => {
 
 
 /* Add Single Post */
-postRouter.post("/", (req, res, next) => {
+postRouter.post("/", authMiddleware, (req, res, next) => {
   let newPost = {
     title: req.body.title,
     body: req.body.body,
-    author: req.body.author
+    author: req.body.author,
+    created: Date.now(),
   };
    Post.create(newPost, function(err, result) {
     if(err){
@@ -61,7 +64,7 @@ postRouter.post("/", (req, res, next) => {
 
 
 /* Edit Single Post */
-postRouter.patch("/:post_id", (req, res, next) => {
+postRouter.patch("/:post_id", authMiddleware, (req, res, next) => {
   let fieldsToUpdate = req.body;
   Post.findByIdAndUpdate(req.params.post_id,{ $set: fieldsToUpdate }, { new: true },  function (err, result) {
       if(err){
@@ -79,7 +82,7 @@ postRouter.patch("/:post_id", (req, res, next) => {
 });
 
 /* Delete Single Post */
-postRouter.delete("/:post_id", (req, res, next) => {
+postRouter.delete("/:post_id", authMiddleware, (req, res, next) => {
   Post.findByIdAndDelete(req.params.post_id, function(err, result){
       if(err){
         res.status(400).send({
