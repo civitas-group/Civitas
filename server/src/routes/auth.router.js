@@ -40,12 +40,11 @@ function verifyToken(req, res, next) {
 }
   
   
-authRouter.post('/admin_login', (req,res) =>{
+authRouter.post('/login', (req,res) =>{
     // check '@' string
-    const username_email = req.body.user_or_email;    ;
+    const email_username = req.body.email_username;
     const password = req.body.password;
-    //const email =  req.body.email;
-    if(!username_email){
+    if(!email_username){
         res.status(400).send({
             success:false,
             msg:"Please enter username or email."
@@ -60,7 +59,7 @@ authRouter.post('/admin_login', (req,res) =>{
         return;
     }
     // decide whether the user inputs an username or email.
-    var criteria = (username_email.indexOf('@') === -1) ? {username: username_email} : {email: username_email};
+    var criteria = (email_username.indexOf('@') === -1) ? {username: email_username} : {email: email_username};
     // check the credentials
     Account.findOne(criteria,
         function(err, user){
@@ -120,6 +119,12 @@ authRouter.post('/admin_login', (req,res) =>{
                             });
                           }
                           else {
+                            res.cookie('token', token, {
+                              maxAge: 60 * 60 * 1000, // 1 hour
+                              httpOnly: true,
+                              secure: true,
+                              sameSite: true,
+                            })
                             res.status(201).send({
                                 token:token,
                                 success: true,
@@ -132,21 +137,9 @@ authRouter.post('/admin_login', (req,res) =>{
                 })
         }
     });
-        //.then((err,user)=>{
-        //exec(function(err, user)
 });
 
-
-authRouter.post('/regular_login', (req,res) =>{
-    res.json({message:'regular_login'});
-});
-
-
-authRouter.post('/admin_logout', (req,res) =>{
-    res.json({message:'logout'});
-});
-
-authRouter.post('/regular_logout', (req,res) =>{
+authRouter.post('/logout', (req,res) =>{
     res.json({message:'logout'});
 });
 
