@@ -2,14 +2,22 @@
 
 const mongoose = require('mongoose');
 const postSchema = new mongoose.Schema({
-   description: {
-       type: String,
-       required: true
-   },
-   created: {
-       type: Date,
-       required: true
-   },
+  title: {
+    type: String,
+    required: true,
+  },
+  body: {
+    type: String,
+    required: true,
+  },
+  author: {
+    type: String,
+    required: true,
+  },
+  created: {
+    type: Date,
+    required: true
+  },
    is_valid: {
        type: Boolean
    }
