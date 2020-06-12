@@ -8,10 +8,19 @@ import App from './App';
 import * as serviceWorker from './serviceWorker';
 
 const initialState = {
-  count: 42
+  count: 42,
+  logged_in: false
 };
 function reducer(state = initialState, action) {
   switch(action.type){
+    case "LOGIN":
+      return {
+        logged_in: true
+      };
+    case "LOGOUT":
+      return {
+        logged_in: false
+      };
     default:
       return state;
   }

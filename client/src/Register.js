@@ -4,15 +4,15 @@ import {
   Col,
   Form,
   FormGroup,
-  Label,
   Input,
   Button,
   FormFeedback,
-  Alert
+  Alert,
+  Spinner
 } from "reactstrap";
 import { Redirect } from 'react-router';
+import { connect } from 'react-redux'
 import "./Register.css";
-import axios from 'axios';
 
 class Register extends Component {
   constructor(props) {
@@ -21,13 +21,15 @@ class Register extends Component {
       email: "",
       username: "",
       password: "",
-	    password2: "",
+      password2: "",
+      userText: "",
       validate: {
         emailState: "",
         userExists: false,
         passMatch: true,
         registerSuccess: false
-      }
+      },
+      loading: false
     };
     this.handleChange = this.handleChange.bind(this);
 	  this.submitForm = this.submitForm.bind(this);
@@ -55,12 +57,23 @@ class Register extends Component {
   };
 
   submitForm(e) {
+    e.preventDefault();
     let is_supervisor = 0;
     if (this.props.usertype === 'admin'){
       is_supervisor = 1;
     }
-
-    e.preventDefault();
+    if (this.state.email === '') {
+      this.setState({
+        validate: {
+          emailState: "has-danger",
+          userExists: false,
+          passMatch: true
+        }
+      })
+      return;
+    }
+    
+    this.setState({loading: true})
     console.log(`Email: ${this.state.email}`);
     const requestOptions = {
         method: 'POST',
@@ -72,84 +85,76 @@ class Register extends Component {
           "is_supervisor": is_supervisor
         })
     };
-    const requestOptionsAxios = {
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        "username": this.state.username,
-        "password": this.state.password,
-        "email": this.state.email,
-        "is_supervisor": is_supervisor
-      })
-  };
     //fetch('http://' + process.env.host + ':8080/api/signup/regular', requestOptions)
     let apiurl = 'http://localhost:8080/api/signup/' + this.props.usertype;
     
     //axios.post(apiurl, requestOptionsAxios)
     fetch(apiurl, requestOptions)
-        .then(async response => {
-          const data = await response.json();
-          const { validate } = this.state;
+      .then(async response => {
+        const data = await response.json();
+        const { validate } = this.state;
+        this.setState({loading: false})
+        // check for error response
+        if (!response.ok) {
+            // get error message from body or default to response status
+          console.log('There was an error!', data['error'], data.message, 
+            response.status);
     
-          // check for error response
-          if (!response.ok) {
-              // get error message from body or default to response status
-            console.log('There was an error!', data['error'], data.message, 
-              response.status);
-      
-            if (data['error'].includes('E11000')) {
-              validate.emailState = "has-danger";
-              validate.userExists = true;
-            } else {
-              validate.emailState = "has-success";
-              validate.userExists = this.state.validate.userExists;
-            }
-            this.setState({ validate });
-            console.log(this.state.validate.emailState);
+          if (data['error'].includes('E11000')) {
+            validate.emailState = "has-danger";
+            validate.userExists = true;
+          } else {
+            validate.emailState = "has-success";
+            validate.userExists = this.state.validate.userExists;
           }
-          // Ok response
-          else {
-              //localStorage.setItem('token', data['token']);
-              const { cookies } = this.props;
-              cookies.set('token', data['token'], 
-                { path: '/', sameSite: true,});
-              validate.emailState = "has-success";
-              validate.userExists = false;
-              validate.registerSuccess = true;
-              
-              this.setState({ validate });              
-              //return (<Redirect to={"/home"} />)
-          }
-        })
-        .catch(error => {
-          console.log('There was an error!', error);
-          const { validate } = this.state;
-          validate.emailState = "has-danger";
-          validate.userExists = this.state.validate.userExists;
           this.setState({ validate });
-        });
+          console.log(this.state.validate.emailState);
+        }
+        // Ok response
+        else {
+            //localStorage.setItem('token', data['token']);
+            const { cookies } = this.props;
+            cookies.set('token', data['token'], 
+              { path: '/', sameSite: true,});
+            validate.emailState = "has-success";
+            validate.userExists = false;
+            validate.registerSuccess = true;
+            
+            this.setState({ validate });
+            this.props.dispatch({ type: 'LOGIN' });         
+            //return (<Redirect to={"/home"} />)
+        }
+      })
+      .catch(error => {
+        this.setState({loading: false})
+        console.log('There was an error!', error);
+        const { validate } = this.state;
+        validate.emailState = "has-danger";
+        validate.userExists = this.state.validate.userExists;
+        this.setState({ validate });
+      });
   }
   render() {
     const { email, username, password } = this.state;
     if (this.state.validate.registerSuccess === true){
       return (<Redirect to="/home" />);
     }
+
     return (  
       <div>
-      <h1 style={{textAlign:"center"}}>{this.props.usertype}</h1>
       <Container className="App">
-        <h2 style={{textAlign:"left"}}>Register</h2>
+
       <Alert isOpen={this.state.validate.userExists} color="danger">
         Email or username already in use.
       </Alert>
         <Form className="form" onSubmit={(e) => this.submitForm(e)}>
           <Col>
             <FormGroup>
-              <Label className="btn-flat">Email</Label>
               <Input
                 type="email"
                 name="email"
                 id="exampleEmail"
-                placeholder="myemail@email.com"
+                placeholder="Email Address"
                 value={email}
                 valid={this.state.validate.emailState === "has-success"}
                 invalid={this.state.validate.emailState === "has-danger"}
@@ -164,12 +169,11 @@ class Register extends Component {
           </Col>
           <Col>
             <FormGroup>
-              <Label>Username</Label>
               <Input
                 type="username"
                 name="username"
                 id="exampleUsername"
-                placeholder="username"
+                placeholder="Username"
                 value={username}
                 onChange={(e) => this.handleChange(e)}
               />
@@ -177,12 +181,11 @@ class Register extends Component {
           </Col>
           <Col>
             <FormGroup>
-              <Label for="examplePassword">Password</Label>
               <Input
                 type="password"
                 name="password"
                 id="examplePassword"
-                placeholder="********"
+                placeholder="Password"
                 value={password}
                 onChange={(e) => {
                   const {  validate } = this.state;
@@ -196,12 +199,11 @@ class Register extends Component {
           </Col>
           <Col>
             <FormGroup>
-              <Label for="exampleConfirmPassword">Confirm Password</Label>
               <Input
-                type="confirmpassword"
+                type="password"
                 name="confirmpassword"
                 id="exampleConfirmPassword"
-                placeholder="*********"
+                placeholder="Confirm Password"
                 invalid={!this.state.validate.passMatch}
                 onChange={(e) => {
                   const { validate } = this.state;
@@ -214,6 +216,10 @@ class Register extends Component {
 			      <FormFeedback>Passwords don't match.</FormFeedback>
             </FormGroup>
           </Col>
+          <div>
+          { this.state.loading ? <Spinner 
+          style={{ width: '1rem', height: '1rem' }} /> : null }
+          </div>
           <Button>Submit</Button>
         </Form>
       </Container>
@@ -222,4 +228,8 @@ class Register extends Component {
   }
 }
 
-export default Register;
+const mapStateToProps = (state) => ({
+  logged_in: state.logged_in
+});
+export default connect(mapStateToProps)(Register);
+//export default Register;
