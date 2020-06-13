@@ -27,7 +27,7 @@ class Register extends Component {
         emailState: "",
         userExists: false,
         passMatch: true,
-        registerSuccess: false
+        passEmpty: ""
       },
       loading: false
     };
@@ -46,7 +46,15 @@ class Register extends Component {
     }
     this.setState({ validate });
   }
-
+  validatePass(e) {
+    const { validate } = this.state;
+    if (e.target.value === ''){
+      validate.passEmpty = 'empty';
+    } else {
+      validate.passEmpty = 'not-empty';
+    }
+    this.setState({ validate });
+  }
   handleChange = async (event) => {
     const { target } = event;
     const value = target.type === "checkbox" ? target.checked : target.value;
@@ -72,7 +80,10 @@ class Register extends Component {
       })
       return;
     }
-    
+    if (this.state.password === '') {
+      this.setState({ validate: { passEmpty: 'empty' } })
+      return;
+    }
     this.setState({loading: true})
     console.log(`Email: ${this.state.email}`);
     const requestOptions = {
@@ -118,7 +129,6 @@ class Register extends Component {
               { path: '/', sameSite: true,});
             validate.emailState = "has-success";
             validate.userExists = false;
-            validate.registerSuccess = true;
             
             this.setState({ validate });
             this.props.dispatch({ type: 'LOGIN' });         
@@ -136,7 +146,7 @@ class Register extends Component {
   }
   render() {
     const { email, username, password } = this.state;
-    if (this.state.validate.registerSuccess === true){
+    if (this.props.logged_in){
       return (<Redirect to="/home" />);
     }
 
@@ -187,14 +197,18 @@ class Register extends Component {
                 id="examplePassword"
                 placeholder="Password"
                 value={password}
+                valid={this.state.validate.passEmpty === "not-empty"}
+                invalid={this.state.validate.passEmpty === "empty"}
                 onChange={(e) => {
                   const {  validate } = this.state;
                   validate.passMatch = (e['target']['value'] === this.state.validate.password2);
-                  this.setState({ validate });
+                  this.validatePass(e);
                   this.handleChange(e)
                 }}
 				        //onChange = { console.log('e') }
               />
+              <FormFeedback valid>Password okay.</FormFeedback>
+              <FormFeedback>Please enter a password.</FormFeedback>
             </FormGroup>
           </Col>
           <Col>

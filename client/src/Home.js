@@ -16,18 +16,19 @@ class Home extends Component {
   async componentDidMount() {
     const { cookies } = this.props;
     let token = cookies.get('token');
-    await authorizeUser(token)
+    await authorizeUser(token, 'authorize')
       .then(result => {
         console.log(result)
         if (result){
-          this.setState({ userInfo: result.data });      
+          this.props.dispatch({ 
+            type: 'HOMEPAGE_ACCESS',
+            payload: result.data });      
         }
       })
       .catch(error => {
-        this.setState({ signOut: true });  
+        console.log(error)
+        this.props.dispatch({ type: 'LOGOUT' });
       })
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    this.setState({justLoggedIn:false})
   }
 
   render() {
@@ -47,24 +48,23 @@ class Home extends Component {
     const { cookies } = this.props;
     console.log("cookies:", cookies.get('token'));
     console.log(this.state.userInfo)
-    if (!this.state.justLoggedIn && !this.props.logged_in){
-      this.props.dispatch({ type: 'LOGOUT' });
+    if (!this.props.logged_in){
       return (<Redirect to="/" />);
     }
     
     return (
       <div>
-      
-		  <h4>Username: {this.state.userInfo.username}</h4>
-      <h4>Email: {this.state.userInfo.email}</h4>
-      <h4>Is supervisor?: {this.state.userInfo.is_supervisor ? <p>Yes</p> : <p>No</p> }</h4>
-      <UserTypeSpecific is_supervisor={this.state.userInfo.is_supervisor}/>
+		  <h4>Username: {this.props.userInfo.username}</h4>
+      <h4>Email: {this.props.userInfo.email}</h4>
+      <h4>Is supervisor?: {this.props.userInfo.is_supervisor ? <p>Yes</p> : <p>No</p> }</h4>
+      <UserTypeSpecific is_supervisor={this.props.userInfo.is_supervisor}/>
       </div>
     );
   }
 }
 
-const mapStateToProps = (state) => ({
-  logged_in: state.logged_in
+const mapStateToProps = (state, ownProps) => ({
+  logged_in: state.logged_in,
+  userInfo: state.userInfo
 });
 export default connect(mapStateToProps)(Home);
