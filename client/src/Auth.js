@@ -1,8 +1,8 @@
 import axios from 'axios';
 
-async function authorizeUser(token) {
+async function authorizeUser(token, endpoint) {
     let fulltoken = 'Bearer ' + token;
-    let apiurl = 'http://localhost:8080/api/authorize';
+    let apiurl = 'http://localhost:8080/api/' + endpoint;
     const options = {
         method: 'post',
         url: apiurl,
@@ -12,7 +12,7 @@ async function authorizeUser(token) {
       };
     return new Promise((resolve, reject) => {
         axios(options).then((response) => {
-            console.log("Auth.js res1:", response)
+            console.log("Auth.js res:", response)
             resolve(response);
         })
         .catch((error) => {

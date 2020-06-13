@@ -29,7 +29,6 @@ class App extends Component {
 }
 
 const mapStateToProps = (state, ownProps) => ({
-  count: state,
   cookies: ownProps.cookies,
 });
 
