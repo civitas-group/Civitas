@@ -15,7 +15,6 @@ class Login extends Component {
       email_username: "",
       password: "",
       login_result: {
-        login_success: false,
         error: ""
       },
       loading: false
@@ -73,7 +72,6 @@ class Login extends Component {
         const { cookies } = this.props;
         cookies.set('token', data['token'], { path: '/', sameSite: true,});
 
-        login_result.login_success = true;
         this.setState({ login_result });
         this.props.dispatch({ type: 'LOGIN' });
       }
@@ -90,7 +88,7 @@ class Login extends Component {
 
   render() {
     const { email_username, password } = this.state;
-    if (this.state.login_result.login_success === true) {
+    if (this.props.logged_in) {
       return (<Redirect to="/home" />);
     }
     return (

@@ -27,7 +27,7 @@ class Home extends Component {
         this.setState({ signOut: true });  
       })
     await new Promise(resolve => setTimeout(resolve, 1000));
-    this.setState({justLoggedIn:false})
+    //this.setState({justLoggedIn:false})
   }
 
   render() {
@@ -47,7 +47,7 @@ class Home extends Component {
     const { cookies } = this.props;
     console.log("cookies:", cookies.get('token'));
     console.log(this.state.userInfo)
-    if (!this.state.justLoggedIn && !this.props.logged_in){
+    if (!this.props.logged_in){
       this.props.dispatch({ type: 'LOGOUT' });
       return (<Redirect to="/" />);
     }

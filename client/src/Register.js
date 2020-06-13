@@ -26,8 +26,7 @@ class Register extends Component {
       validate: {
         emailState: "",
         userExists: false,
-        passMatch: true,
-        registerSuccess: false
+        passMatch: true
       },
       loading: false
     };
@@ -118,7 +117,6 @@ class Register extends Component {
               { path: '/', sameSite: true,});
             validate.emailState = "has-success";
             validate.userExists = false;
-            validate.registerSuccess = true;
             
             this.setState({ validate });
             this.props.dispatch({ type: 'LOGIN' });         
@@ -136,7 +134,7 @@ class Register extends Component {
   }
   render() {
     const { email, username, password } = this.state;
-    if (this.state.validate.registerSuccess === true){
+    if (this.props.logged_in){
       return (<Redirect to="/home" />);
     }
 
