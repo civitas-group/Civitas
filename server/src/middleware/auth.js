@@ -26,8 +26,8 @@ function authMiddleware(req,res,next){
           Account.findOne({username:authData.username}).select('-password').then(user_info =>{
             //res.json({payload:authData, user_info: user_info});
             req.user = {payload:authData, user_info: user_info};
+            next();
           });
-          next();
         }
       });
     }
