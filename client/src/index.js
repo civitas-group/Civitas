@@ -6,6 +6,7 @@ import { CookiesProvider } from 'react-cookie';
 import './index.css';
 import App from './App';
 import * as serviceWorker from './serviceWorker';
+import Group from './Group';
 
 const initialState = {
   logged_in: false,
@@ -21,7 +22,7 @@ function reducer(state = initialState, action) {
       };
     case "LOGOUT":
       return {
-        ...state,
+        userInfo: {},
         logged_in: false
       };
     case "HOMEPAGE_ACCESS":

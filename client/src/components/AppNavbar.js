@@ -31,41 +31,6 @@ const AppNavbar = (props) => {
     setTypeText('Register as Regular User');
     setModal(!modal);
   }
-  function NavButtons() {
-    if (!props.logged_in) {    
-      return (
-      <ButtonGroup>
-        <ButtonDropdown isOpen={dropdownOpen} toggle={toggleDropdown}>
-          <DropdownToggle caret>
-            Register
-          </DropdownToggle>
-          <DropdownMenu>
-            <DropdownItem onClick={toggleRegAdmin}>Register as Admin User</DropdownItem>
-            <DropdownItem onClick={toggleRegRegular}>Register as Regular User</DropdownItem>
-          </DropdownMenu>
-        </ButtonDropdown>
-        <Button onClick={toggleLogin}>Login</Button>
-      </ButtonGroup>)
-    } else {
-      return (
-        <ButtonGroup>
-          <Button>Groups</Button>
-          <ButtonDropdown isOpen={dropdownOpen} toggle={toggleDropdown}>
-          <DropdownToggle caret>
-            Settings
-          </DropdownToggle>
-          <DropdownMenu>
-            <DropdownItem>Profile</DropdownItem>
-            <DropdownItem 
-            onClick={() => {
-              props.dispatch({ type: 'LOGOUT' });
-              props.cookies.remove('token');
-            }}>Logout</DropdownItem>
-          </DropdownMenu>
-        </ButtonDropdown>
-        </ButtonGroup>)
-    }
-  }
   function NavButtonsLoggedIn() {
     return (
         <ButtonGroup>

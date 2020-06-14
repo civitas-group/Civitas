@@ -12,8 +12,25 @@ authRouter.post('/', verifyToken, (req, res) => {
         res.sendStatus(403);
       } else {
 
-        var decoded = jwt_decode(req.token);
-        res.json(decoded);
+        let decoded = jwt_decode(req.token);
+        let full = "";
+        if (decoded.username === "a9"){
+          full = Object.assign(decoded, {
+            group_ids: ["5ee449a308eedc0f7b42366e"]
+          })
+        } else if (decoded.username === "a11"){
+          full = Object.assign(decoded, {
+            group_ids: ["5ee449a308eedc0f7b42366e"]
+          })
+        } else if (decoded.username === "a10"){
+          full = Object.assign(decoded, {
+            group_ids: [],
+            managed_groups_ids: ["5ee449a308eedc0f7b42366e"]
+          })
+        }
+
+        if (full != "" ) { res.json(full); }
+        else { res.json(decoded); }
       }
     });
   });

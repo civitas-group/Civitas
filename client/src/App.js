@@ -3,6 +3,7 @@ import { connect } from 'react-redux'
 import { withCookies } from 'react-cookie';
 import AppNavbar from './components/AppNavbar';
 import Home from './Home';
+import Group from './Group';
 import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css'
 import './App.css';
@@ -11,7 +12,7 @@ class App extends Component {
   render() {
     return (
 
-      <div className="bgimg"> 
+      <div> 
       <Router>
       <div className="App">
         <AppNavbar cookies={this.props.cookies}/>
@@ -20,6 +21,10 @@ class App extends Component {
           <Switch>
               <Route exact path="/home" 
                 render={() => (<Home cookies={this.props.cookies}/>)} />
+          <Route exact path="/group" 
+                    render={() => (<Group cookies={this.props.cookies}/>)} />
+          <Route exact path="/joingroup" 
+                    render={() => (<Group cookies={this.props.cookies}/>)} />
           </Switch>
       </div>
       </Router>
