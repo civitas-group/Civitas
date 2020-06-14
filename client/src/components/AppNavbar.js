@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { Button, Modal, ModalHeader, ModalBody, Form,
-  Navbar, NavbarBrand, Container, ButtonDropdown, ButtonGroup,
+  Navbar, Container, ButtonDropdown, ButtonGroup,
   DropdownItem, DropdownToggle, DropdownMenu } from 'reactstrap';
 import { connect } from 'react-redux'
+import { Link } from 'react-router-dom'
 import Register from '../Register'
 import Login from '../Login'
 
@@ -30,41 +31,6 @@ const AppNavbar = (props) => {
     setType('regular');
     setTypeText('Register as Regular User');
     setModal(!modal);
-  }
-  function NavButtons() {
-    if (!props.logged_in) {    
-      return (
-      <ButtonGroup>
-        <ButtonDropdown isOpen={dropdownOpen} toggle={toggleDropdown}>
-          <DropdownToggle caret>
-            Register
-          </DropdownToggle>
-          <DropdownMenu>
-            <DropdownItem onClick={toggleRegAdmin}>Register as Admin User</DropdownItem>
-            <DropdownItem onClick={toggleRegRegular}>Register as Regular User</DropdownItem>
-          </DropdownMenu>
-        </ButtonDropdown>
-        <Button onClick={toggleLogin}>Login</Button>
-      </ButtonGroup>)
-    } else {
-      return (
-        <ButtonGroup>
-          <Button>Groups</Button>
-          <ButtonDropdown isOpen={dropdownOpen} toggle={toggleDropdown}>
-          <DropdownToggle caret>
-            Settings
-          </DropdownToggle>
-          <DropdownMenu>
-            <DropdownItem>Profile</DropdownItem>
-            <DropdownItem 
-            onClick={() => {
-              props.dispatch({ type: 'LOGOUT' });
-              props.cookies.remove('token');
-            }}>Logout</DropdownItem>
-          </DropdownMenu>
-        </ButtonDropdown>
-        </ButtonGroup>)
-    }
   }
   function NavButtonsLoggedIn() {
     return (
@@ -102,10 +68,13 @@ const AppNavbar = (props) => {
   }
 
   return (
-    <div> 
-      <Navbar color="dark" dark expand="lg" className="mb-5">
+    <div id="AppNavbar"> 
+      <Navbar color="dark" dark expand="lg" className="mb-5" 
+        style={{width:'100%',float: 'left'}}>
           <Container>
-              <NavbarBrand href="/">Civitas</NavbarBrand>
+              <Link to="/">
+              <Button>Civitas</Button>
+              </Link>
               {props.logged_in ? <NavButtonsLoggedIn/> : <NavButtonsLoggedOut /> }
           </Container> 
           <Form inline onSubmit={(e) => e.preventDefault()}>
