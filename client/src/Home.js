@@ -11,8 +11,9 @@ class Home extends Component {
       signOut: false,
       userInfo: {},
       justLoggedIn: true
-    }
-  };
+    };
+  }
+
   async componentDidMount() {
     const { cookies } = this.props;
     let token = cookies.get('token');

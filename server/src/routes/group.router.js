@@ -5,7 +5,7 @@ var Group = require('../models/group.model');
 const groupRouter = express.Router();
 
 /* Create a new group */
-groupRouter.post("/", authMiddleware, (req, res) => {
+groupRouter.post("/create", authMiddleware, (req, res) => {
     let newGroup = {
         group_name: req.body.group_name,
         supervisor_id: req.user.user_info._id,

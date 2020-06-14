@@ -3,9 +3,10 @@ import { connect } from 'react-redux'
 import { withCookies } from 'react-cookie';
 import AppNavbar from './components/AppNavbar';
 import Home from './Home';
+import CreateGroup from './create_group';
 import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css'
-import './App.css';
+import './css/App.css';
 
 class App extends Component {
   render() {
@@ -20,6 +21,8 @@ class App extends Component {
           <Switch>
               <Route exact path="/home" 
                 render={() => (<Home cookies={this.props.cookies}/>)} />
+              <Route exact path="/creategroup"
+                render={() => (<CreateGroup cookies={this.props.cookies}/>)} />
           </Switch>
       </div>
       </Router>

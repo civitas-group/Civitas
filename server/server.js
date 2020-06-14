@@ -35,7 +35,7 @@ app.use(bodyParser.json());
 app.use('/api/posts', postRouter);
 app.use('/api/signup', signUpRouter);
 app.use('/api/authorize',authRouter);
-app.use('/api/creategroup', groupRouter);
+app.use('/api/group', groupRouter);
 
 // listen
 app.listen(PORT, function () {

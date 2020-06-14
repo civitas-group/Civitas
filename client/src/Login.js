@@ -6,7 +6,7 @@ import {
 } from 'reactstrap';
 import { Redirect } from 'react-router';
 import { connect } from 'react-redux'
-import './Login.css';
+import './css/Login.css';
 
 class Login extends Component {
   constructor(props) {
@@ -33,7 +33,6 @@ class Login extends Component {
   };
 
   submitForm(e) {
-    
     e.preventDefault();
     if (this.state.email_username === '') {
       this.setState({
@@ -87,7 +86,6 @@ class Login extends Component {
   }
 
   render() {
-    const { email_username, password } = this.state;
     if (this.props.logged_in) {
       return (<Redirect to="/home" />);
     }
