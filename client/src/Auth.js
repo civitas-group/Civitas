@@ -2,7 +2,7 @@ import axios from 'axios';
 
 async function authorizeUser(token, endpoint) {
     let fulltoken = 'Bearer ' + token;
-    let apiurl = 'http://localhost:8080/api/' + endpoint;
+    let apiurl = 'http://localhost:8080/api' + endpoint;
     const options = {
         method: 'post',
         url: apiurl,
