@@ -6,30 +6,51 @@ import { CookiesProvider } from 'react-cookie';
 import './index.css';
 import App from './App';
 import * as serviceWorker from './serviceWorker';
-import Group from './Group';
 
 const initialState = {
   logged_in: false,
-  userInfo: {
-  }
+  user_info: {
+  },
+  loading: true
 };
 function reducer(state = initialState, action) {
   switch(action.type){
     case "LOGIN":
       return {
         ...state,
-        logged_in: true
+        logged_in: true,
+        loading: false
       };
     case "LOGOUT":
       return {
-        userInfo: {},
-        logged_in: false
+        user_info: {},
+        logged_in: false,
+        loading: false
       };
     case "HOMEPAGE_ACCESS":
       return {
         ...state,
-        userInfo: action.payload
+        user_info: action.payload,
+        logged_in: true,
+        loading: false
       }
+    case "GROUP_ACCESS":
+      return {
+        ...state,
+        user_info: action.payload,
+        logged_in: true,
+        loading: false
+      }
+    case "LOADING":
+      return {
+        ...state,
+        loading: true
+      };
+    case "STOP_LOADING":
+      return {
+        ...state,
+        loading: false
+      };
     default:
       return state;
   }

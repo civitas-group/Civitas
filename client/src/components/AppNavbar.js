@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { Button, Modal, ModalHeader, ModalBody, Form,
-  Navbar, NavbarBrand, Container, ButtonDropdown, ButtonGroup,
+  Navbar, Container, ButtonDropdown, ButtonGroup,
   DropdownItem, DropdownToggle, DropdownMenu } from 'reactstrap';
 import { connect } from 'react-redux'
+import { Link } from 'react-router-dom'
 import Register from '../Register'
 import Login from '../Login'
 
@@ -67,10 +68,13 @@ const AppNavbar = (props) => {
   }
 
   return (
-    <div> 
-      <Navbar color="dark" dark expand="lg" className="mb-5">
+    <div id="AppNavbar"> 
+      <Navbar color="dark" dark expand="lg" className="mb-5" 
+        style={{width:'100%',float: 'left'}}>
           <Container>
-              <NavbarBrand href="/">Civitas</NavbarBrand>
+              <Link to="/">
+              <Button>Civitas</Button>
+              </Link>
               {props.logged_in ? <NavButtonsLoggedIn/> : <NavButtonsLoggedOut /> }
           </Container> 
           <Form inline onSubmit={(e) => e.preventDefault()}>
