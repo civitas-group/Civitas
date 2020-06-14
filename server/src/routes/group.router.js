@@ -12,6 +12,13 @@ groupRouter.post("/create", authMiddleware, (req, res) => {
         is_private: true,
         is_valid: false
     };
+    if (req.user.user_info.is_supervisor !== true) {
+      res.status(403).send({
+        success: false,
+        error: "You are not an admin user!"
+      });
+      return;
+    }
     Group.create(newGroup, function(err, result) {
         if(err){
           res.status(400).send({
