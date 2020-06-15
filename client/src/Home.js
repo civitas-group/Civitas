@@ -9,6 +9,7 @@ class Home extends Component {
   constructor(props) {
     super(props);
   };
+  
   async componentDidMount() {
     this.props.dispatch({ type: 'LOADING' });
     const { cookies } = this.props;

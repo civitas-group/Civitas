@@ -5,9 +5,10 @@ import AppNavbar from './components/AppNavbar';
 import Home from './Home';
 import Group from './Group';
 import Posts from './Posts';
+import CreateGroup from './create_group';
 import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css'
-import './App.css';
+import './css/App.css';
 import authorizeUser from './Auth'
 
 class App extends Component {
@@ -51,6 +52,8 @@ class App extends Component {
           </Route>
           <Route exact path="/joingroup"
                     render={() => (<Group cookies={this.props.cookies}/>)} />
+          <Route exact path="/creategroup"
+                render={() => (<CreateGroup cookies={this.props.cookies}/>)} />
           </Switch>
       </div>
       </Router>

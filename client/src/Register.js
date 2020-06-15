@@ -12,7 +12,7 @@ import {
 } from "reactstrap";
 import { Redirect } from 'react-router';
 import { connect } from 'react-redux'
-import "./Register.css";
+import "./css/Register.css";
 
 class Register extends Component {
   constructor(props) {

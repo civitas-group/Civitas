@@ -5,13 +5,20 @@ var Group = require('../models/group.model');
 const groupRouter = express.Router();
 
 /* Create a new group */
-groupRouter.post("/", authMiddleware, (req, res) => {
+groupRouter.post("/create", authMiddleware, (req, res) => {
     let newGroup = {
         group_name: req.body.group_name,
         supervisor_id: req.user.user_info._id,
         is_private: true,
         is_valid: false
     };
+    if (req.user.user_info.is_supervisor !== true) {
+      res.status(403).send({
+        success: false,
+        error: "You are not an admin user!"
+      });
+      return;
+    }
     Group.create(newGroup, function(err, result) {
         if(err){
           res.status(400).send({
