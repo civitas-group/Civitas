@@ -35,7 +35,9 @@ const AppNavbar = (props) => {
   function NavButtonsLoggedIn() {
     return (
         <ButtonGroup>
-          <Button>Groups</Button>
+          <Link to="/home">
+            <Button>Groups</Button>
+          </Link>
           <ButtonDropdown isOpen={dropdownOpen} toggle={toggleDropdown}>
           <DropdownToggle caret>
             Settings
@@ -68,7 +70,7 @@ const AppNavbar = (props) => {
   }
 
   return (
-    <div id="AppNavbar"> 
+    <div id="AppNavbar" style={{height: '54px',minHeight: '100%'}}> 
       <Navbar color="dark" dark expand="lg" className="mb-5" 
         style={{width:'100%',float: 'left'}}>
           <Container>
@@ -77,9 +79,7 @@ const AppNavbar = (props) => {
               </Link>
               {props.logged_in ? <NavButtonsLoggedIn/> : <NavButtonsLoggedOut /> }
           </Container> 
-          <Form inline onSubmit={(e) => e.preventDefault()}>
 
-        </Form>
 
         <Modal isOpen={modal && !props.logged_in} toggle={toggle} style={{opacity:"0.9"}}>
           <ModalHeader toggle={toggle}>{typeText}</ModalHeader>

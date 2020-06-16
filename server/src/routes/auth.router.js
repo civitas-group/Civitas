@@ -13,7 +13,33 @@ authRouter.post('/', verifyToken, (req, res) => {
       } else {
 
         var decoded = jwt_decode(req.token);
-        res.json(decoded);
+
+        var criteria = {username: decoded.username}
+        
+        Account.findOne(criteria, function(accountErr, user){
+          if(accountErr || !user){
+            res.status(400).send({
+              success:false,
+              error: accountErr.message,
+            });
+            return;
+          } else {
+
+            let group_ids = [];
+            let managed_groups_ids = [];
+            if ('group_ids' in user){ group_ids = user.group_ids; }
+            if ('managed_groups_ids' in user){
+              managed_groups_ids = user.managed_groups_ids; 
+            }
+            full = Object.assign(decoded, {
+              group_ids: group_ids,
+              managed_groups_ids: managed_groups_ids
+            })
+
+            res.json(full);
+          }
+        });
+
       }
     });
   });

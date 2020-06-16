@@ -3,6 +3,7 @@
 const express = require('express');
 const postRouter = express.Router();
 const Post = require('../models/post.model'); // post model
+var Group = require('../models/group.model');
 // test the authentication middleware
 const authMiddleware = require('../middleware/auth');
 
@@ -45,21 +46,59 @@ postRouter.post("/", authMiddleware, (req, res, next) => {
     title: req.body.title,
     body: req.body.body,
     author: req.body.author,
+    likes: 0,
     created: Date.now(),
   };
-   Post.create(newPost, function(err, result) {
+  Post.create(newPost, function(err, result) {
     if(err){
         res.status(400).send({
           success: false,
           error: err.message
         });
     }
-      res.status(201).send({
-        success: true,
-        data: result,
-        message: "Post created successfully"
-      });
+
+    let listOfPosts = [];
+    criteria = {_id: req.body.group_id};
+    // Check if user has existing managed groups
+    Group.findOne(criteria, function(groupFindErr, groupFind){
+      if(groupFindErr || !groupFind){
+        res.status(400).send({
+          success:false,
+          error: groupFindErr.message,
+        });
+        return;
+      } else {
+        listOfPosts = groupFind.post_ids;
+        listOfPosts.push(result._id)
+
+        let fieldsToUpdate = { 'post_ids': listOfPosts }
+  
+        // Update
+        Group.findByIdAndUpdate(req.body.group_id,
+          { $set: fieldsToUpdate }, 
+          { new: true, useFindAndModify: false},  
+          function (groupUpdateErr, groupUpdateResult) {
+            if(groupUpdateErr){
+              res.status(400).send({
+                success: false,
+                error: groupUpdateErr.message
+                });
+            } else {
+              res.status(201).send({
+                success: true,
+                data: result,
+                message: "Post created successfully"
+              });
+            }
+        })
+      }
+    });
+
+
+
   });
+
+
 });
 
 
