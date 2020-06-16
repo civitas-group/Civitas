@@ -25,7 +25,7 @@ function GroupLinks(props){
   for (let i = 0; i < props.ids.length; ++i){
     endpoint = "/group/" + props.ids[i];
     group_links.push(
-    <div>
+    <div key={i}>
       <Link to={endpoint}>
         <Button outline color="primary">{props.ids[i]}</Button>
       </Link>

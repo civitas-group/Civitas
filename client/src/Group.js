@@ -34,6 +34,7 @@ class Group extends Component {
           if (!result.data.group_ids.includes(this.props.match.params.group_id)
             && !result.data.managed_groups_ids.includes(this.props.match.params.group_id)){
             this.setState({redirect_to_root:true})
+            return;
           }
           this.setState({posts: result.data.posts,
                         group_name: result.data.group_name,
@@ -53,7 +54,16 @@ class Group extends Component {
       })
       .catch(error => {
         console.log(error)
-        this.props.dispatch({ type: 'LOGOUT' });
+        if ('data' in error.response){
+          if ('error' in error.response.data){
+            if (error.response.data.error === "Invalid group"){
+              this.setState({redirect_to_root:true})
+            }
+          }
+        } else {
+          this.props.dispatch({ type: 'LOGOUT' });
+        }
+        
       })
   }
 

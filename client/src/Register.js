@@ -80,8 +80,9 @@ class Register extends Component {
       })
       return;
     }
-    if (this.state.password === '') {
-      this.setState({ validate: { passEmpty: 'empty' } })
+    if (this.state.password === '' || this.state.password2 === '') {
+      this.setState({ validate: { userExists: false, 
+        passEmpty: 'empty' } })
       return;
     }
     this.setState({loading: true})
@@ -215,7 +216,7 @@ class Register extends Component {
             <FormGroup>
               <Input
                 type="password"
-                name="confirmpassword"
+                name="password2"
                 id="exampleConfirmPassword"
                 placeholder="Confirm Password"
                 invalid={!this.state.validate.passMatch}

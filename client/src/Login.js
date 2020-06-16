@@ -42,6 +42,14 @@ class Login extends Component {
       })
       return;
     }
+    if (this.state.password === '') {
+      this.setState({
+        login_result: {
+          error: "Please enter your password."
+        }
+      })
+      return;
+    }
     this.setState({loading: true})
     const requestOptions = {
       method: 'POST',

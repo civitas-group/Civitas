@@ -53,7 +53,7 @@ postRouter.post("/", authMiddleware, (req, res, next) => {
     if(err){
         res.status(400).send({
           success: false,
-          error: err.message
+          error: JSON.stringify(err)
         });
     }
 
@@ -64,7 +64,7 @@ postRouter.post("/", authMiddleware, (req, res, next) => {
       if(groupFindErr || !groupFind){
         res.status(400).send({
           success:false,
-          error: groupFindErr.message,
+          error: JSON.stringify(groupFindErr),
         });
         return;
       } else {
@@ -81,7 +81,7 @@ postRouter.post("/", authMiddleware, (req, res, next) => {
             if(groupUpdateErr){
               res.status(400).send({
                 success: false,
-                error: groupUpdateErr.message
+                error: JSON.stringify(groupUpdateErr)
                 });
             } else {
               res.status(201).send({

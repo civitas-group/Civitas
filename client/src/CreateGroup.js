@@ -74,38 +74,18 @@ class CreateGroup extends Component {
       return;
     }
 
-    const { cookies } = this.props;
-    let token = cookies.get('token');
-    let fulltoken = 'Bearer ' + token;
-    const requestOptions = {
-      method: 'POST',
-      headers: { 
-        'Content-Type': 'application/json', 
-        'authorization': fulltoken, 
-        'Access-Control-Allow-Origin': 'http://localhost:3000/*' 
-      },
-      body: JSON.stringify({
-        "group_name": this.state.group_name
-      })
-    };
-    let apiurl = 'http://localhost:8080/api/group/create';
-    fetch(apiurl, requestOptions).then(async response => {
-      const data = await response.json();
-      this.setState({
-        localLoading: false
-      });
-
-      if (!response.ok) {
-        console.log('There was an error!', data['error'], data.message, response.status);
-        if ('error' in data) {
-          this.setState({error: data['error']});
-        } else {
-          this.setState({error: "An unknown error has occured, please try again!"});
-        }
-        console.log(this.state.error);
-      } else {
+    let token = this.props.cookies.get('token');
+    let req_body = { "group_name": this.state.group_name }
+    authorizeUser(token, '/group/create', req_body)
+      .then(result => {
+        console.log("result:",result)
+        let data = result['data'];
+        console.log(data)
         if ('created_group' in data === false) {
-          this.setState({ error: "Response was okay, but no group was created. Please try again!" });
+          this.setState({ error: 
+            "Response was okay, but no group was created. Please try again!",
+            localLoading: false, 
+          });
         } else {
           console.log("CREATED GROUP: ", data['created_group']);
           this.setState({
@@ -113,16 +93,26 @@ class CreateGroup extends Component {
               success: true,
               created_group: data['created_group']
             },
-            redirect_to_group:true
+            redirect_to_group:true,
+            localLoading: false, 
           });
         }
-      }
-    }).catch(err => {
-      this.setState({localLoading: false})
-      console.log('There was an error!', err);
-      this.setState({ error: err });
+      })
+      .catch(error => {
 
-    });
+        console.log('There was an error!', error, typeof error.response.status);
+        if (error.response.status === 409){
+          this.setState({error: "Group already exists, please try again!",
+          localLoading: false, });
+        }
+        else if ('error' in error) {
+          this.setState({error: error['error'], localLoading: false, });
+        } else {
+          this.setState({error: "An unknown error has occured, please try again!",
+            localLoading: false, });
+        }
+        console.log(this.state.error);
+      })
   }
   render() {
     if (this.props.loading){
