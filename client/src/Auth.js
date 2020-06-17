@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-async function authorizeUser(token, endpoint) {
+async function authorizeUser(token, endpoint, body={}) {
     let fulltoken = 'Bearer ' + token;
     let apiurl = 'http://localhost:8080/api' + endpoint;
     const options = {
@@ -8,7 +8,8 @@ async function authorizeUser(token, endpoint) {
         url: apiurl,
         headers: { 'Content-Type': 'application/json', 
         'authorization': fulltoken, 
-        'Access-Control-Allow-Origin': 'http://localhost:3000/*' }
+        'Access-Control-Allow-Origin': 'http://localhost:3000/*' },
+        data: body
       };
     return new Promise((resolve, reject) => {
         axios(options).then((response) => {

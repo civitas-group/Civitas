@@ -5,6 +5,7 @@ var Account = require('../models/account.model');
 const jwt = require('jsonwebtoken');
 var jwt_decode = require('jwt-decode');
 const bcrypt = require('bcryptjs');
+const helper = require('./helper.js')
 
 authRouter.post('/', verifyToken, (req, res) => {  
     jwt.verify(req.token, process.env.JWT_SECRET, (err, authData) => {
@@ -13,7 +14,23 @@ authRouter.post('/', verifyToken, (req, res) => {
       } else {
 
         var decoded = jwt_decode(req.token);
-        res.json(decoded);
+        var criteria = {username: decoded.username}
+        
+        // Find account based on username
+        Account.findOne(criteria, function(accountErr, user){
+          if(accountErr || !user){
+            res.status(400).send({
+              success:false,
+              error: JSON.stringify(accountErr),
+            });
+            return;
+          } else {
+
+            // Add user's group IDs to response 
+            res.json(helper.addGroupIDS(user, decoded));
+          }
+        });
+
       }
     });
   });
@@ -66,7 +83,7 @@ authRouter.post('/login', (req,res) =>{
         if(err){
             res.status(400).send({
                 success:false,
-                error: err.message,
+                error: JSON.stringify(err),
                 msg:'Mongoose error'
             });
             return;
@@ -85,7 +102,7 @@ authRouter.post('/login', (req,res) =>{
                     if(err){
                         res.status(400).send({
                             success:false,
-                            error: err.message,
+                            error: JSON.stringify(err),
                             msg:'bcrypt error'
                         });
                         return;

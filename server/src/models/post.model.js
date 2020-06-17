@@ -14,6 +14,10 @@ const postSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  likes: {
+    type: Number,
+    default: 0,
+  },
   created: {
     type: Date,
     required: true

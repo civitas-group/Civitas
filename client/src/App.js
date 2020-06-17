@@ -4,8 +4,8 @@ import { withCookies } from 'react-cookie';
 import AppNavbar from './components/AppNavbar';
 import Home from './Home';
 import Group from './Group';
-import Posts from './Posts';
-import CreateGroup from './create_group';
+import { Posts } from './Posts';
+import CreateGroup from './CreateGroup';
 import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css'
 import './css/App.css';
