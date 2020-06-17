@@ -7,6 +7,7 @@ const groupRouter = express.Router();
 var jwt_decode = require('jwt-decode');
 const helper = require('./helper.js')
 const mongoose = require('mongoose');
+const e = require('express');
 
 /* Create a new group */
 groupRouter.post("/create", authMiddleware, (req, res) => {
@@ -353,5 +354,159 @@ groupRouter.patch("/invite/:group_id", [authMiddleware,verifyIds], (req, res, ne
   });
 
 });
+
+groupRouter.patch("/join/:group_id", authMiddleware, (req, res, next) => {
+	if(!req.params.group_id){
+      return res.status(400).json({
+          success:false,
+          msg:"Please indicate the group_id."
+      });
+	}
+	Group.findOne({'_id':req.params.group_id}).then(function(result){
+      if(!result){
+        res.status(400).json({
+            success:false,
+            msg:"Invalid group_id. Please try another one."
+        });
+        return;
+      }
+	    else if(result.user_ids.indexOf(req.user.user_info._id) >=0){
+		    // if the member has already become a group member
+		    res.status(400).json({
+				  success:false,
+				  msg:"Sorry, the group account shows you are currently inside the group."
+		  	});
+		    return;
+	    }
+      else{
+        let userId = req.user.user_info._id
+        let new_user_ids = result.user_ids;
+        new_user_ids.push(userId);
+		    // if we find the group, check whether the user is invited
+		    if(result.invited_user_ids.indexOf(userId) < 0){
+			    res.status(400).json({
+				    success:false,
+				    msg:"Sorry, you are not invited."
+			    });
+			    return;
+		    }
+		    else{
+          let deleteIndex = result.invited_user_ids.indexOf(userId)
+          let new_invited_user_ids = result.invited_user_ids;
+          new_invited_user_ids.splice(deleteIndex,1);
+			    // if it is, check whether the user account exists
+			    Account.findOne(userId,  
+            function (accountErr, accResult) {
+              if(accountErr || !accResult){
+                res.status(400).send({
+                  success: false,
+					        msg:"Fail to find the user account"
+                });
+                return;
+              } else {
+				      	// check again whether the user is in the group
+                  New_group_ids = accResult.group_ids;
+					        if(New_group_ids.indexOf(req.params.group_id) >=0){
+						        res.status(400).send({
+							        success: false,
+							        msg:"Sorry, the account shows you are already in the group"
+                    });
+                    return;
+				        	}
+					        else{
+                    let groupId = req.params.group_id;
+						        // update the account's invited_groups_ids
+                    // check whether account's invited_groups_ids has the group_id
+                    if(accResult.invited_groups_ids.indexOf(groupId)<0){
+                      // if the group_id is not in the invited_groups_ids, 
+                      //throw ann error
+                      res.status(400).send({
+                        success: false,
+                        msg:"Sorry, the account info shows you are not invited."
+                      });
+                      return;
+                    }
+                    else{
+                      let index = accResult.invited_groups_ids.indexOf(groupId);
+                      // delete the group_id from invited_groups_ids
+                      let new_group_ids = accResult.invited_groups_ids.splice(index,1);
+                      let update_fields = {invited_groups_ids: new_group_ids};
+                      console.log("step 1");
+                      Account.findByIdAndUpdate(accResult._id, 
+                        { $set: update_fields},
+                        { useFindAndModify: false, new: true },
+                        function(updateErr, acc_update_result){
+                          if (updateErr){
+                            res.status(400).send({
+                              success: false,
+                              msg:"Fail to delete the group_ids"
+                            });
+                            return;
+                          }
+                          else{
+                            console.log("step 2");
+                            // update the user_ids in the account model
+                            accResult.group_ids.push(groupId);
+									          accResult.save(function(err){
+										          if (err){
+											          res.status(400).send({
+												          success: false,
+												          msg:"Fail to add the group_ids"
+											          });
+											          return;
+                              } else {;
+                                  console.log("step 3");
+                                  // update the invited_user_ids and user_ids in the group model
+											            UpdateGroupForJoin(req, res,new_user_ids,
+												            new_invited_user_ids);
+										          }	
+									          });	
+								          }
+								        }
+							        );
+                    } 
+                  }
+                }
+            });
+		    }
+      }
+      //NewInvitedUserList = result.invited_user_ids.push(req.params.user_id);
+  }).catch(function(err){
+      res.status(400).send({
+        success:false,
+        msg: "General error."
+      });  
+  });
+});
+
+function UpdateGroupForJoin(req, res, new_user_ids, new_invited_user_ids){
+  // update the group's invited_user_ids and user_ids
+  let updated_fields = {user_ids : new_user_ids,
+                        invited_user_ids : new_invited_user_ids};
+  console.log("step 4");
+  Group.findByIdAndUpdate(req.params.group_id, 
+    { $set: updated_fields},
+    { useFindAndModify: false, new: true },
+    function(updateErr, group_update_result){
+      if(updateErr){
+        res.status(400).send({
+          success: false,
+          msg:"Fail to update the group model",
+          err:updateErr.msg
+        });
+        return;
+      }
+      else{
+        console.log("step 5");
+        res.status(200).send({
+          success: true,
+          msg:"Join the group successfully",
+          group:group_update_result
+        });
+        return;
+      }
+    }
+  );
+}
 
 module.exports = groupRouter;
