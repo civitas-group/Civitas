@@ -28,6 +28,10 @@ const accountSchema = new mongoose.Schema({
        type: mongoose.ObjectId,
        ref: "Group"
    }],
+   invited_groups_ids: [{
+       type: mongoose.ObjectId,
+       ref: "Group"
+   }]
 });
 
 const Account = mongoose.model("Account", accountSchema);

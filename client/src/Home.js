@@ -59,7 +59,7 @@ class Home extends Component {
         
         <h4>{'group_ids' || 
           'managed_group_ids' in this.props.user_info ? 
-          <UserHomeOptions info={this.props.user_info}/> : null}</h4>
+          <UserHomeOptions cookies={this.props.cookies} info={this.props.user_info}/> : null}</h4>
       </Jumbotron>
       </div>
       );

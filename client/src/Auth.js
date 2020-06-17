@@ -1,10 +1,10 @@
 import axios from 'axios';
 
-async function authorizeUser(token, endpoint, body={}) {
+async function authorizeUser(token, endpoint, body={}, type='post') {
     let fulltoken = 'Bearer ' + token;
     let apiurl = 'http://localhost:8080/api' + endpoint;
     const options = {
-        method: 'post',
+        method: type,
         url: apiurl,
         headers: { 'Content-Type': 'application/json', 
         'authorization': fulltoken, 

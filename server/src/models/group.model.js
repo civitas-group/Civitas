@@ -22,7 +22,15 @@ const groupSchema = new mongoose.Schema({
     is_valid : {
         type: Boolean,
         required: true
-    }
+    },
+    user_ids:[{
+        type: mongoose.ObjectId,
+        ref: "Account"
+    }],
+    invited_user_ids:[{
+        type: mongoose.ObjectId,
+        ref: "Account"
+    }],
 });
 
 const Group = mongoose.model("Group", groupSchema);

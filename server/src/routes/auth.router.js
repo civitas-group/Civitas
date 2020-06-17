@@ -156,6 +156,37 @@ authRouter.post('/login', (req,res) =>{
     });
 });
 
+authRouter.post('/getid', verifyToken, (req, res) => {
+  const email_username = req.body.email_username;
+  var criteria = (email_username.indexOf('@') === -1) ? {username: email_username} : {email: email_username};
+  // check the credentials
+  Account.findOne(criteria,
+      function(err, user){
+      if(err){
+          res.status(400).send({
+            success:false,
+            error: JSON.stringify(err),
+            msg:'Mongoose error'
+          });
+          return;
+      }
+      if(!user){
+          res.status(400).send({
+            success:false,
+            msg:"Account does not exists."
+          });
+          return;
+      }
+      else {
+        res.status(200).send({
+          success:true,
+          user_id: user._id
+        });
+        return;
+      } 
+    })
+});
+
 authRouter.post('/logout', (req,res) =>{
     res.json({message:'logout'});
 });
