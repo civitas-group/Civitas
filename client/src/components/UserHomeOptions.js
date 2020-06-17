@@ -1,6 +1,8 @@
-import React from 'react';
-import { Button } from 'reactstrap';
+import React, { useState } from 'react';
+import { Button, Alert, Input, InputGroup, InputGroupAddon, InputGroupText } from 'reactstrap';
+import { Redirect } from 'react-router';
 import { Link } from 'react-router-dom'
+import authorizeUser from '../Auth'
 
 function CreateGroupLink(props){
   return(
@@ -19,7 +21,71 @@ function JoinGroupLink(){
   )
 }
 
-function GroupLinks(props){
+const GroupLinks = (props) =>  {
+
+  const [inviteUsername, setInvite] = useState("");
+  const [errMsg, setErrMsg] = useState("");
+  const [error, setError] = useState(false);
+
+  let defaulErrMsg = "An error has occurred. The user could not be found.";
+  const handleChange = async (event) => {
+    const { target } = event;
+    const value = target.type === "checkbox" ? target.checked : target.value;
+    setInvite(value);
+    console.log(inviteUsername)
+  }
+  const invite = (group_id) => {
+    setError(false);
+    setErrMsg("");
+    console.log('INVITE',inviteUsername)
+    let token = props.cookies.get('token');
+    console.log(token)
+    let req_body = {"email_username": inviteUsername}
+    let apiendpoint = "/authorize/getid"
+    authorizeUser(token, apiendpoint, req_body)
+      .then(result => {
+        console.log("result invite:",result)
+        if (result){
+          console.log(result)
+
+          apiendpoint = '/group/invite/' + group_id;
+          req_body={"user_ids": [result.data.user_id]}
+          authorizeUser(token, apiendpoint, req_body, 'patch')
+            .then(result => {
+              console.log("result invite:",result)
+              if (result){
+                console.log(result)
+                setErrMsg("Invited " + inviteUsername + "!")
+                setError(true)
+                //setRedirect(true)          
+              }
+              else {
+                setError(true);
+                setErrMsg("An error has occurred. Please try again.");
+              }
+            })
+            .catch(error => {
+              if (typeof error.response.data === "string"){
+                if (error.response.data.includes('must be a single String of 12 bytes')){
+                  setErrMsg("Invalid user entered.")
+                }
+                else { setErrMsg("An unknown error has occurred.") }
+              }
+              else { setErrMsg(error.response.data.error) }
+              setError(true);
+            })
+        }
+        else {
+          setError(true);
+          setErrMsg("An error has occurred. Please try again.");
+        }
+      })
+      .catch(error => {
+        setErrMsg("No user found.")
+        setError(true);
+      })
+  }
+
   let endpoint = "";
   let group_links = []
   for (let i = 0; i < props.ids.length; ++i){
@@ -29,14 +95,26 @@ function GroupLinks(props){
       <Link to={endpoint}>
         <Button outline color="primary">{props.ids[i]}</Button>
       </Link>
+
+      
+      {props.admin ? <Button color="link"size="sm">
+         <Input bsSize="sm" placeholder="Username or Email" 
+        onChange={(e) => {handleChange(e)}}/></Button> : null}
+      {props.admin ? 
+      <Button size="sm" onClick={()=> invite(props.ids[i])}>Invite User</Button> : null}
+      
+
     </div>
     )
   }
   return (
   <div>
     <h3>Your {props.admin ? "administered" : "" } groups:</h3>
+    <span><Alert  color={errMsg.includes("Invited") ? "success" : "danger"} isOpen={error}>
+      {errMsg != "" ? errMsg : defaulErrMsg}</Alert></span>
     {group_links}
   </div>)
+
 }
 
 function UserHomeOptions(props) {
@@ -49,7 +127,7 @@ function UserHomeOptions(props) {
         else {
           return(
             <div>
-            <GroupLinks admin={true}
+            <GroupLinks admin={true} cookies={props.cookies}
               ids={props.info['managed_groups_ids']} />
             <CreateGroupLink additional="another"/>
             </div>
