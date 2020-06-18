@@ -80,7 +80,7 @@ const AppNavbar = (props) => {
       <Navbar color="dark" dark expand="lg" className="mb-5" 
         style={{width:'100%',float: 'left'}}>
           <Container>
-              <Link to="/">
+              <Link to={props.logged_in ? "/home" : "/"}>
               <Button>Civitas</Button>
               </Link>
               {props.logged_in ? <NavButtonsLoggedIn/> : <NavButtonsLoggedOut /> }
