@@ -5,7 +5,7 @@ function authMiddleware(req,res,next){
     // Check if token is unauthorized
     //return res.status(200).json({headers:req.headers});
     if(!req.headers['authorization']) {
-      res.status(401).json({msg:"No token is available, authentication failed"});
+      res.status(401).json({error:"No token is available, authentication failed"});
     }
     else {
       const bearerHeader = req.headers['authorization'];
@@ -20,7 +20,7 @@ function authMiddleware(req,res,next){
       jwt.verify(bearerToken, process.env.JWT_SECRET, (err, authData) => {
         if(err) {
           // unauthorized
-          res.status(401).json({msg:"Token is invalid, authentication failed"});
+          res.status(401).json({error:"Token is invalid, authentication failed"});
         } else {
           // if authorized, find the user info and pass into the res
           Account.findOne({username:authData.username}).select('-password').then(user_info =>{

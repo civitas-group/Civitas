@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Button, Alert, Input, InputGroup, InputGroupAddon, InputGroupText } from 'reactstrap';
+import { Button, Alert, Input, InputGroup, InputGroupAddon, InputGroupText,
+  UncontrolledTooltip  } from 'reactstrap';
 import { Redirect } from 'react-router';
 import { Link } from 'react-router-dom'
 import authorizeUser from '../Auth'
@@ -13,12 +14,80 @@ function CreateGroupLink(props){
     </Link>
   )
 }
-function JoinGroupLink(){
-  return(
-    <Link to="/joingroup">
-      <Button>Join Group</Button>
-    </Link>
-  )
+const JoinGroupLink = (props) => {
+  const [joinGroupID, setJoinGroup] = useState("");
+  const [errMsg, setErrMsg] = useState("");
+  const [error, setError] = useState(false);
+  const [redirectToGroup, setRedirect] = useState(false);
+  const [redirectEndpoint, setRedirectEndpoint] = useState("/home");
+
+  let defaultErrMsg = "An error has occurred. The group could not be found.";
+  const handleChange = async (event) => {
+    const { target } = event;
+    const value = target.type === "checkbox" ? target.checked : target.value;
+    setJoinGroup(value);
+  }
+  const join = () => {
+    setError(false);
+    setErrMsg("");
+    console.log('JOIN',joinGroupID)
+    let token = props.cookies.get('token');
+    console.log(token)
+
+    let apiendpoint = "/group/join/" + joinGroupID
+    console.log(joinGroupID, apiendpoint)
+    authorizeUser(token, apiendpoint, {}, 'patch')
+      .then(result => {
+        console.log("result join:",result)
+        if (result){
+          console.log(result)
+          setError(true)
+          setRedirectEndpoint("/group/" + joinGroupID)
+          setRedirect(true)          
+        }
+        else {
+          setError(true);
+          setErrMsg("An error has occurred. Please try again.");
+        }
+      })
+      .catch(error => {
+        console.log(error)
+        try{
+          if (error.response['data']['error'].includes("General error")){
+            setErrMsg("Error: no group found.")
+          }
+          else {
+            setErrMsg(error.response['data']['error'])
+          }
+        }
+        catch{
+          setErrMsg("Error: no group found.") 
+        }
+        setError(true);
+      })
+  }
+  if (redirectToGroup){
+    return (<Redirect to={redirectEndpoint} />);
+  }
+  else {
+    return(
+      <div>
+      <span><Alert color="danger" isOpen={error}> 
+        {errMsg != "" ? errMsg : defaultErrMsg}</Alert></span>
+      <Button color="link"size="sm">
+      <Input bsSize="sm" placeholder="Group ID" 
+        onChange={(e) => {handleChange(e)}}/></Button>
+
+      <Button id="JoinToolTip" size="sm" 
+        onClick={()=> join()}>Join {props.additional} Group</Button>
+      
+      <UncontrolledTooltip placement="right" target="JoinToolTip">
+          Enter the Group ID given by the admin of the group.
+      </UncontrolledTooltip>
+      </div>
+    )
+  }
+
 }
 
 const GroupLinks = (props) =>  {
@@ -27,12 +96,11 @@ const GroupLinks = (props) =>  {
   const [errMsg, setErrMsg] = useState("");
   const [error, setError] = useState(false);
 
-  let defaulErrMsg = "An error has occurred. The user could not be found.";
+  let defaultErrMsg = "An error has occurred. The user could not be found.";
   const handleChange = async (event) => {
     const { target } = event;
     const value = target.type === "checkbox" ? target.checked : target.value;
     setInvite(value);
-    console.log(inviteUsername)
   }
   const invite = (group_id) => {
     setError(false);
@@ -96,13 +164,12 @@ const GroupLinks = (props) =>  {
         <Button outline color="primary">{props.ids[i]}</Button>
       </Link>
 
-      
       {props.admin ? <Button color="link"size="sm">
          <Input bsSize="sm" placeholder="Username or Email" 
         onChange={(e) => {handleChange(e)}}/></Button> : null}
       {props.admin ? 
-      <Button size="sm" onClick={()=> invite(props.ids[i])}>Invite User</Button> : null}
-      
+      <Button size="sm" 
+        onClick={()=> invite(props.ids[i])}>Invite User</Button> : null}
 
     </div>
     )
@@ -111,7 +178,7 @@ const GroupLinks = (props) =>  {
   <div>
     <h3>Your {props.admin ? "administered" : "" } groups:</h3>
     <span><Alert  color={errMsg.includes("Invited") ? "success" : "danger"} isOpen={error}>
-      {errMsg != "" ? errMsg : defaulErrMsg}</Alert></span>
+      {errMsg != "" ? errMsg : defaultErrMsg}</Alert></span>
     {group_links}
   </div>)
 
@@ -139,14 +206,21 @@ function UserHomeOptions(props) {
     else {
       if ('group_ids' in props.info){
         if (props.info['group_ids'].length === 0){
-          return (<JoinGroupLink />)       
+          console.log('1')
+          return (<JoinGroupLink cookies={props.cookies}/>)       
         }
         else {
-          return (<GroupLinks admin={false} 
-            ids={props.info['group_ids']} />)
+          console.log('2')
+          return (
+          <div>
+            <GroupLinks admin={false} 
+            ids={props.info['group_ids']} />
+            <JoinGroupLink additional="another" cookies={props.cookies}/>
+          </div>)
         }
       }
-      return (<JoinGroupLink />)  
+      console.log('3')
+      return (<JoinGroupLink cookies={props.cookies}/>)  
     }
   }
 

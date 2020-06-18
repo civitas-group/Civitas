@@ -359,14 +359,14 @@ groupRouter.patch("/join/:group_id", authMiddleware, (req, res, next) => {
 	if(!req.params.group_id){
       return res.status(400).json({
           success:false,
-          msg:"Please indicate the group_id."
+          error:"Please indicate the group_id."
       });
 	}
 	Group.findOne({'_id':req.params.group_id}).then(function(result){
       if(!result){
         res.status(400).json({
             success:false,
-            msg:"Invalid group_id. Please try another one."
+            error:"Invalid group_id. Please try another one."
         });
         return;
       }
@@ -374,7 +374,7 @@ groupRouter.patch("/join/:group_id", authMiddleware, (req, res, next) => {
 		    // if the member has already become a group member
 		    res.status(400).json({
 				  success:false,
-				  msg:"Sorry, the group account shows you are currently inside the group."
+				  error:"Sorry, the group account shows you are currently inside the group."
 		  	});
 		    return;
 	    }
@@ -386,7 +386,7 @@ groupRouter.patch("/join/:group_id", authMiddleware, (req, res, next) => {
 		    if(result.invited_user_ids.indexOf(userId) < 0){
 			    res.status(400).json({
 				    success:false,
-				    msg:"Sorry, you are not invited."
+				    error:"Sorry, you are not invited."
 			    });
 			    return;
 		    }
@@ -400,7 +400,7 @@ groupRouter.patch("/join/:group_id", authMiddleware, (req, res, next) => {
               if(accountErr || !accResult){
                 res.status(400).send({
                   success: false,
-					        msg:"Fail to find the user account"
+					        error:"Fail to find the user account"
                 });
                 return;
               } else {
@@ -409,7 +409,7 @@ groupRouter.patch("/join/:group_id", authMiddleware, (req, res, next) => {
 					        if(New_group_ids.indexOf(req.params.group_id) >=0){
 						        res.status(400).send({
 							        success: false,
-							        msg:"Sorry, the account shows you are already in the group"
+							        error:"Sorry, the account shows you are already in the group"
                     });
                     return;
 				        	}
@@ -422,7 +422,7 @@ groupRouter.patch("/join/:group_id", authMiddleware, (req, res, next) => {
                       //throw ann error
                       res.status(400).send({
                         success: false,
-                        msg:"Sorry, the account info shows you are not invited."
+                        error:"Sorry, the account info shows you are not invited."
                       });
                       return;
                     }
@@ -439,7 +439,7 @@ groupRouter.patch("/join/:group_id", authMiddleware, (req, res, next) => {
                           if (updateErr){
                             res.status(400).send({
                               success: false,
-                              msg:"Fail to delete the group_ids"
+                              error:"Failed to delete the group_ids."
                             });
                             return;
                           }
@@ -451,7 +451,7 @@ groupRouter.patch("/join/:group_id", authMiddleware, (req, res, next) => {
 										          if (err){
 											          res.status(400).send({
 												          success: false,
-												          msg:"Fail to add the group_ids"
+												          error:"Failed to add the group_ids."
 											          });
 											          return;
                               } else {;
@@ -474,7 +474,7 @@ groupRouter.patch("/join/:group_id", authMiddleware, (req, res, next) => {
   }).catch(function(err){
       res.status(400).send({
         success:false,
-        msg: "General error."
+        error: "General error."
       });  
   });
 });
@@ -491,7 +491,7 @@ function UpdateGroupForJoin(req, res, new_user_ids, new_invited_user_ids){
       if(updateErr){
         res.status(400).send({
           success: false,
-          msg:"Fail to update the group model",
+          error:"Fail to update the group model",
           err:updateErr.msg
         });
         return;
@@ -500,7 +500,7 @@ function UpdateGroupForJoin(req, res, new_user_ids, new_invited_user_ids){
         console.log("step 5");
         res.status(200).send({
           success: true,
-          msg:"Join the group successfully",
+          msg:"Joined the group successfully",
           group:group_update_result
         });
         return;

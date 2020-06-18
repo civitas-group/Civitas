@@ -67,9 +67,10 @@ class Login extends Component {
       this.setState({loading: false})
       // check for errors
       if (!response.ok) {
-        console.log('There was an error!', data['error'], data.message, response.status);
-        if ('msg' in data){
-          login_result.error = data['msg'];
+        
+        if ('error' in data){
+          console.log('There was an error!', data['error'], data.message, response.status);
+          login_result.error = data['error'];
         } else {
           login_result.error = 'An unknown error has occurred. Please try again.';
         }
