@@ -3,6 +3,7 @@ import { Button, Modal, ModalHeader, ModalBody, Form,
   Navbar, Container, ButtonDropdown, ButtonGroup,
   DropdownItem, DropdownToggle, DropdownMenu } from 'reactstrap';
 import { connect } from 'react-redux'
+import { withCookies } from 'react-cookie';
 import { Link } from 'react-router-dom'
 import Register from '../Register'
 import Login from '../Login'
@@ -46,8 +47,13 @@ const AppNavbar = (props) => {
             <DropdownItem>Profile</DropdownItem>
             <DropdownItem 
             onClick={() => {
+              while(props.cookies.get('token')){
+                props.cookies.remove('token');
+              }
+              console.log('Removed Cookie!', props.cookies.get('token'))
               props.dispatch({ type: 'LOGOUT' });
-              props.cookies.remove('token');
+              
+              
             }}>Logout</DropdownItem>
           </DropdownMenu>
         </ButtonDropdown>
@@ -101,6 +107,6 @@ const mapStateToProps = (state) => ({
 });
 
 //export default connect(mapStateToProps)(App);
-export default connect(mapStateToProps)(AppNavbar);
+export default withCookies(connect(mapStateToProps)(AppNavbar));
 
 //export default AppNavbar;
