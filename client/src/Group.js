@@ -45,7 +45,6 @@ class Group extends Component {
             payload: Object.assign(result.data, {
               group_id: this.props.match.params.group_id
             })});
-          
         }
         else {
           console.log('Error: no result on mount.')
@@ -54,13 +53,12 @@ class Group extends Component {
       })
       .catch(error => {
         console.log(error)
-        if ('data' in error.response){
-          if ('error' in error.response.data){
-            if (error.response.data.error === "Invalid group"){
-              this.setState({redirect_to_root:true})
-            }
+        try{
+          if (error.response.data.error === "Invalid group"){
+            this.setState({redirect_to_root:true})
           }
-        } else {
+        }
+        catch {
           this.props.dispatch({ type: 'LOGOUT' });
         }
         
