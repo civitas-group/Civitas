@@ -64,14 +64,14 @@ authRouter.post('/login', (req,res) =>{
     if(!email_username){
         res.status(400).send({
             success:false,
-            msg:"Please enter username or email."
+            error:"Please enter username or email."
         });
         return;
     }
     if(!password){
         res.status(400).send({
             success:false,
-            msg:"Please enter your password."
+            error:"Please enter your password."
         });
         return;
     }
@@ -91,7 +91,7 @@ authRouter.post('/login', (req,res) =>{
         if(!user){
             res.status(400).send({
                 success:false,
-                msg:"Account does not exists."
+                error:"Account does not exist."
             });
             return;
         }
@@ -111,7 +111,7 @@ authRouter.post('/login', (req,res) =>{
                     if(!isMatch){
                         res.status(400).send({
                             success:false,
-                            msg:"Invalid password"
+                            error:"Invalid password"
                         });
                         return;
                     }
@@ -132,7 +132,7 @@ authRouter.post('/login', (req,res) =>{
                             res.status(400).send({
                               success: false,
                               //error: err.message
-                              msg:"Error generating token"
+                              error:"Error generating token"
                             });
                           }
                           else {
@@ -173,7 +173,7 @@ authRouter.post('/getid', verifyToken, (req, res) => {
       if(!user){
           res.status(400).send({
             success:false,
-            msg:"Account does not exists."
+            error:"Account does not exist."
           });
           return;
       }
