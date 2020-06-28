@@ -1,4 +1,4 @@
-import React, { Component, useState} from 'react';
+import React, { Component } from 'react';
 import { connect } from 'react-redux'
 import { Redirect, withRouter } from 'react-router';
 import Loading from './components/Loading'
@@ -8,9 +8,6 @@ import { CreatePost } from './Posts'
 
 
 class Group extends Component {
-  constructor(props){
-    super(props);
-  }
   state = {
     posts: [],
     redirect_to_root: false,
