@@ -2,9 +2,9 @@ import React, { Component } from 'react';
 import { Redirect } from 'react-router';
 import { connect } from 'react-redux'
 import {
-  Container, Row, Col, Form,
-  FormGroup, Label, Input,
-  Button, Alert, Spinner
+  Row, Col, Form,
+  FormGroup, Input,
+  Button, Alert
 } from 'reactstrap';
 import Loading from './components/Loading'
 import authorizeUser from './Auth'

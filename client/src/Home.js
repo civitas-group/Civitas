@@ -7,9 +7,6 @@ import UserHomeOptions from './components/UserHomeOptions'
 import { Jumbotron } from 'reactstrap';
 
 class Home extends Component {
-  constructor(props) {
-    super(props);
-  };
   async componentDidMount() {
     console.log('home mounted')
     this.props.dispatch({ type: 'LOADING' });

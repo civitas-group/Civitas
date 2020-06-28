@@ -18,9 +18,9 @@ process.argv.forEach(function (val, index, array) {
   }
 });
 
-mongoose.connect(process.env.DB_PROD_URI, options);
+mongoose.connect(db_url, options);
 const db = mongoose.connection;
-db.on('error', console.error.bind(console, 'Mongodb Connection Error: ' + process.env.DB_PROD_URI));
+db.on('error', console.error.bind(console, 'Mongodb Connection Error: ' + db_url));
 db.once('open', () => {
 	if (db_url == process.env.DB_DEV_URI) {
 		console.log('Running on development database');

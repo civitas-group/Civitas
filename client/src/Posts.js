@@ -1,7 +1,7 @@
-import React, { Component, useState} from 'react';
+import React, { Component } from 'react';
 import { Toast, ToastBody, ToastHeader, Badge, Button, 
   Modal, ModalHeader, ModalBody, Form, FormGroup,
-  Nav, NavItem, NavLink, Label, Col, Input, Alert } from 'reactstrap';
+  Input, Alert } from 'reactstrap';
 import authorizeUser from './Auth';
 
 function EmptyPosts(){

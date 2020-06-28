@@ -124,7 +124,7 @@ class Register extends Component {
         }
         // Ok response
         else {
-            //localStorage.setItem('token', data['token']);
+            this.props.toggleModal();
             const { cookies } = this.props;
             cookies.set('token', data['token'], 
               { path: '/', sameSite: true,});

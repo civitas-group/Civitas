@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Button, Modal, ModalHeader, ModalBody, Form,
+import { Button, Modal, ModalHeader, ModalBody,
   Navbar, Container, ButtonDropdown, ButtonGroup,
   DropdownItem, DropdownToggle, DropdownMenu } from 'reactstrap';
 import { connect } from 'react-redux'
@@ -52,8 +52,6 @@ const AppNavbar = (props) => {
               }
               console.log('Removed Cookie!', props.cookies.get('token'))
               props.dispatch({ type: 'LOGOUT' });
-              
-              
             }}>Logout</DropdownItem>
           </DropdownMenu>
         </ButtonDropdown>
@@ -80,7 +78,7 @@ const AppNavbar = (props) => {
       <Navbar color="dark" dark expand="lg" className="mb-5" 
         style={{width:'100%',float: 'left'}}>
           <Container>
-              <Link to="/">
+              <Link to={"/"}>
               <Button>Civitas</Button>
               </Link>
               {props.logged_in ? <NavButtonsLoggedIn/> : <NavButtonsLoggedOut /> }
@@ -90,9 +88,8 @@ const AppNavbar = (props) => {
         <Modal isOpen={modal && !props.logged_in} toggle={toggle} style={{opacity:"0.9"}}>
           <ModalHeader toggle={toggle}>{typeText}</ModalHeader>
           <ModalBody>
-            {type==='login' ? <Login cookies={props.cookies}/> : 
-            <Register usertype={type} cookies={props.cookies}/>}
-
+            {type==='login' ? <Login cookies={props.cookies} toggleModal={toggle}/> : 
+            <Register usertype={type} cookies={props.cookies} toggleModal={toggle}/>}
           </ModalBody>
         </Modal>
       </Navbar>

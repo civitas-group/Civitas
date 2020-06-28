@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import {
   Container, Col, Form,
-  FormGroup, Label, Input,
+  FormGroup, Input,
   Button, Alert, Spinner
 } from 'reactstrap';
 import { Redirect } from 'react-router';
@@ -77,6 +77,7 @@ class Login extends Component {
         this.setState({ login_result });
         console.log(this.state.login_result);
       } else {
+        this.props.toggleModal();
         const { cookies } = this.props;
         cookies.set('token', data['token'], { path: '/', sameSite: true,});
 

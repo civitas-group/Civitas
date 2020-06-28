@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import { Button, Alert, Input, InputGroup, InputGroupAddon, InputGroupText,
-  UncontrolledTooltip  } from 'reactstrap';
+import { Button, Alert, Input, UncontrolledTooltip } from 'reactstrap';
 import { Redirect } from 'react-router';
 import { Link } from 'react-router-dom'
 import authorizeUser from '../Auth'
@@ -73,7 +72,7 @@ const JoinGroupLink = (props) => {
     return(
       <div>
       <span><Alert color="danger" isOpen={error}> 
-        {errMsg != "" ? errMsg : defaultErrMsg}</Alert></span>
+        {errMsg !== "" ? errMsg : defaultErrMsg}</Alert></span>
       <Button color="link"size="sm">
       <Input bsSize="sm" placeholder="Group ID" 
         onChange={(e) => {handleChange(e)}}/></Button>
@@ -178,7 +177,7 @@ const GroupLinks = (props) =>  {
   <div>
     <h3>Your {props.admin ? "administered" : "" } groups:</h3>
     <span><Alert  color={errMsg.includes("Invited") ? "success" : "danger"} isOpen={error}>
-      {errMsg != "" ? errMsg : defaultErrMsg}</Alert></span>
+      {errMsg !== "" ? errMsg : defaultErrMsg}</Alert></span>
     {group_links}
   </div>)
 
