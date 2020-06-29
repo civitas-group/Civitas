@@ -2,7 +2,13 @@ import axios from 'axios';
 
 async function authorizeUser(token, endpoint, body={}, type='post') {
     let fulltoken = 'Bearer ' + token;
-    let apiurl = 'http://localhost:8080/api' + endpoint;
+    let apiurl = '';
+    if (process.env.NODE_ENV  === 'development') {
+        apiurl = 'http://localhost:8080/api' + endpoint;
+    }
+    else { 
+        apiurl = process.env.REACT_APP_AWS_URL + '/api' + endpoint; 
+    }
     const options = {
         method: type,
         url: apiurl,

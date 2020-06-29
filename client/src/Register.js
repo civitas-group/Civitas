@@ -98,8 +98,16 @@ class Register extends Component {
         })
     };
     //fetch('http://' + process.env.host + ':8080/api/signup/regular', requestOptions)
-    let apiurl = 'http://localhost:8080/api/signup/' + this.props.usertype;
-    
+    let apiurl = '';
+    if (process.env.NODE_ENV  === 'development') {
+      apiurl = 'http://localhost:8080/api/signup/' 
+        + this.props.usertype;
+    }
+    else { 
+      apiurl = process.env.REACT_APP_AWS_URL 
+        + '/api/signup/' + this.props.usertype; 
+    }
+
     //axios.post(apiurl, requestOptionsAxios)
     fetch(apiurl, requestOptions)
       .then(async response => {

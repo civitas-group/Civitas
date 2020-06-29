@@ -60,7 +60,14 @@ class Login extends Component {
       })
     };
 
-    let apiurl = 'http://localhost:8080/api/authorize/login';
+    let apiurl = '';
+    if (process.env.NODE_ENV  === 'development') {
+      apiurl = 'http://localhost:8080/api/authorize/login';
+    }
+    else { 
+      apiurl = process.env.REACT_APP_AWS_URL + '/api/authorize/login'; 
+    }
+
     fetch(apiurl, requestOptions).then(async response => {
       const data = await response.json();
       const { login_result } = this.state;
