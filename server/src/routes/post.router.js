@@ -3,7 +3,7 @@
 const express = require('express');
 const postRouter = express.Router();
 const Post = require('../models/post.model'); // post model
-var Group = require('../models/group.model');
+const Group = require('../models/group.model');
 // test the authentication middleware
 const authMiddleware = require('../middleware/auth');
 

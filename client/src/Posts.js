@@ -3,6 +3,7 @@ import { Button, Toast, ToastBody, ToastHeader, Badge,
   Modal, ModalHeader, ModalBody, Form, FormGroup,
   Input, Alert } from 'reactstrap';
 import authorizeUser from './Auth';
+import { CreateComment } from './Comments';
 import { connect } from 'react-redux'
 import { AiFillHeart, AiOutlineHeart } from 'react-icons/ai';
 
@@ -11,11 +12,12 @@ function EmptyPosts(){
     <h5 style={{color:'grey'}}>No posts made yet.</h5>
   )
 }
+
 const Post = (props) => {
   const [likeChanged, setLikeChanged] = useState(false);
   const [liked, setLiked] = 
     useState(props.post.like_ids.indexOf(props.email) !== -1);
-  const toggleLike = () => {
+    const toggleLike = () => {
      // like after success?
     let token = props.cookies.get('token');
     let endpoint = '/posts/' +  props.post._id 
@@ -51,7 +53,6 @@ const Post = (props) => {
 
   return (
     <Toast style={{minWidth:"50em"}}>
-
     <ToastHeader>
       <h5 style={{padding:'0.4em'}}><b>{ props.post.title }</b></h5>
       <Badge color="dark">
@@ -93,11 +94,22 @@ const Post = (props) => {
         {liked ? ' Unlike' : ' Like'}
       </Button>
     </ToastHeader>
+    <ToastHeader>
+      <CreateComment 
+        username={props.username}
+        group_id={props.group_id}
+        cookies={props.cookies}
+        post_id={props.post._id}
+      />
+    </ToastHeader>
     </Toast>
   )
 }
 
-class Posts extends Component  {
+
+const Posts = (props) =>  {
+  let posts = props.posts;
+  console.log(posts);
   render(){
     let posts = this.props.posts;
     if (Object.keys(this.props.user_info).length === 0){
@@ -112,7 +124,9 @@ class Posts extends Component  {
                 <Post email={this.props.user_info.email} 
                   post={posts[key]} 
                   cookies={this.props.cookies}
-                  dispatch={this.props.dispatch}/>
+                  dispatch={this.props.dispatch}
+                  group_id={props.group_id}
+                  username={props.username}/>
               </div>
             );
           }.bind(this))}
@@ -125,7 +139,7 @@ class Posts extends Component  {
 
 class CreatePost extends Component {
   constructor(props){
-    super(props)
+    super(props);
     this.state ={
       modal: false,
       alertOpen: false,
@@ -133,14 +147,14 @@ class CreatePost extends Component {
       title_error: false,
       title: "",
       body: ""
-    }
+    };
   }
 
   handleChange = async (event) => {
     const { target } = event;
     const value = target.type === "checkbox" ? target.checked : target.value;
     const { name } = target;
-    await this.setState({
+    this.setState({
       [name]: value,
     });
   };
