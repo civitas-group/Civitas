@@ -110,31 +110,30 @@ const Post = (props) => {
 const Posts = (props) =>  {
   let posts = props.posts;
   console.log(posts);
-  render(){
-    let posts = this.props.posts;
-    if (Object.keys(this.props.user_info).length === 0){
-      return (null)
-    }
-    return (
-      <div style={{display:"flex"}}>
-        <div id="Posts">
-          { Object.keys(posts).reverse().map(function(key) {
-            return (
-              <div key={key}  style={{paddingTop:"2em"}}>
-                <Post email={this.props.user_info.email} 
-                  post={posts[key]} 
-                  cookies={this.props.cookies}
-                  dispatch={this.props.dispatch}
-                  group_id={props.group_id}
-                  username={props.username}/>
-              </div>
-            );
-          }.bind(this))}
-          { Object.keys(posts).length === 0 ? <EmptyPosts />: null}
-        </div>
-      </div>
-    );
+
+  if (Object.keys(props.user_info).length === 0){
+    return (null)
   }
+  return (
+    <div style={{display:"flex"}}>
+      <div id="Posts">
+        { Object.keys(posts).reverse().map(function(key) {
+          return (
+            <div key={key}  style={{paddingTop:"2em"}}>
+              <Post email={props.user_info.email} 
+                post={posts[key]} 
+                cookies={props.cookies}
+                dispatch={props.dispatch}
+                group_id={props.group_id}
+                username={props.username}/>
+            </div>
+          );
+        }.bind(this))}
+        { Object.keys(posts).length === 0 ? <EmptyPosts />: null}
+      </div>
+    </div>
+  );
+
 }
 
 class CreatePost extends Component {
