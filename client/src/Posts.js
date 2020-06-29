@@ -3,6 +3,7 @@ import { Toast, ToastBody, ToastHeader, Badge, Button,
   Modal, ModalHeader, ModalBody, Form, FormGroup,
   Input, Alert } from 'reactstrap';
 import authorizeUser from './Auth';
+import { CreateComment } from './Comments';
 
 function EmptyPosts(){
   return(
@@ -11,6 +12,7 @@ function EmptyPosts(){
 }
 const Posts = (props) =>  {
   let posts = props.posts;
+  console.log(posts);
 
   return (
     <div style={{display:"flex"}}>
@@ -41,6 +43,15 @@ const Posts = (props) =>  {
                   <Badge color="primary" pill >Like {posts[key].likes}</Badge>
                 </Button> 
               </ToastHeader>
+
+              <ToastHeader>
+                <CreateComment 
+                  username={props.username}
+                  group_id={props.group_id}
+                  cookies={props.cookies}
+                  post_id={posts[key]._id}
+                />
+              </ToastHeader>
               </Toast>
 
             </div>
@@ -54,7 +65,7 @@ const Posts = (props) =>  {
 
 class CreatePost extends Component {
   constructor(props){
-    super(props)
+    super(props);
     this.state ={
       modal: false,
       alertOpen: false,
@@ -62,14 +73,14 @@ class CreatePost extends Component {
       title_error: false,
       title: "",
       body: ""
-    }
+    };
   }
 
   handleChange = async (event) => {
     const { target } = event;
     const value = target.type === "checkbox" ? target.checked : target.value;
     const { name } = target;
-    await this.setState({
+    this.setState({
       [name]: value,
     });
   };

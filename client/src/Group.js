@@ -27,7 +27,6 @@ class Group extends Component {
       .then(result => {
         console.log("result group:",result)
         if (result){
-          
           if (!result.data.group_ids.includes(this.props.match.params.group_id)
             && !result.data.managed_groups_ids.includes(this.props.match.params.group_id)){
             this.setState({redirect_to_root:true})
@@ -88,7 +87,9 @@ class Group extends Component {
               cookies={this.props.cookies}/>
               {this.props.children && React.cloneElement(this.props.children, {
                 posts: this.state.posts,
-                group_id: this.props.match.params.group_id
+                group_id: this.props.match.params.group_id,
+                username: this.props.user_info.username,
+                cookies: this.props.cookies
               })}
               
           </Jumbotron>
