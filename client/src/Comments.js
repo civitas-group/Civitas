@@ -29,6 +29,10 @@ class CreateComment extends Component {
             this.setState({
                 commentBodyError: true
             });
+        } else {
+            this.setState({
+                commentBodyError: false
+            });
         }
 
         // construct the request to create a comment
@@ -53,7 +57,7 @@ class CreateComment extends Component {
         return (
             <div>
                 <Alert isOpen={this.state.commentBodyError} color="danger">
-                Comment Body cannot be empty!
+                Comment cannot be empty!
                 </Alert>
                 <Form onSubmit={this.submitForm}>
                     <FormGroup>
