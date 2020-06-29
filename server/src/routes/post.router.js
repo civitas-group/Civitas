@@ -102,10 +102,48 @@ postRouter.post("/", authMiddleware, (req, res, next) => {
 });
 
 
+/* Like/Dislike Single Post */
+postRouter.patch("/:post_id/like", authMiddleware, (req, res, next) => {
+  // if like, like will be set to 1; if dislike, like will be set to -1
+  // increment/decrement 
+  let fieldsToUpdate;
+
+  if (req.query.like === '1') { 
+    fieldsToUpdate = { 
+      '$inc': { 'likes': req.query.like },
+      '$push': { 'like_ids': req.query.email } 
+    }
+  } 
+  else { 
+    fieldsToUpdate = { 
+      '$inc': { 'likes': req.query.like },
+      '$pull': { 'like_ids': req.query.email } 
+    }
+  }
+
+  Post.findByIdAndUpdate(req.params.post_id,
+    fieldsToUpdate, 
+    { useFindAndModify: false },
+    function (err, result) {
+      if(err){
+        res.status(400).send({
+          success: false,
+          error: err.message
+          });
+      }
+      res.status(200).send({
+        success: true,
+        data: result,
+        message: "Post updated successfully"
+      });
+  });
+});
+
 /* Edit Single Post */
 postRouter.patch("/:post_id", authMiddleware, (req, res, next) => {
   let fieldsToUpdate = req.body;
-  Post.findByIdAndUpdate(req.params.post_id,{ $set: fieldsToUpdate }, { new: true },  function (err, result) {
+  Post.findByIdAndUpdate(req.params.post_id,{ $set: fieldsToUpdate }, 
+    { new: true },  function (err, result) {
       if(err){
           res.status(400).send({
              success: false,
