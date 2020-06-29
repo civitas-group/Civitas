@@ -26,9 +26,12 @@ const postSchema = new mongoose.Schema({
     type: Date,
     required: true
   },
-   is_valid: {
-       type: Boolean
-   }
+  is_valid: {
+    type: Boolean
+  },
+  like_ids: [{
+    type: String
+  }],
 });
 
 const Post = mongoose.model("Post", postSchema);

@@ -1,66 +1,140 @@
-import React, { Component } from 'react';
-import { Toast, ToastBody, ToastHeader, Badge, Button, 
+import React, { Component, useState } from 'react';
+import { Button, Toast, ToastBody, ToastHeader, Badge, 
   Modal, ModalHeader, ModalBody, Form, FormGroup,
   Input, Alert } from 'reactstrap';
 import authorizeUser from './Auth';
 import { CreateComment } from './Comments';
+import { connect } from 'react-redux'
+import { AiFillHeart, AiOutlineHeart } from 'react-icons/ai';
 
 function EmptyPosts(){
   return(
     <h5 style={{color:'grey'}}>No posts made yet.</h5>
   )
 }
+
+const Post = (props) => {
+  const [likeChanged, setLikeChanged] = useState(false);
+  const [liked, setLiked] = 
+    useState(props.post.like_ids.indexOf(props.email) !== -1);
+    const toggleLike = () => {
+     // like after success?
+    let token = props.cookies.get('token');
+    let endpoint = '/posts/' +  props.post._id 
+      + '/like?like=' + (liked ? '-1' : '1') + '&email=' + props.email;
+    console.log(liked, 'like endpoint:', endpoint)
+
+    authorizeUser(token, endpoint, null, 'patch')
+      .then(result => {
+        console.log("result like:",result)
+        if (result){
+          console.log('successful liking post', props.post._id)
+          if (!likeChanged && !liked){
+            props.post.like_ids.push(props.email);
+          }
+          setLiked(!liked);
+          setLikeChanged(true);
+        }
+        else {
+          console.log('Error liking post', props.post._id)
+          props.dispatch({ type: 'LOGOUT' });
+        }
+      })
+      .catch(error => {
+        console.log('Error liking post', props.post._id, error)
+        props.dispatch({ type: 'LOGOUT' });
+      })
+  }
+  const [likeList, setLikeList] = useState(false);
+  const toggleLikeList = () => {
+    setLikeList(!likeList);
+    console.log(props.post.like_ids)
+  }
+
+  return (
+    <Toast style={{minWidth:"50em"}}>
+    <ToastHeader>
+      <h5 style={{padding:'0.4em'}}><b>{ props.post.title }</b></h5>
+      <Badge color="dark">
+        @{ props.post.author }
+      </Badge>
+      {'  '}
+      <small style={{justifyContent:"right"}}>{props.post.created ? 
+      props.post.created.slice(0,10) : null}</small>
+    </ToastHeader>
+  
+    <ToastBody>
+      <p>{ props.post.body }</p>
+    </ToastBody>
+    <ToastHeader>
+      <Modal isOpen={likeList} toggle={toggleLikeList}>
+        <ModalHeader>Likes</ModalHeader>
+        <ModalBody>
+          {Object.keys(props.post.like_ids).reverse().map(function(key){
+            if (props.post.like_ids[key] === props.email && !liked){
+              return (null)
+            }
+            return (
+              <div key={key}>{props.post.like_ids[key]}</div>
+            );
+          })}
+        </ModalBody>
+      </Modal>
+      <Button style={{padding:'0'}}  
+        color="link" onClick={toggleLikeList}>
+        {liked ? 
+        <Badge color="dark">
+          <AiFillHeart />{' ' + (props.post.likes + 1)}
+        </Badge> :
+        <Badge color="dark">
+          <AiOutlineHeart/>{' ' + props.post.likes}
+        </Badge>}
+      </Button>
+      <Button onClick={toggleLike} color='link' size="sm">
+        {liked ? ' Unlike' : ' Like'}
+      </Button>
+    </ToastHeader>
+    <ToastHeader>
+      <CreateComment 
+        username={props.username}
+        group_id={props.group_id}
+        cookies={props.cookies}
+        post_id={props.post._id}
+      />
+    </ToastHeader>
+    </Toast>
+  )
+}
+
+
 const Posts = (props) =>  {
   let posts = props.posts;
   console.log(posts);
-
-  return (
-    <div style={{display:"flex"}}>
-      <div id="Posts">
-        { Object.keys(posts).reverse().map(function(key) {
-          return (
-            <div key={key}  style={{paddingTop:"2em"}}>
-              <Toast style={{minWidth:"50em"}}>
-
-              <ToastHeader>
-                <h5 style={{padding:'0.4em'}}><b>{ posts[key].title }</b></h5>
-                <Badge color="dark">
-                  @{ posts[key].author }
-                </Badge>
-                {'  '}
-                <small style={{justifyContent:"right"}}>{posts[key].created ? 
-                posts[key].created.slice(0,10) : null}</small>
-              </ToastHeader>
-
-              <ToastBody>
-                <p>
-                { posts[key].body }
-                </p>
-              </ToastBody>
-
-              <ToastHeader>
-                <Button color='link' style={{margin:'0', padding:'0'}}>
-                  <Badge color="primary" pill >Like {posts[key].likes}</Badge>
-                </Button> 
-              </ToastHeader>
-
-              <ToastHeader>
-                <CreateComment 
-                  username={props.username}
+  render(){
+    let posts = this.props.posts;
+    if (Object.keys(this.props.user_info).length === 0){
+      return (null)
+    }
+    return (
+      <div style={{display:"flex"}}>
+        <div id="Posts">
+          { Object.keys(posts).reverse().map(function(key) {
+            return (
+              <div key={key}  style={{paddingTop:"2em"}}>
+                <Post email={this.props.user_info.email} 
+                  post={posts[key]} 
+                  cookies={this.props.cookies}
+                  dispatch={this.props.dispatch}
                   group_id={props.group_id}
-                  cookies={props.cookies}
-                  post_id={posts[key]._id}
-                />
-              </ToastHeader>
-              </Toast>
-
-            </div>
-          );
-        })}
-        { Object.keys(posts).length === 0 ? <EmptyPosts />: null}
+                  username={props.username}/>
+              </div>
+            );
+          }.bind(this))}
+          { Object.keys(posts).length === 0 ? <EmptyPosts />: null}
+        </div>
       </div>
-    </div>
-  );
+    );
+  }
 }
 
 class CreatePost extends Component {
@@ -160,5 +234,9 @@ class CreatePost extends Component {
 }
 
 
+const mapStateToProps = (state) => ({
+  user_info: state.user_info,
+});
 
-export {Posts, CreatePost};
+export default connect(mapStateToProps, null)(Posts);
+export { CreatePost };

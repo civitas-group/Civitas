@@ -47,9 +47,7 @@ const AppNavbar = (props) => {
             <DropdownItem>Profile</DropdownItem>
             <DropdownItem 
             onClick={() => {
-              while(props.cookies.get('token')){
-                props.cookies.remove('token');
-              }
+              props.cookies.remove('token', { path: '/' });
               console.log('Removed Cookie!', props.cookies.get('token'))
               props.dispatch({ type: 'LOGOUT' });
             }}>Logout</DropdownItem>
