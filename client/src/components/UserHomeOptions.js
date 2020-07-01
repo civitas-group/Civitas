@@ -156,7 +156,7 @@ const GroupLinks = (props) =>  {
   let endpoint = "";
   let group_links = []
   for (let i = 0; i < props.ids.length; ++i){
-    endpoint = "/group/" + props.ids[i];
+    endpoint = "/groups/" + props.ids[i];
     group_links.push(
     <div key={i}>
       <Link to={endpoint}>

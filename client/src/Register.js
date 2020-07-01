@@ -156,7 +156,7 @@ class Register extends Component {
   render() {
     const { email, username, password } = this.state;
     if (this.props.logged_in){
-      return (<Redirect to="/home" />);
+      return (<Redirect to="/groups" />);
     }
 
     return (  
@@ -243,7 +243,7 @@ class Register extends Component {
           { this.state.loading ? <Spinner 
           style={{ width: '1rem', height: '1rem' }} /> : null }
           </div>
-          <Button>Submit</Button>
+          <Button color="primary">Submit</Button>
         </Form>
       </Container>
       </div>

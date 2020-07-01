@@ -3,13 +3,14 @@ import { connect } from 'react-redux'
 import { withCookies } from 'react-cookie';
 import AppNavbar from './components/AppNavbar';
 import Home from './Home';
+import PublicHome from './PublicHome';
 import Group from './Group';
 import Posts from './Posts';
 import CreateGroup from './CreateGroup';
 import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css'
 import './css/App.css';
-import authorizeUser from './Auth'
+import authorizeUser from './Auth';
 
 class App extends Component {
   async componentDidMount() {
@@ -37,15 +38,13 @@ class App extends Component {
 
   render() {
     return (
-      <div> 
+      <div style={{ backgroundColor: '#2D70CE'}}> 
       <Router>
-      <div className="App">
-        <AppNavbar cookies={this.props.cookies}/>
-      </div>
-      <div>
-          <Switch>
-          <Route exact path="/home">{() => (<Home cookies={this.props.cookies}/>)}</Route>
-          <Route exact path="/group/:group_id" >
+      <AppNavbar cookies={this.props.cookies}/>
+      <Switch>
+          <Route exact path="/">{() => (<PublicHome cookies={this.props.cookies}/>)}</Route>
+          <Route exact path="/groups">{() => (<Home cookies={this.props.cookies}/>)}</Route>
+          <Route exact path="/groups/:group_id" >
               <Group cookies={this.props.cookies}>
                 <Posts cookies={this.props.cookies}/>
               </Group>
@@ -55,7 +54,6 @@ class App extends Component {
           <Route exact path="/creategroup"
                 render={() => (<CreateGroup cookies={this.props.cookies}/>)} />
           </Switch>
-      </div>
       </Router>
       </div>
     );
