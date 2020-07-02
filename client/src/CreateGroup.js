@@ -122,7 +122,7 @@ class CreateGroup extends Component {
       return (<Redirect to="/" />);
     }
     else if (this.state.redirect_to_group){
-      let endpoint = "/group/" + this.state.result.created_group._id;
+      let endpoint = "/groups/" + this.state.result.created_group._id;
       return (<Redirect to={endpoint} />);
     }
     else {

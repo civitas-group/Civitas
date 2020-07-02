@@ -36,11 +36,11 @@ const AppNavbar = (props) => {
   function NavButtonsLoggedIn() {
     return (
         <ButtonGroup>
-          <Link to="/home">
-            <Button>Groups</Button>
+          <Link to="/groups">
+            <Button color="primary">Groups</Button>
           </Link>
           <ButtonDropdown isOpen={dropdownOpen} toggle={toggleDropdown}>
-          <DropdownToggle caret>
+          <DropdownToggle color="primary" caret>
             Settings
           </DropdownToggle>
           <DropdownMenu>
@@ -59,7 +59,7 @@ const AppNavbar = (props) => {
     return (
       <ButtonGroup>
         <ButtonDropdown isOpen={dropdownOpen} toggle={toggleDropdown}>
-          <DropdownToggle caret>
+          <DropdownToggle color="primary" caret>
             Register
           </DropdownToggle>
           <DropdownMenu>
@@ -67,17 +67,17 @@ const AppNavbar = (props) => {
             <DropdownItem onClick={toggleRegRegular}>Register as Regular User</DropdownItem>
           </DropdownMenu>
         </ButtonDropdown>
-        <Button onClick={toggleLogin}>Login</Button>
+        <Button color="primary" onClick={toggleLogin}>Login</Button>
       </ButtonGroup>)
   }
 
   return (
     <div id="AppNavbar" style={{height: '54px',minHeight: '100%'}}> 
-      <Navbar color="dark" dark expand="lg" className="mb-5" 
+      <Navbar color="#2D70CE" dark expand="lg" className="mb-5" 
         style={{width:'100%',float: 'left'}}>
           <Container>
               <Link to={"/"}>
-              <Button>Civitas</Button>
+              <Button color="primary">Civitas</Button>
               </Link>
               {props.logged_in ? <NavButtonsLoggedIn/> : <NavButtonsLoggedOut /> }
           </Container> 

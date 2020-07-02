@@ -104,7 +104,7 @@ class Login extends Component {
 
   render() {
     if (this.props.logged_in) {
-      return (<Redirect to="/home" />);
+      return (<Redirect to="/groups" />);
     }
     return (
       <Container className="App">
@@ -143,7 +143,7 @@ class Login extends Component {
           { this.state.loading ? <Spinner 
           style={{ width: '1rem', height: '1rem' }} /> : null }
           </div>
-          <Button>Submit</Button>
+          <Button color="primary">Submit</Button>
           
         </Form>
       </Container>
