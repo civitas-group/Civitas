@@ -2,6 +2,7 @@ const express = require('express');
 const authMiddleware = require('../middleware/auth');
 var Group = require('../models/group.model');
 var Account = require('../models/account.model');
+var Announcement = require('../models/announcement.model');
 const Post = require('../models/post.model');
 const groupRouter = express.Router();
 var jwt_decode = require('jwt-decode');
@@ -86,7 +87,7 @@ groupRouter.post("/create", authMiddleware, (req, res) => {
 });
 
 
-// Get group info, posts in group and user's groups list
+// Get group info, posts in group, announcements in group, and user's groups list
 groupRouter.post("/:group_id", authMiddleware, (req, res) => {
   var decoded = jwt_decode(req.token);
   var criteria = {username: decoded.username}
@@ -104,7 +105,7 @@ groupRouter.post("/:group_id", authMiddleware, (req, res) => {
 
       // Add user's group IDs to response 
       let full = helper.addGroupIDS(user, decoded);
-      
+
       // Find group based on specified group_id
       Group.findOne(group_criteria, function(err, group){
         if(err || !group){
@@ -114,6 +115,11 @@ groupRouter.post("/:group_id", authMiddleware, (req, res) => {
           });
           return;
         } else {
+          
+          // append group name to result
+          full = Object.assign(full, {
+            group_name: group.group_name
+          })
 
           // Get all posts in group
           Post.find().where('_id').in(group.post_ids).exec((err, records) => {
@@ -125,10 +131,26 @@ groupRouter.post("/:group_id", authMiddleware, (req, res) => {
               return;
             } else {
               full = Object.assign(full, {
-                posts: records,
-                group_name: group.group_name
+                posts: records
               })
-              res.json(full);
+
+              // Get all posts in group
+              Announcement.find().where('_id').in(
+                group.announcement_ids).exec((announceErr, announceRecords) => {
+                if (announceErr || !announceRecords){
+                  res.status(400).send({
+                    success: false,
+                    error: announceErrrr
+                  });
+                  return;
+                } else {
+                  full = Object.assign(full, {
+                    announcements: announceRecords,
+                  })
+                  res.json(full);
+                }
+              });
+              //res.json(full);
             }
           });
         }

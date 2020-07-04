@@ -31,6 +31,11 @@ const Post = (props) => {
           console.log('successful liking post', props.post._id)
           if (!likeChanged && !liked){
             props.post.like_ids.push(props.email);
+          } 
+          if (liked) {
+            props.post.likes -= 1;
+          } else if (!liked){
+            props.post.likes += 1;
           }
           setLiked(!liked);
           setLikeChanged(true);
@@ -84,7 +89,7 @@ const Post = (props) => {
         color="link" onClick={toggleLikeList}>
         {liked ? 
         <Badge color="dark">
-          <AiFillHeart />{' ' + (props.post.likes + 1)}
+          <AiFillHeart />{' ' + (props.post.likes)}
         </Badge> :
         <Badge color="dark">
           <AiOutlineHeart/>{' ' + props.post.likes}
@@ -202,7 +207,7 @@ class CreatePost extends Component {
   render(){
     return (
       <div> 
-        <Button onClick={this.toggle}>Create a Post</Button>
+        <Button color="primary" onClick={this.toggle}>Create Post</Button>
         <Modal isOpen={this.state.modal} toggle={this.toggle} style={{opacity:"0.9"}}>
           <ModalHeader toggle={this.toggle}>Create a Post</ModalHeader>
           <ModalBody>
@@ -221,8 +226,8 @@ class CreatePost extends Component {
                   type="textarea" name="body" id="body" placeholder="Body" 
                   onChange={(e) => { this.handleChange(e);}}/>
               </FormGroup>
-              <Button onClick={this.toggle}>Cancel</Button>
-              <Button color="link" onClick={(e) => { this.submitForm(e)} }>Submit</Button>
+              <Button color="link" onClick={this.toggle}>Cancel</Button>
+              <Button color="primary" onClick={(e) => { this.submitForm(e)} }>Submit</Button>
             </Form>
           </ModalBody>
         </Modal>

@@ -31,6 +31,10 @@ const groupSchema = new mongoose.Schema({
         type: mongoose.ObjectId,
         ref: "Account"
     }],
+    announcement_ids: [{
+        type: mongoose.ObjectId,
+        ref: "Announcement"
+    }]
 });
 
 const Group = mongoose.model("Group", groupSchema);
