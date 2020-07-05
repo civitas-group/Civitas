@@ -6,11 +6,8 @@ import authorizeUser from './Auth';
 import { connect } from 'react-redux'
 import { AiFillCaretUp, AiFillCaretDown, 
   AiFillNotification} from 'react-icons/ai';
-import { FiMoreHorizontal } from "react-icons/fi";
 
 const Announcement = (props) => {
-  console.log('Announcement', props.announcement)
-
   const [alertVisible, setAlertVisible] = useState(true);
   const onDismiss = () => setAlertVisible(false);
   const [bodyIsOpen, setBodyIsOpen] = useState(false);
@@ -18,8 +15,6 @@ const Announcement = (props) => {
     console.log('Announcement', props.announcement)
     setBodyIsOpen(!bodyIsOpen);
   }
-  const [deleteVisible, setDeleteVisible] = useState(false);
-  const deleteToggle = () => setDeleteVisible(!deleteVisible);
 
   const deleteAnnouncement = (announcement_id) => {
     props.dispatch({ type: 'LOADING' });
@@ -46,15 +41,6 @@ const Announcement = (props) => {
 
   return (
     <div style={{width:'43.7em'}}>
-      {props.is_supervisor ? 
-      <UncontrolledTooltip target="AnnouncementOptions" trigger="click"
-        style={{backgroundColor:"white"}} placement="top">
-        <Button onClick={()=>{deleteAnnouncement(props.announcement._id)}} 
-          outline size="sm" color="link" 
-          style={{padding:'0', color:"red"}}>
-          Delete Announcement</Button>
-      </UncontrolledTooltip> : null }
-
       <Alert color="danger" isOpen={alertVisible} toggle={onDismiss}>
         <p style={{marginBottom:'0'}} >
           {props.announcement.title} <Badge color="danger">
@@ -62,12 +48,12 @@ const Announcement = (props) => {
           <AiFillNotification onClick={bodyToggle}/></Badge>
           {bodyIsOpen ? 
             <AiFillCaretUp onClick={bodyToggle}/> : 
-            <AiFillCaretDown onClick={bodyToggle}/> }
+            <AiFillCaretDown onClick={bodyToggle}/>}
           {props.is_supervisor ? 
-          <Button onClick={deleteToggle}  id="AnnouncementOptions"
-            color="link" size="sm">
-            <FiMoreHorizontal/>
-          </Button> : null}
+          <Button onClick={()=>{deleteAnnouncement(props.announcement._id)}} 
+            outline size="sm" color="link" 
+            style={{padding:'0', color:"red"}}>
+            Delete Announcement</Button> : null }
         </p>
         <Collapse isOpen={bodyIsOpen} >
           <Card>
@@ -115,7 +101,8 @@ class CreateAnnouncement extends Component {
       body_error: false,
       title_error: false,
       title: "",
-      body: ""
+      body: "",
+      submit_loading: false
     };
   }
 
@@ -130,15 +117,19 @@ class CreateAnnouncement extends Component {
 
   submitForm(e) {
     e.preventDefault();
+    this.setState({ submit_loading: true })
     if (this.state.title === '') {
       this.setState({
         title_error: true,
-        alertOpen: true
+        alertOpen: true,
+        submit_loading: false
       })
+      return;
     } else if (this.state.body === '') {
       this.setState({
         body_error: true,
-        alertOpen: true
+        alertOpen: true,
+        submit_loading: false
       })
       return;
     }
@@ -197,9 +188,9 @@ class CreateAnnouncement extends Component {
                 type="textarea" name="body" id="body" placeholder="Body" 
                 onChange={(e) => { this.handleChange(e);}}/>
             </FormGroup>
-            <Button color="link" style={{color:"#D23C4A"}} 
-              onClick={this.toggle}>Cancel</Button>
-            <Button color="danger" outline 
+            <Button color="link" disabled={this.state.submit_loading} 
+              style={{color:"#D23C4A"}} onClick={this.toggle}>Cancel</Button>
+            <Button color="danger" outline disabled={this.state.submit_loading}
               onClick={(e) => { this.submitForm(e)} }>Submit</Button>
           </Form>
         </ModalBody>

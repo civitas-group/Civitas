@@ -17,8 +17,8 @@ const Post = (props) => {
   const [likeChanged, setLikeChanged] = useState(false);
   const [liked, setLiked] = 
     useState(props.post.like_ids.indexOf(props.email) !== -1);
-    const toggleLike = () => {
-     // like after success?
+  const toggleLike = () => {
+    setSubmitting(true);
     let token = props.cookies.get('token');
     let endpoint = '/posts/' +  props.post._id 
       + '/like?like=' + (liked ? '-1' : '1') + '&email=' + props.email;
@@ -39,6 +39,7 @@ const Post = (props) => {
           }
           setLiked(!liked);
           setLikeChanged(true);
+          setSubmitting(false);
         }
         else {
           console.log('Error liking post', props.post._id)
@@ -55,6 +56,7 @@ const Post = (props) => {
     setLikeList(!likeList);
     console.log(props.post.like_ids)
   }
+  const [submitting_like, setSubmitting] = useState(false);
 
   return (
     <Toast style={{minWidth:"50em"}}>
@@ -95,7 +97,8 @@ const Post = (props) => {
           <AiOutlineHeart/>{' ' + props.post.likes}
         </Badge>}
       </Button>
-      <Button onClick={toggleLike} color='link' size="sm">
+      <Button disabled={submitting_like} 
+        onClick={toggleLike} color='link' size="sm">
         {liked ? ' Unlike' : ' Like'}
       </Button>
     </ToastHeader>
@@ -165,15 +168,19 @@ class CreatePost extends Component {
 
   submitForm(e) {
     e.preventDefault();
+    this.setState({ submit_loading: true })
     if (this.state.title === '') {
       this.setState({
         title_error: true,
-        alertOpen: true
+        alertOpen: true,
+        submit_loading: false
       })
+      return;
     } else if (this.state.body === '') {
       this.setState({
         body_error: true,
-        alertOpen: true
+        alertOpen: true,
+        submit_loading: false
       })
       return;
     }
@@ -226,8 +233,10 @@ class CreatePost extends Component {
                   type="textarea" name="body" id="body" placeholder="Body" 
                   onChange={(e) => { this.handleChange(e);}}/>
               </FormGroup>
-              <Button color="link" onClick={this.toggle}>Cancel</Button>
-              <Button color="primary" onClick={(e) => { this.submitForm(e)} }>Submit</Button>
+              <Button color="link" disabled={this.state.submit_loading} 
+                onClick={this.toggle}>Cancel</Button>
+              <Button color="primary" disabled={this.state.submit_loading} 
+                onClick={(e) => { this.submitForm(e)} }>Submit</Button>
             </Form>
           </ModalBody>
         </Modal>

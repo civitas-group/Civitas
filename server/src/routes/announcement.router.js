@@ -91,7 +91,6 @@ announcementRouter.post("/", authMiddleware, (req, res, next) => {
 announcementRouter.delete("/", authMiddleware, (req, res, next) => {
   let group_id = req.body.group_id;
   let announcement_id = req.body.announcement_id;
-  console.log(req.body)
 
   fieldsToUpdate = { 
     '$pull': { 'announcement_ids': announcement_id } 
