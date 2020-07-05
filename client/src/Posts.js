@@ -17,8 +17,8 @@ const Post = (props) => {
   const [likeChanged, setLikeChanged] = useState(false);
   const [liked, setLiked] = 
     useState(props.post.like_ids.indexOf(props.email) !== -1);
-    const toggleLike = () => {
-     // like after success?
+  const toggleLike = () => {
+    setSubmitting(true);
     let token = props.cookies.get('token');
     let endpoint = '/posts/' +  props.post._id 
       + '/like?like=' + (liked ? '-1' : '1') + '&email=' + props.email;
@@ -31,9 +31,15 @@ const Post = (props) => {
           console.log('successful liking post', props.post._id)
           if (!likeChanged && !liked){
             props.post.like_ids.push(props.email);
+          } 
+          if (liked) {
+            props.post.likes -= 1;
+          } else if (!liked){
+            props.post.likes += 1;
           }
           setLiked(!liked);
           setLikeChanged(true);
+          setSubmitting(false);
         }
         else {
           console.log('Error liking post', props.post._id)
@@ -50,6 +56,7 @@ const Post = (props) => {
     setLikeList(!likeList);
     console.log(props.post.like_ids)
   }
+  const [submitting_like, setSubmitting] = useState(false);
 
   return (
     <Toast style={{minWidth:"50em"}}>
@@ -84,13 +91,14 @@ const Post = (props) => {
         color="link" onClick={toggleLikeList}>
         {liked ? 
         <Badge color="dark">
-          <AiFillHeart />{' ' + (props.post.likes + 1)}
+          <AiFillHeart />{' ' + (props.post.likes)}
         </Badge> :
         <Badge color="dark">
           <AiOutlineHeart/>{' ' + props.post.likes}
         </Badge>}
       </Button>
-      <Button onClick={toggleLike} color='link' size="sm">
+      <Button disabled={submitting_like} 
+        onClick={toggleLike} color='link' size="sm">
         {liked ? ' Unlike' : ' Like'}
       </Button>
     </ToastHeader>
@@ -160,15 +168,19 @@ class CreatePost extends Component {
 
   submitForm(e) {
     e.preventDefault();
+    this.setState({ submit_loading: true })
     if (this.state.title === '') {
       this.setState({
         title_error: true,
-        alertOpen: true
+        alertOpen: true,
+        submit_loading: false
       })
+      return;
     } else if (this.state.body === '') {
       this.setState({
         body_error: true,
-        alertOpen: true
+        alertOpen: true,
+        submit_loading: false
       })
       return;
     }
@@ -202,7 +214,7 @@ class CreatePost extends Component {
   render(){
     return (
       <div> 
-        <Button onClick={this.toggle}>Create a Post</Button>
+        <Button color="primary" onClick={this.toggle}>Create Post</Button>
         <Modal isOpen={this.state.modal} toggle={this.toggle} style={{opacity:"0.9"}}>
           <ModalHeader toggle={this.toggle}>Create a Post</ModalHeader>
           <ModalBody>
@@ -221,8 +233,10 @@ class CreatePost extends Component {
                   type="textarea" name="body" id="body" placeholder="Body" 
                   onChange={(e) => { this.handleChange(e);}}/>
               </FormGroup>
-              <Button onClick={this.toggle}>Cancel</Button>
-              <Button color="link" onClick={(e) => { this.submitForm(e)} }>Submit</Button>
+              <Button color="link" disabled={this.state.submit_loading} 
+                onClick={this.toggle}>Cancel</Button>
+              <Button color="primary" disabled={this.state.submit_loading} 
+                onClick={(e) => { this.submitForm(e)} }>Submit</Button>
             </Form>
           </ModalBody>
         </Modal>

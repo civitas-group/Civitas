@@ -1,15 +1,25 @@
 import React, { Component } from 'react';
 import authorizeUser from './Auth'
 import { Redirect } from 'react-router';
+import { Link } from 'react-router-dom';
 import { connect } from 'react-redux'
 import Loading from './components/Loading'
-import { Button, Jumbotron, Media, Badge } from 'reactstrap';
-import Login from './img/Login.png';
-import LoginHover from './img/LoginHover.png';
-import Register from './img/Register.png';
-import RegisterHover from './img/RegisterHover.png';
-import Logo from './img/Logo.png';
-import Houses from './img/HousesMedium.png';
+import { Button, Jumbotron, Media, Badge, Fade,
+Modal, ModalBody, ModalHeader } from 'reactstrap';
+import Register from './Register';
+import Login from './Login';
+import LoginImg from './img/Login.png';
+import LoginHoverImg from './img/LoginHover.png';
+import RegisterImg from './img/Register.png';
+import RegisterHoverImg from './img/RegisterHover.png';
+import RegisterAdminImg from './img/RegisterAdmin.png';
+import RegisterRegularImg from './img/RegisterRegular.png';
+import GroupsImg from './img/Groups.png';
+import GroupsHoverImg from './img/GroupsHover.png';
+import LogoImg from './img/Logo.png';
+import LogoHoverImg from './img/LogoHover.png';
+import HousesImg from './img/HousesMedium.png';
+import HousesHoverImg from './img/HousesMediumHover.png';
 import { AiTwotoneHome } from 'react-icons/ai';
 
 class PublicHome extends Component {
@@ -17,10 +27,49 @@ class PublicHome extends Component {
     super(props);
     this.state = {
       login_hover: false,
-      regiser_hover: false,
+      register_hover: false,
+      houses_hover: false,
       show_info: false,
-      show_resident_info: false
-    }
+      show_resident_info: false,
+      show_register_info: false,
+      logo_hover: false,
+      modal: false,
+      type: false,
+      typeText: "login"
+    };
+    this.toggleRegister = this.toggleRegister.bind(this);
+    this.toggle = this.toggle.bind(this);
+    this.toggleLogin = this.toggleLogin.bind(this);
+    this.toggleRegAdmin = this.toggleRegAdmin.bind(this);
+    this.toggleRegRegular = this.toggleRegRegular.bind(this);
+  }
+
+  toggle = () => this.setState({modal: !this.state.modal});
+  toggleLogin = () => {
+    this.setState({
+      type: 'login',
+      typeText: 'Login',
+      modal: !this.state.modal
+    })
+  }
+  toggleRegAdmin = () => {
+    this.setState({
+      type: 'admin',
+      typeText: 'Register as Administrator',
+      modal: !this.state.modal
+    })
+  }
+  toggleRegRegular = () => {
+    this.setState({
+      type: 'regular',
+      typeText: 'Register as Regular User',
+      modal: !this.state.modal
+    })
+  }
+  toggleRegister() {
+    this.setState({
+      show_register_info: !this.state.show_register_info
+    }) 
   }
   componentDidMount() {
     document.body.style.overflow = 'hidden';
@@ -33,14 +82,13 @@ class PublicHome extends Component {
     console.log("public home cookies:", cookies.get('token'),
     this.props.logged_in);
 
-
     if (this.props.loading){
       return (<Loading />);
     }
     else {
       return (
-        
-      <Jumbotron style={{paddingBottom:'0'}}>
+        <div>
+        <Jumbotron style={{paddingBottom:'0'}}>
         <Media>
 
           { this.state.show_info ? 
@@ -59,41 +107,86 @@ class PublicHome extends Component {
           </Jumbotron> 
           :
           <Media left top >
-            <Media 
+            <Media
+              onMouseLeave={()=>{this.setState({logo_hover: false})}} 
+              onMouseEnter={()=>{this.setState({logo_hover: true})}}
               style={{paddingLeft:'5em',paddingTop:'2em',maxWidth:'35em'}} 
-              object src={Logo} alt="Generic placeholder image"/>
+              object src={this.state.logo_hover ? LogoHoverImg: LogoImg} 
+              alt="Civitas Logo"/>
           </Media>}
-
-          <Jumbotron style={{paddingLeft:'5em',backgroundColor:'#FFFFF'}}>
-            <Button outline color="primary" 
+          {this.props.logged_in ? 
+          <Jumbotron style={{paddingLeft:'5em',
+            paddingTop:'6.13em', paddingBottom:'6.13em',backgroundColor:'#FFFFF'}}>
+            <Media className="mt-1">
+              <Link to="/groups">
+              <Button outline color="primary" 
+                onMouseLeave={()=>{this.setState({register_hover: false})}} 
+                onMouseEnter={()=>{this.setState({register_hover: true})}}>
+                <Media middle>
+                  <Media 
+                    style={{maxWidth:'10em'}} 
+                    object src={this.state.register_hover ? 
+                    GroupsHoverImg : GroupsImg} alt="Groups" />
+                </Media>
+              </Button>
+              </Link>
+            </Media>
+          </Jumbotron>
+          :
+          <Jumbotron style={{paddingLeft:'5em',backgroundColor:'#FFFFF',
+          paddingRight:'0'}}>
+            <Button outline color="primary" onClick={this.toggleLogin}
               onMouseLeave={()=>{this.setState({login_hover: false})}} 
               onMouseEnter={()=>{this.setState({login_hover: true})}}>
               <Media right top>
-                <Media onMouseLeave={()=>{this.setState({login_width: '10em'})}} 
-                  onMouseEnter={()=>{this.setState({login_width: '10em'})}}
+                <Media
                   style={{maxWidth:'10em'}} 
                   object src={this.state.login_hover ? 
-                    LoginHover : Login} alt="Login" />
+                  LoginHoverImg : LoginImg} alt="Login" />
               </Media>
             </Button>
             <Media className="mt-1">
-
-            <Button outline color="primary" 
-              onMouseLeave={()=>{this.setState({regiser_hover: false})}} 
-              onMouseEnter={()=>{this.setState({regiser_hover: true})}}>
-              <Media middle>
-                <Media 
-                  style={{maxWidth:'10em'}} 
-                  object src={this.state.regiser_hover ? 
-                  RegisterHover : Register} alt="Register" />
-              </Media>
-            </Button>
-
+              <Button outline color="primary" onClick={this.toggleRegister}
+                onMouseLeave={()=>{this.setState({register_hover: false})}} 
+                onMouseEnter={()=>{this.setState({register_hover: true})}}>
+                <Media middle>
+                  <Media 
+                    style={{maxWidth:'10em'}} 
+                    object src={this.state.show_register_info ?
+                    RegisterHoverImg : (this.state.register_hover ? 
+                    RegisterHoverImg : RegisterImg)} alt="Register" />
+                </Media>
+              </Button>
             </Media>
-          </Jumbotron>
-
+            </Jumbotron> }
+            <Fade in={this.state.show_register_info}>
+              <Jumbotron style={{padding:'0',
+              paddingTop:'8.35em', paddingBottom:'3.91em',
+              backgroundColor:'#FFFFF'}}>
+                <Button color="primary" style={{padding:'0.15em'}}
+                  onClick={this.toggleRegRegular}>
+                  <Media right top>
+                    <Media
+                      style={{maxWidth:'10em'}} 
+                      object src={RegisterRegularImg} 
+                      alt="Register as a Regular User" />
+                  </Media>
+                </Button>
+                <Media className="mt-1">
+                  <Button color="primary" style={{padding:'0.15em'}}
+                    onClick={this.toggleRegAdmin}>
+                    <Media middle>
+                      <Media 
+                        style={{maxWidth:'10em'}} 
+                        object src={RegisterAdminImg} 
+                        alt="Register as an Administrator" />
+                    </Media>
+                  </Button>
+                </Media>
+              </Jumbotron>
+            </Fade>
         </Media>
-        <Media style={{paddingLeft:'15em'}} >
+        <Media style={{paddingLeft:'16em'}} >
           <Button onClick={() => {
             this.setState({show_info: !this.state.show_info})}} 
             color="link">Guide 
@@ -104,13 +197,27 @@ class PublicHome extends Component {
         <Media
           className="mt-1" 
           style={{display:'flex', justifyContent:'center'}}>
-          <Media left bottom>
+          <Media left bottom               
+              onMouseLeave={()=>{this.setState({houses_hover: false})}} 
+              onMouseEnter={()=>{this.setState({houses_hover: true})}}>
             <Media object style={{maxWidth:'80em'}} 
-            src={Houses} alt="Generic placeholder image" />
+            src={this.state.houses_hover ? HousesHoverImg: 
+            HousesImg} alt="Civitas Houses Graphic" />
           </Media>
         </Media>
 
       </Jumbotron>
+      <Modal isOpen={this.state.modal && !this.props.logged_in} 
+        toggle={this.toggle} style={{opacity:"0.9"}}>
+        <ModalHeader toggle={this.toggle}>{this.state.typeText}</ModalHeader>
+        <ModalBody>
+          {this.state.type==='login' ? 
+          <Login cookies={this.props.cookies} toggleModal={this.toggle}/> : 
+          <Register usertype={this.state.type} 
+          cookies={this.props.cookies} toggleModal={this.toggle}/>}
+        </ModalBody>
+      </Modal>
+      </div>
       );
     }
   }
