@@ -78,12 +78,11 @@ commentRouter.delete("/:comment_id", authMiddleware, (req, res, next) => {
     req.authorized = 'false';
     Group.findOne({_id: req.body.group_id}, function(groupFindErr, groupFind){
         if(groupFindErr || !groupFind){
-            res.status(400).send({
+            return res.status(400).send({
                 success:false,
                 error: JSON.stringify(groupFindErr),
                 msg:"1"
             });
-            return; 
         }
         else{
             // check if the user is the group supervisor
@@ -97,12 +96,12 @@ commentRouter.delete("/:comment_id", authMiddleware, (req, res, next) => {
                 console.log(req.params);
                 Comment.findById(req.params.comment_id, function(commentFindErr, commentFind){
                     if(!commentFind || commentFindErr){
+                        console.log("comment not found");
                         req.authorized = 'error';
-                        res.status(400).send({
+                        return res.status(400).send({
                             success:false,
-                            error: JSON.stringify(commentFindErr)
+                            error: "Current comment not found"
                         });
-                        return;
                     }
                     console.log(commentFind);
                     if(commentFind.author === req.user.user_info.username){
@@ -116,65 +115,60 @@ commentRouter.delete("/:comment_id", authMiddleware, (req, res, next) => {
                     else{
                         /* if the user is neither the group superviser, 
                         post creater, nor comment creater*/ 
-                        res.status(403).send({
+                        console.log("not authorized.")
+                        return res.status(403).send({
                             success:false,
                             error: "Sorry, you are not authorized to delete this post"
                         });
                     }
-                }).catch(function(commentFindErr){
-                    req.authorized = 'error';
-                    res.status(400).send({
-                        success:false,
-                        error: JSON.stringify(commentFindErr)
-                    });
-                });
+                })
             }
         }
     })
-
-    Comment.findByIdAndDelete(req.params.comment_id, (err, deleteComment) => {
-        if (err) {
-            console.log("500 #1, fail to delete the comment", err);
-            return res.status(500).send({
-                success: false,
-                error: JSON.stringify(err)
-            });
-        }
-        else{
-            // update the post's comment_ids
-            var filter = {
-                '_id': req.body.post_id
-            },
-            update = {
-                $pull: {comment_ids: req.params.comment_id}
-            },
-            options = {
-                useFindAndModify: false
-            };
-            Post.findOneAndUpdate(filter, update, options, (postUpdateErr, updatedPost) => {
-                if(postUpdateErr){
-                    res.status(400).send({
-                        success:false,
-                        error: JSON.stringify(postUpdateErr)
-                    });
-                    return;
-                }
-                else if(!updatedPost){
-                    res.status(404).send({
-                        success:false,
-                        error: "Post not existed"
-                    });
-                    return;
-                }
-                else{
-                    return res.status(201).send({
-                        success: true,
-                        data: updatedPost,
-                        message: "Comment deleted successfully"
-                    })
-                }
-            })
-        }
-    })
+    if(req.authorized === 'true'){
+        Comment.findByIdAndDelete(req.params.comment_id, (err, deleteComment) => {
+            console.log("authentication check complete");
+            if (err) {
+                console.log("500 #1, fail to delete the comment", err);
+                return res.status(500).send({
+                    success: false,
+                    error: JSON.stringify(err)
+                });
+            }
+            else{
+                // update the post's comment_ids
+                var filter = {
+                    '_id': req.body.post_id
+                },
+                update = {
+                    $pull: {comment_ids: req.params.comment_id}
+                },
+                options = {
+                    useFindAndModify: false
+                };
+                Post.findOneAndUpdate(filter, update, options, (postUpdateErr, updatedPost) => {
+                    if(postUpdateErr){
+                        return res.status(400).send({
+                            success:false,
+                            error: JSON.stringify(postUpdateErr)
+                        });
+                    }
+                    else if(!updatedPost){
+                        return res.status(404).send({
+                            success:false,
+                            error: "Post not existed"
+                        });
+                    }
+                    else{
+                        return res.status(201).send({
+                            success: true,
+                            data: updatedPost,
+                            message: "Comment deleted successfully"
+                        })
+                    }
+                })
+            }
+        })
+    }
 })
 module.exports = commentRouter;
