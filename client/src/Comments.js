@@ -1,6 +1,64 @@
-import React, { Component } from 'react';
-import { Alert, Button, Form, FormGroup, Input } from 'reactstrap';
+import React, { Component, useState, useEffect } from 'react';
+import { Alert, Button, Form, FormGroup, Input, ToastBody, Toast } from 'reactstrap';
 import authorizeUser from './Auth';
+import { connect } from 'react-redux'
+import './css/Comments.css'
+
+const Comment = (props) => {
+  return (
+    <Toast style={{'margin': '2%'}}>
+      <div style={{'margin': '2%'}}>
+        <strong>{props.comment.author}</strong>
+        <p>{props.comment.text}</p>
+      </div>
+    </Toast>
+  );
+}
+
+const Comments = (props) => {
+  const [comments, setComments] = useState([]);
+  const [isLoadingComments, setLoadingComments] = useState(true);
+
+  let endpoint = '/comments/get-comments/' + props.post_id;
+  let token = props.cookies.get('token');
+
+  useEffect(() => {
+    authorizeUser(token, endpoint, null, 'get').then(result => {
+      console.log("result comments: ", result);
+      if (result) {
+        setComments(result.data.data.comments);
+        setLoadingComments(false);
+        console.log("LOADED COMMENTS");
+      }
+    }).catch(error => {
+      console.log("error getting comments: ", error);
+    });
+  }, []);
+
+  console.log("is loading comments: ", isLoadingComments);
+  if (!comments || comments.length === 0) {
+    console.log("NULL COMMENTS");
+    return (null);
+  }
+
+  console.log("NON NULL COMMENTS");
+  console.log("is loading comments: ", isLoadingComments);
+  return (
+    <div style={{display:"flex"}}>
+      { isLoadingComments ? (<h4>Loading Comments</h4>) : (
+        <div id="Comments" style={{'width': '100%'}}>
+        { Object.keys(comments).map(function(key) {
+          return (
+            <div key={key}>
+              <Comment comment={comments[key]}/>
+            </div>
+          )
+        }.bind(this))}
+      </div>
+      )}
+    </div>
+  );
+}
 
 class CreateComment extends Component {
   state = {
@@ -63,7 +121,6 @@ class CreateComment extends Component {
           <FormGroup>
             <Input type="textarea" name="commentBody" id="commentBody" 
               placeholder="Comment here"
-              style={{width: "280%"}} 
               onChange={(e) => { this.handleChange(e); }} />
           </FormGroup>
           <Button color="primary" size="sm">Comment</Button>
@@ -73,4 +130,9 @@ class CreateComment extends Component {
   }
 }
 
-export { CreateComment };
+const mapStateToProps = (state) => ({
+  user_info: state.user_info,
+});
+
+export default connect(mapStateToProps, null)(Comments);
+export { CreateComment, Comments };

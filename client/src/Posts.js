@@ -3,9 +3,10 @@ import { Button, Toast, ToastBody, ToastHeader, Badge,
   Modal, ModalHeader, ModalBody, Form, FormGroup,
   Input, Alert } from 'reactstrap';
 import authorizeUser from './Auth';
-import { CreateComment } from './Comments';
+import { CreateComment, Comments } from './Comments';
 import { connect } from 'react-redux'
 import { AiFillHeart, AiOutlineHeart } from 'react-icons/ai';
+import './css/Posts.css';
 
 function EmptyPosts(){
   return(
@@ -101,6 +102,11 @@ const Post = (props) => {
         cookies={props.cookies}
         post_id={props.post._id}
       />
+      {props.children && React.cloneElement(props.children, {
+        post_id: props.post._id,
+        username: props.username,
+        cookies: props.cookies
+      })}
     </ToastHeader>
     </Toast>
   )
@@ -125,7 +131,9 @@ const Posts = (props) =>  {
                 cookies={props.cookies}
                 dispatch={props.dispatch}
                 group_id={props.group_id}
-                username={props.username}/>
+                username={props.username}>
+                  <Comments cookies={props.cookies}/>
+              </Post>
             </div>
           );
         }.bind(this))}
@@ -176,7 +184,8 @@ class CreatePost extends Component {
       'title':this.state.title, 
       'body': this.state.body,
       'author': this.props.username,
-      'group_id': this.props.group_id }
+      'group_id': this.props.group_id 
+    };
     let endpoint = "/posts";
     let token = this.props.cookies.get('token');
     authorizeUser(token, endpoint, req_body)
