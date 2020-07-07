@@ -3,13 +3,14 @@ import { connect } from 'react-redux'
 import { Redirect, withRouter } from 'react-router';
 import Loading from './components/Loading'
 import authorizeUser from './Auth'
-import { Jumbotron, Badge } from 'reactstrap';
+import { Jumbotron, Badge, Row, Col} from 'reactstrap';
 import { CreatePost } from './Posts'
-
+import Announcements, { CreateAnnouncement } from './Announcements';
 
 class Group extends Component {
   state = {
     posts: [],
+    announcements: [],
     redirect_to_root: false,
     group_name: "",
     group_id: "",
@@ -33,10 +34,14 @@ class Group extends Component {
             return;
           }
           this.setState({posts: result.data.posts,
+                        announcements: result.data.announcements,
                         group_name: result.data.group_name,
                         group_id: this.props.match.params.group_id})
           delete result.data.posts;
-          this.props.dispatch({ 
+          if (result.data.hasOwnProperty('announcements')) {
+            delete result.data.announcements;
+          }
+          this.props.dispatch({
             type: 'GROUP_ACCESS',
             payload: Object.assign(result.data, {
               group_id: this.props.match.params.group_id
@@ -74,24 +79,34 @@ class Group extends Component {
       return (<Redirect to="/" />);
     }
     else {
-
+      console.log("Announcements:", this.state.announcements)
       return (
         <div>
-          <Jumbotron>
-          
+          <Jumbotron style={{paddingTop:'0'}}>
             <h1 className="display-5">{this.state.group_name}</h1>
             <p><Badge color="danger" pill>Private</Badge></p>
+            <Announcements
+              dispatch={this.props.dispatch}
+              cookies={this.props.cookies}
+              group_id= {this.props.match.params.group_id}
+              is_supervisor={this.props.user_info.is_supervisor}
+              announcements={this.state.announcements}/>
             <h4>Posts</h4>
+            <Row style={{paddingLeft:'1em'}}>
             <CreatePost group_id={this.state.group_id}
               username={this.props.user_info.username}
               cookies={this.props.cookies}/>
-              {this.props.children && React.cloneElement(this.props.children, {
-                posts: this.state.posts,
-                group_id: this.props.match.params.group_id,
-                username: this.props.user_info.username,
-                cookies: this.props.cookies
-              })}
-              
+            { this.props.user_info.is_supervisor ?
+            <CreateAnnouncement group_id={this.state.group_id}
+              username={this.props.user_info.username}
+              cookies={this.props.cookies}/> : null }</Row>
+            {this.props.children && React.cloneElement(this.props.children, {
+              announcements: this.state.announcements,
+              posts: this.state.posts,
+              group_id: this.props.match.params.group_id,
+              username: this.props.user_info.username,
+              cookies: this.props.cookies
+            })}
           </Jumbotron>
         </div>
       );

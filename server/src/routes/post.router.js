@@ -130,6 +130,7 @@ postRouter.patch("/:post_id/like", authMiddleware, (req, res, next) => {
           success: false,
           error: err.message
           });
+        return;
       }
       res.status(200).send({
         success: true,
