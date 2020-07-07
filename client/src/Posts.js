@@ -109,6 +109,7 @@ const Post = (props) => {
         group_id={props.group_id}
         cookies={props.cookies}
         post_id={props.post._id}
+        post_owner={props.post.author}
       />
       {props.children && React.cloneElement(props.children, {
         post_id: props.post._id,

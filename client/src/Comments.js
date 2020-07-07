@@ -98,7 +98,8 @@ class CreateComment extends Component {
       'author': this.props.username,
       'is_reply': false,
       'text': this.state.commentBody,
-      'post_id': this.props.post_id
+      'post_id': this.props.post_id,
+      'post_owner': this.props.post_owner
     };
     let endpoint = '/comments/create-comment';
     let token = this.props.cookies.get('token');
