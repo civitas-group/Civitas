@@ -93,7 +93,14 @@ class Group extends Component {
               announcements={this.state.announcements}/>
             <h4>Posts</h4>
             <Row style={{paddingLeft:'1em'}}>
-            <CreatePost group_id={this.state.group_id}
+            <CreatePost 
+              is_request={false}
+              group_id={this.state.group_id}
+              username={this.props.user_info.username}
+              cookies={this.props.cookies}/>
+            <CreatePost 
+              is_request={true}
+              group_id={this.state.group_id}
               username={this.props.user_info.username}
               cookies={this.props.cookies}/>
             { this.props.user_info.is_supervisor ?
@@ -117,7 +124,8 @@ class Group extends Component {
 const mapStateToProps = (state) => ({
     logged_in: state.logged_in,
     user_info: state.user_info,
-    loading: state.loading
+    loading: state.loading,
+    refetch_page: state.refetch_page
 });
   
 export default withRouter(connect(mapStateToProps)(Group));

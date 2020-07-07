@@ -10,7 +10,7 @@ const authMiddleware = require('../middleware/auth');
 
 /* Get comments for a post given a post_id */
 commentRouter.get('/get-comments/:post_id', authMiddleware, (req, res) => {
-    console.log("GET COMMENT REQ: ", req);
+    //console.log("GET COMMENT REQ: ", req);
     // Find the post that contains our target comments
     Post.findById(req.params.post_id, (err, targetPost) => {
         if (err) {
@@ -51,7 +51,7 @@ commentRouter.get('/get-comments/:post_id', authMiddleware, (req, res) => {
 
 /* Make a comment on a post */
 commentRouter.post('/create-comment', authMiddleware, (req, res) => {
-    console.log("CREATE COMMENT REQ: ", req);
+    //console.log("CREATE COMMENT REQ: ", req);
     // TODO: check that user making req has proper permissions to comment on the specificed post
     let newComment = {
         author: req.body.author,
@@ -181,8 +181,8 @@ commentRouter.delete("/:comment_id", authMiddleware, (req, res, next) => {
             });
         }
         else{
-            console.log('hello1');
-            console.log(req.params);
+            //console.log('hello1');
+            //console.log(req.params);
             // first check whether the comment exists
             Comment.findById(req.params.comment_id, function(commentFindErr, commentFind){
                 if(!commentFind || commentFindErr){

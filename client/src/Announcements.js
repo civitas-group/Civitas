@@ -11,6 +11,7 @@ const Announcement = (props) => {
   const [alertVisible, setAlertVisible] = useState(true);
   const onDismiss = () => setAlertVisible(false);
   const [bodyIsOpen, setBodyIsOpen] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState(false);
   const bodyToggle = () => {
     console.log('Announcement', props.announcement)
     setBodyIsOpen(!bodyIsOpen);
@@ -50,7 +51,15 @@ const Announcement = (props) => {
             <AiFillCaretUp onClick={bodyToggle}/> : 
             <AiFillCaretDown onClick={bodyToggle}/>}
           {props.is_supervisor ? 
-          <Button onClick={()=>{deleteAnnouncement(props.announcement._id)}} 
+          deleteConfirm ?
+          <div>
+            <Button size="sm" outline color="danger"
+              onClick={()=>{deleteAnnouncement(props.announcement._id)}}>
+                Delete Announcement?</Button>
+            <Button size="sm" outline 
+              onClick={()=>{setDeleteConfirm(false)}}>Cancel</Button>
+          </div> 
+          :<Button onClick={()=>{setDeleteConfirm(true)}} 
             outline size="sm" color="link" 
             style={{padding:'0', color:"red"}}>
             Delete Announcement</Button> : null }
@@ -180,12 +189,14 @@ class CreateAnnouncement extends Component {
           <Form onSubmit={(e) => this.submitForm(e)}>
             <FormGroup>
               <Input 
-                type="text" name="title" id="title" placeholder="Title"
+                type="text" name="title" id="title" 
+                placeholder="Announcement Title"
                 onChange={(e) => { this.handleChange(e);}}/>
             </FormGroup>
             <FormGroup >
               <Input 
-                type="textarea" name="body" id="body" placeholder="Body" 
+                type="textarea" name="body" id="body" 
+                placeholder="Announcement Body" 
                 onChange={(e) => { this.handleChange(e);}}/>
             </FormGroup>
             <Button color="link" disabled={this.state.submit_loading} 
