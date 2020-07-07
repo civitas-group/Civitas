@@ -63,6 +63,16 @@ commentRouter.post('/create-comment', authMiddleware, (req, res) => {
     })
 })
 
+/* This function is for commentRouter.delete("/:comment_id", authMiddleware, (req, res, next) api
+    It deletes the selected comment inside Comment and update the comment_ids field inside the Post.
+*/
+/*
+    // req body
+    let req_body = {
+      'post_id': this.props.post_id,
+      'group_id': this.props.group_id
+    };
+*/
 function update_comment_and_post(req,res){
     Comment.findByIdAndDelete(req.params.comment_id, (err, deleteComment) => {
         console.log("authentication check complete");
