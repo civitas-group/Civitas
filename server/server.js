@@ -28,13 +28,13 @@ app.get('/', (req, res) => {
     res.send("<Server>");
 });
 
+app.use(bodyParser.json());
 app.use(
   bodyParser.urlencoded({
     extended: true
   })
 );
 
-app.use(bodyParser.json());
 app.use('/api/announcements', announcementRouter);
 app.use('/api/posts', postRouter);
 app.use('/api/comments', commentRouter);
