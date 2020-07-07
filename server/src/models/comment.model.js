@@ -21,7 +21,11 @@ const commentSchema = new mongoose.Schema({
     created: {
         type: Date,
         required: true
-    }
+    },
+    post_owner: {
+        type: String,
+        required: true
+   } 
 });
 
 const Comment = mongoose.model("Comment", commentSchema);
