@@ -58,7 +58,8 @@ commentRouter.post('/create-comment', authMiddleware, (req, res) => {
         is_reply: req.body.is_reply,
         text: req.body.text,
         created: Date.now(),
-        post_owner: req.body.post_owner
+        post_owner: req.body.post_owner,
+        parent_post_id: req.body.post_id
     };
 
     // create the comment, append it in the parent post's comments

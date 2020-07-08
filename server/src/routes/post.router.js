@@ -4,6 +4,7 @@ const express = require('express');
 const postRouter = express.Router();
 const Post = require('../models/post.model'); // post model
 const Group = require('../models/group.model');
+const Comment = require('../models/comment.model');
 var Account = require('../models/account.model');
 var jwt_decode = require('jwt-decode');
 // test the authentication middleware
@@ -231,11 +232,22 @@ postRouter.delete("/", authMiddleware, (req, res, next) => {
                   success: false,
                   error: postDeleteErr
                 });
+                return;
               }
-              res.status(200).send({
-                success: true,
-                data: postDeleteResult,
-                message: "Post deleted successfully"
+              Comment.deleteMany({ parent_post_id: post_id }, 
+                function(commentErr, commentResult) {
+                if (commentErr) {
+                  res.status(400).send({
+                    success: false,
+                    error: commentErr
+                  });
+                } else {
+                  res.status(200).send({
+                    success: true,
+                    data: postDeleteResult,
+                    message: "Post deleted successfully"
+                  });
+                }
               });
             });
           }
