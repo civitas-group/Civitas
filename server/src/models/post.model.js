@@ -32,6 +32,11 @@ const postSchema = new mongoose.Schema({
   like_ids: [{
     type: String
   }],
+  is_request: {
+    type: Boolean,
+    required: true
+  },
+
 });
 
 const Post = mongoose.model("Post", postSchema);

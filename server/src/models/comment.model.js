@@ -25,7 +25,11 @@ const commentSchema = new mongoose.Schema({
     post_owner: {
         type: String,
         required: true
-   } 
+    },
+    parent_post_id: {
+        type: mongoose.ObjectId,
+        ref: "Post"
+    },
 });
 
 const Comment = mongoose.model("Comment", commentSchema);

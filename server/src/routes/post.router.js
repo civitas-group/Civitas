@@ -4,6 +4,9 @@ const express = require('express');
 const postRouter = express.Router();
 const Post = require('../models/post.model'); // post model
 const Group = require('../models/group.model');
+const Comment = require('../models/comment.model');
+var Account = require('../models/account.model');
+var jwt_decode = require('jwt-decode');
 // test the authentication middleware
 const authMiddleware = require('../middleware/auth');
 
@@ -46,6 +49,7 @@ postRouter.post("/", authMiddleware, (req, res, next) => {
     title: req.body.title,
     body: req.body.body,
     author: req.body.author,
+    is_request: req.body.is_request,
     likes: 0,
     created: Date.now(),
   };
@@ -160,20 +164,98 @@ postRouter.patch("/:post_id", authMiddleware, (req, res, next) => {
 });
 
 /* Delete Single Post */
-postRouter.delete("/:post_id", authMiddleware, (req, res, next) => {
-  Post.findByIdAndDelete(req.params.post_id, function(err, result){
-      if(err){
-        res.status(400).send({
-          success: false,
-          error: err.message
+// Requires:
+// body : {
+//    post_id
+//    group_id
+// }
+postRouter.delete("/", authMiddleware, (req, res, next) => {
+  let post_id = req.body.post_id;
+  let group_id = req.body.group_id;
+  var decoded = jwt_decode(req.token);
+  var criteria = {username: decoded.username}
+  let fieldsToUpdate = { '$pull': { 'post_ids': post_id } }
+  let authorized_to_delete = false;
+
+  // Find account based on username
+  Account.findOne(criteria, function(accountErr, user){
+    if(accountErr || !user){
+      res.status(400).send({
+        success:false,
+        error: accountErr,
+      });
+      return;
+    // Successful so far
+    } else {
+
+      // User authorized to delete if supervisor
+      if (user.is_supervisor) authorized_to_delete = true;
+
+      Post.findById(post_id, function(postFindErr, postFindResult){
+        if(postFindErr || !postFindResult){
+          res.status(400).send({
+            success: false,
+            error: postFindErr
+          });
+          return;
+        } 
+        // Successful so far
+
+        // User authorized to delete if post owner
+        if (postFindResult.author == decoded.username) authorized_to_delete = true;
+        if (!authorized_to_delete){
+          res.status(401).send({
+            success: false,
+            error: "Unauthorized to delete."
+          });
+          return;
+        }
+        // Successful so far
+
+        // Find group by group_id to remove post_id from list of post_ids
+        Group.findByIdAndUpdate(group_id, fieldsToUpdate, 
+        { useFindAndModify: false },
+        function (groupErr, groupResult) {
+          if(groupErr || !groupResult){
+            res.status(400).send({
+              success: false,
+              error: groupErr
+            });
+            return;
+          }
+          // Successful so far
+          else {
+            Post.findByIdAndDelete(post_id, 
+              function(postDeleteErr, postDeleteResult){
+              if(postDeleteErr || !postDeleteResult){
+                res.status(400).send({
+                  success: false,
+                  error: postDeleteErr
+                });
+                return;
+              }
+              Comment.deleteMany({ parent_post_id: post_id }, 
+                function(commentErr, commentResult) {
+                if (commentErr) {
+                  res.status(400).send({
+                    success: false,
+                    error: commentErr
+                  });
+                } else {
+                  res.status(200).send({
+                    success: true,
+                    data: postDeleteResult,
+                    message: "Post deleted successfully"
+                  });
+                }
+              });
+            });
+          }
         });
-      }
-    res.status(200).send({
-      success: true,
-      data: result,
-      message: "Post deleted successfully"
-    });
-  });
-});
+      });
+    }
+  })
+})
+
 
 module.exports = postRouter;

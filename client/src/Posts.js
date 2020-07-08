@@ -1,11 +1,13 @@
 import React, { Component, useState } from 'react';
 import { Button, Toast, ToastBody, ToastHeader, Badge, 
   Modal, ModalHeader, ModalBody, Form, FormGroup,
-  Input, Alert } from 'reactstrap';
+  Input, Alert, Fade } from 'reactstrap';
 import authorizeUser from './Auth';
-import { CreateComment, Comments } from './Comments';
+import Comments, { CreateComment } from './Comments';
 import { connect } from 'react-redux'
-import { AiFillHeart, AiOutlineHeart } from 'react-icons/ai';
+import { AiFillHeart, AiOutlineHeart } from 'react-icons/ai'
+import { RiShoppingBasketLine } from 'react-icons/ri'
+import { TiDelete } from 'react-icons/ti'
 import './css/Posts.css';
 
 function EmptyPosts(){
@@ -52,17 +54,58 @@ const Post = (props) => {
         props.dispatch({ type: 'LOGOUT' });
       })
   }
+  const deletePost = (post_id) => {
+    props.dispatch({ type: 'LOADING' });
+    let token = props.cookies.get('token');
+    let endpoint = '/posts';
+    console.log('posts delete endpoint:', endpoint)
+    authorizeUser(token, endpoint, 
+      {group_id: props.group_id, 
+      post_id: post_id}, 'delete')
+      .then(result => {
+        console.log("result delete post:",result)
+        if (result){
+          window.location.reload(false);
+        } else {
+          console.log('Error: no result on deleting post.')
+          props.dispatch({ type: 'LOGOUT' });
+        }
+      })
+      .catch(error => {
+        console.log(error)
+        props.dispatch({ type: 'LOGOUT' });
+      })
+  }
   const [likeList, setLikeList] = useState(false);
   const toggleLikeList = () => {
     setLikeList(!likeList);
     console.log(props.post.like_ids)
   }
   const [submitting_like, setSubmitting] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState(false);
 
   return (
-    <Toast style={{minWidth:"50em"}}>
-    <ToastHeader>
-      <h5 style={{padding:'0.4em'}}><b>{ props.post.title }</b></h5>
+    <Toast style={{width:"50em"}}>
+    <ToastHeader style={{backgroundColor:(props.post.is_request ? 
+        "#D6E5FF": "#FCFCFD")}}>
+      <h5 style={{padding:'0.4em'}}>
+      <b>{ props.post.title }</b>{' '}
+      {props.post.is_request ? 
+      <Badge pill color="primary">Request {' '}
+      <RiShoppingBasketLine style={{paddingBottom:'0.2em'}}/></Badge>:null}
+      {props.is_post_owner || props.is_supervisor ? 
+      deleteConfirm ? 
+      <div>
+        <Button size="sm" outline color="danger"
+          onClick={()=>{deletePost(props.post._id)}}>Delete Post?</Button>
+        <Button size="sm" outline 
+          onClick={()=>{setDeleteConfirm(false)}}>Cancel</Button>
+      </div>
+      : <Button onClick={()=>{setDeleteConfirm(true)}}
+        style={{padding:'0',paddingBottom:'0.3em',color:'#DC3545'}}
+        size="lg" color="link"><TiDelete/></Button>: null}
+
+      </h5>
       <Badge color="dark">
         @{ props.post.author }
       </Badge>
@@ -103,20 +146,25 @@ const Post = (props) => {
         {liked ? ' Unlike' : ' Like'}
       </Button>
     </ToastHeader>
-    <ToastHeader>
+    <ToastBody>
+      {props.children && React.cloneElement(props.children, {
+        group_id: props.group_id,
+        post_id: props.post._id,
+        username: props.username,
+        cookies: props.cookies,
+        is_post_owner: props.is_post_owner,
+        is_supervisor: props.is_supervisor
+      })}
+
+    </ToastBody>
+    <div style={{paddingLeft:'1em', paddingRight:'1em'}}>
       <CreateComment 
         username={props.username}
         group_id={props.group_id}
         cookies={props.cookies}
         post_id={props.post._id}
-        post_owner={props.post.author}
-      />
-      {props.children && React.cloneElement(props.children, {
-        post_id: props.post._id,
-        username: props.username,
-        cookies: props.cookies
-      })}
-    </ToastHeader>
+        post_owner={props.post.author}/>
+    </div>
     </Toast>
   )
 }
@@ -135,7 +183,9 @@ const Posts = (props) =>  {
         { Object.keys(posts).reverse().map(function(key) {
           return (
             <div key={key}  style={{paddingTop:"2em"}}>
-              <Post email={props.user_info.email} 
+              <Post email={props.user_info.email}
+                is_supervisor={props.user_info.is_supervisor}
+                is_post_owner={props.username === posts[key].author}
                 post={posts[key]} 
                 cookies={props.cookies}
                 dispatch={props.dispatch}
@@ -162,7 +212,9 @@ class CreatePost extends Component {
       body_error: false,
       title_error: false,
       title: "",
-      body: ""
+      body: "",
+      title_text: this.props.is_request ? 'Request Title' : 'Title',
+      body_text: this.props.is_request ? 'Request Body' : 'Body',
     };
   }
 
@@ -197,7 +249,8 @@ class CreatePost extends Component {
       'title':this.state.title, 
       'body': this.state.body,
       'author': this.props.username,
-      'group_id': this.props.group_id 
+      'group_id': this.props.group_id,
+      'is_request': this.props.is_request
     };
     let endpoint = "/posts";
     let token = this.props.cookies.get('token');
@@ -223,10 +276,17 @@ class CreatePost extends Component {
   DismissAlert = () => this.setState({alertOpen: !this.state.alertOpen})
   render(){
     return (
-      <div> 
-        <Button color="primary" onClick={this.toggle}>Create Post</Button>
+      <div style={{paddingLeft: this.props.is_request ? '0.5em' :'0'}}> 
+        <Button outline={this.props.is_request} color="primary" onClick={this.toggle} >
+          {this.props.is_request ? 'Make Request' :'Create Post'} {' '}
+          {this.props.is_request ? <RiShoppingBasketLine/> : null}
+          </Button>
         <Modal isOpen={this.state.modal} toggle={this.toggle} style={{opacity:"0.9"}}>
-          <ModalHeader toggle={this.toggle}>Create a Post</ModalHeader>
+          <ModalHeader toggle={this.toggle}>
+          {this.props.is_request ? <Badge color="primary">
+          Make a Request <RiShoppingBasketLine/></Badge> :'Create a Post'}
+          
+          </ModalHeader>
           <ModalBody>
             <Alert isOpen={this.state.title_error && this.state.alertOpen}
                 toggle={this.DismissAlert} color="danger">
@@ -235,12 +295,14 @@ class CreatePost extends Component {
             <Form onSubmit={(e) => this.submitForm(e)}>
               <FormGroup>
                 <Input 
-                  type="text" name="title" id="title" placeholder="Title"
+                  type="text" name="title" id="title" 
+                  placeholder={this.state.title_text}
                   onChange={(e) => { this.handleChange(e);}}/>
               </FormGroup>
               <FormGroup >
                 <Input 
-                  type="textarea" name="body" id="body" placeholder="Body" 
+                  type="textarea" name="body" id="body" 
+                  placeholder={this.state.body_text}
                   onChange={(e) => { this.handleChange(e);}}/>
               </FormGroup>
               <Button color="link" disabled={this.state.submit_loading} 
