@@ -36,7 +36,10 @@ const postSchema = new mongoose.Schema({
     type: Boolean,
     required: true
   },
-
+  request_resolved: {
+    type: Boolean,
+    required: false
+  }
 });
 
 const Post = mongoose.model("Post", postSchema);
