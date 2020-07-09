@@ -1,13 +1,15 @@
 import React, { Component, useState } from 'react';
-import { Button, Toast, ToastBody, ToastHeader, Badge, 
+import { Button, Toast, ToastBody, ToastHeader, Badge, Collapse, 
   Modal, ModalHeader, ModalBody, Form, FormGroup,
-  Input, Alert, Fade } from 'reactstrap';
+  Input, Alert, ButtonGroup } from 'reactstrap';
 import authorizeUser from './Auth';
 import Comments, { CreateComment } from './Comments';
-import { connect } from 'react-redux'
-import { AiFillHeart, AiOutlineHeart } from 'react-icons/ai'
-import { RiShoppingBasketLine } from 'react-icons/ri'
-import { TiDelete } from 'react-icons/ti'
+import { connect } from 'react-redux';
+import { AiFillHeart, AiOutlineHeart } from 'react-icons/ai';
+import { RiShoppingBasketLine,
+  RiTimerLine } from 'react-icons/ri';
+import { TiDelete } from 'react-icons/ti';
+import { MdDone, MdMoreHoriz }from 'react-icons/md';
 import './css/Posts.css';
 
 function EmptyPosts(){
@@ -55,6 +57,7 @@ const Post = (props) => {
       })
   }
   const deletePost = (post_id) => {
+    if (moreOptions) return;
     props.dispatch({ type: 'LOADING' });
     let token = props.cookies.get('token');
     let endpoint = '/posts';
@@ -64,10 +67,35 @@ const Post = (props) => {
       post_id: post_id}, 'delete')
       .then(result => {
         console.log("result delete post:",result)
-        if (result){
-          window.location.reload(false);
-        } else {
+        if (result){ window.location.reload(false); }
+        else {
           console.log('Error: no result on deleting post.')
+          props.dispatch({ type: 'LOGOUT' });
+        }
+      })
+      .catch(error => {
+        console.log(error)
+        props.dispatch({ type: 'LOGOUT' });
+      })
+  }
+  const resolvePost = (post_id) => {
+    if (deleteConfirm) return;
+    props.dispatch({ type: 'LOADING' });
+    let token = props.cookies.get('token');
+    let resolve_param;
+    if (props.post.request_resolved) resolve_param = 'false';
+    else resolve_param = 'true';
+    let endpoint = '/posts/resolve?resolved=' + resolve_param;
+
+    console.log('posts resolve (' + resolve_param  + 
+      ') endpoint:', endpoint)
+    authorizeUser(token, endpoint, 
+      {post_id: post_id}, 'patch')
+      .then(result => {
+        console.log("result resolve post:",result)
+        if (result){ window.location.reload(false);}
+        else {
+          console.log('Error: no result on resolving post.')
           props.dispatch({ type: 'LOGOUT' });
         }
       })
@@ -83,27 +111,61 @@ const Post = (props) => {
   }
   const [submitting_like, setSubmitting] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState(false);
+  const [moreOptions, setMoreOptions] = useState(false);
 
   return (
     <Toast style={{width:"50em"}}>
     <ToastHeader style={{backgroundColor:(props.post.is_request ? 
-        "#D6E5FF": "#FCFCFD")}}>
+        (props.post.request_resolved ? "#92E89C" : "#FFD37C") 
+        :"#FCFCFD")}}>
       <h5 style={{padding:'0.4em'}}>
       <b>{ props.post.title }</b>{' '}
       {props.post.is_request ? 
-      <Badge pill color="primary">Request {' '}
-      <RiShoppingBasketLine style={{paddingBottom:'0.2em'}}/></Badge>:null}
+      <Badge pill 
+      color={props.post.request_resolved ? "success": "warning"}>
+      Request {' '}
+      {props.post.request_resolved ? 
+      <MdDone style={{paddingBottom:'0.2em'}}/> 
+      : <RiTimerLine style={{paddingBottom:'0.2em'}}/>}
+      </Badge>:null} {/*MdMoreHoriz*/}
+
       {props.is_post_owner || props.is_supervisor ? 
-      deleteConfirm ? 
-      <div>
-        <Button size="sm" outline color="danger"
-          onClick={()=>{deletePost(props.post._id)}}>Delete Post?</Button>
-        <Button size="sm" outline 
-          onClick={()=>{setDeleteConfirm(false)}}>Cancel</Button>
-      </div>
-      : <Button onClick={()=>{setDeleteConfirm(true)}}
+      <Button style={{padding:'0'}} 
+      onClick={()=>{setMoreOptions(!moreOptions)}}
+      disabled={deleteConfirm} color="link"><MdMoreHoriz/>
+      </Button>: null}
+
+      {props.is_post_owner || props.is_supervisor ? 
+      <Button onClick={()=>{setDeleteConfirm(!deleteConfirm)}} 
+        disabled={moreOptions}
         style={{padding:'0',paddingBottom:'0.3em',color:'#DC3545'}}
         size="lg" color="link"><TiDelete/></Button>: null}
+      {props.is_post_owner || props.is_supervisor ? 
+      <Collapse isOpen={moreOptions || deleteConfirm}>
+        
+        <ButtonGroup size="sm">
+        {deleteConfirm && !moreOptions ? 
+        <Button size="sm" color="danger"
+          onClick={()=>{deletePost(props.post._id)}}>
+            {props.post.is_request ? 'Delete Request?' : 'Delete Post?'}
+        </Button>
+        :null}
+        {moreOptions ? 
+        (props.post.is_request ? /* Request options */
+        
+        (props.post.request_resolved ? 
+        /* Request resolved options */
+        <Button size="sm" onClick={()=>{resolvePost(props.post._id)}}
+        color="warning">Unresolve Request</Button>
+        : /* Request unresolved options */
+        <Button size="sm" onClick={()=>{resolvePost(props.post._id)}}
+        color="success">Resolve Request</Button>)
+
+        : <Button size="sm" /* Regular Post options */
+        color="primary">Add more options here</Button>) : null}
+        </ButtonGroup>
+      </Collapse>
+      : null}
 
       </h5>
       <Badge color="dark">
@@ -112,59 +174,64 @@ const Post = (props) => {
       {'  '}
       <small style={{justifyContent:"right"}}>{props.post.created ? 
       props.post.created.slice(0,10) : null}</small>
-    </ToastHeader>
-  
-    <ToastBody>
-      <p>{ props.post.body }</p>
-    </ToastBody>
-    <ToastHeader>
-      <Modal isOpen={likeList} toggle={toggleLikeList}>
-        <ModalHeader>Likes</ModalHeader>
-        <ModalBody>
-          {Object.keys(props.post.like_ids).reverse().map(function(key){
-            if (props.post.like_ids[key] === props.email && !liked){
-              return (null)
-            }
-            return (
-              <div key={key}>{props.post.like_ids[key]}</div>
-            );
-          })}
-        </ModalBody>
-      </Modal>
-      <Button style={{padding:'0'}}  
-        color="link" onClick={toggleLikeList}>
-        {liked ? 
-        <Badge color="dark">
-          <AiFillHeart />{' ' + (props.post.likes)}
-        </Badge> :
-        <Badge color="dark">
-          <AiOutlineHeart/>{' ' + props.post.likes}
-        </Badge>}
-      </Button>
-      <Button disabled={submitting_like} 
-        onClick={toggleLike} color='link' size="sm">
-        {liked ? ' Unlike' : ' Like'}
-      </Button>
-    </ToastHeader>
-    <ToastBody>
-      {props.children && React.cloneElement(props.children, {
-        group_id: props.group_id,
-        post_id: props.post._id,
-        username: props.username,
-        cookies: props.cookies,
-        is_post_owner: props.is_post_owner,
-        is_supervisor: props.is_supervisor
-      })}
 
-    </ToastBody>
-    <div style={{paddingLeft:'1em', paddingRight:'1em'}}>
-      <CreateComment 
-        username={props.username}
-        group_id={props.group_id}
-        cookies={props.cookies}
-        post_id={props.post._id}
-        post_owner={props.post.author}/>
-    </div>
+    </ToastHeader>
+    
+    {props.post.is_request && props.post.request_resolved ? null :
+    <div>
+      <ToastBody>
+        <p>{ props.post.body }</p>
+      </ToastBody>
+      <ToastHeader>
+        <Modal isOpen={likeList} toggle={toggleLikeList}>
+          <ModalHeader>Likes</ModalHeader>
+          <ModalBody>
+            {Object.keys(props.post.like_ids).reverse().map(function(key){
+              if (props.post.like_ids[key] === props.email && !liked){
+                return (null)
+              }
+              return (
+                <div key={key}>{props.post.like_ids[key]}</div>
+              );
+            })}
+          </ModalBody>
+        </Modal>
+        <Button style={{padding:'0'}}  
+          color="link" onClick={toggleLikeList}>
+          {liked ? 
+          <Badge color="dark">
+            <AiFillHeart />{' ' + (props.post.likes)}
+          </Badge> :
+          <Badge color="dark">
+            <AiOutlineHeart/>{' ' + props.post.likes}
+          </Badge>}
+        </Button>
+        <Button disabled={submitting_like} 
+          onClick={toggleLike} color='link' size="sm">
+          {liked ? ' Unlike' : ' Like'}
+        </Button>
+      </ToastHeader>
+      <ToastBody>
+        {props.children && React.cloneElement(props.children, {
+          group_id: props.group_id,
+          post_id: props.post._id,
+          username: props.username,
+          cookies: props.cookies,
+          is_post_owner: props.is_post_owner,
+          is_supervisor: props.is_supervisor
+        })}
+
+      </ToastBody>
+
+      <div style={{paddingLeft:'1em', paddingRight:'1em'}}>
+        <CreateComment 
+          username={props.username}
+          group_id={props.group_id}
+          cookies={props.cookies}
+          post_id={props.post._id}
+          post_owner={props.post.author}/>
+      </div>
+    </div>}
     </Toast>
   )
 }
