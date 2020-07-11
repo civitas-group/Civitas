@@ -1,11 +1,23 @@
 // Mongoose schema that represents a user account.
 
 const mongoose = require('mongoose');
+const fileSchema = new mongoose.Schema({
+    file_urls:[{
+        type: String
+    }],
+    file_storage_type:{
+        type: String
+    }
+});
 const accountSchema = new mongoose.Schema({
    username: {
        type: String,
        required: true,
        unique: true
+   },
+   full_legal_name: {
+       type:String,
+       required:true
    },
    password: { // SHA-256 hashed, salted password
        type: String,
@@ -24,6 +36,16 @@ const accountSchema = new mongoose.Schema({
        type: Boolean,
        required: true
    },
+   requested_groups_ids:[{
+       type: String
+   }],
+   requested_groups_files:[{
+        requested_group_id:{
+            type: mongoose.ObjectId,
+            ref: "Group"
+        },
+        fileInfo:fileSchema
+   }],
    managed_groups_ids: [{
        type: mongoose.ObjectId,
        ref: "Group"
