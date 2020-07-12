@@ -41,19 +41,20 @@ class App extends Component {
       <div style={{ backgroundColor: '#2D70CE'}}> 
       <Router>
       <AppNavbar cookies={this.props.cookies}/>
+      
       <Switch>
-          <Route exact path="/">{() => (<PublicHome cookies={this.props.cookies}/>)}</Route>
-          <Route exact path="/groups">{() => (<Home cookies={this.props.cookies}/>)}</Route>
-          <Route exact path="/groups/:group_id" >
-              <Group cookies={this.props.cookies}>
-                <Posts cookies={this.props.cookies}/>
-              </Group>
-          </Route>
-          <Route exact path="/joingroup"
-                    render={() => (<Group cookies={this.props.cookies}/>)} />
-          <Route exact path="/creategroup"
-                render={() => (<CreateGroup cookies={this.props.cookies}/>)} />
-          </Switch>
+        <Route exact path="/">{() => (<PublicHome cookies={this.props.cookies}/>)}</Route>
+        <Route exact path="/groups">{() => (<Home cookies={this.props.cookies}/>)}</Route>
+        <Route exact path="/groups/:group_id" >
+          <Group cookies={this.props.cookies}>
+            <Posts cookies={this.props.cookies}/>
+          </Group>
+        </Route>
+        <Route exact path="/joingroup"
+          render={() => (<Group cookies={this.props.cookies}/>)} />
+        <Route exact path="/creategroup"
+          render={() => (<CreateGroup cookies={this.props.cookies}/>)} />
+      </Switch>
       </Router>
       </div>
     );
