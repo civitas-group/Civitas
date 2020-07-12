@@ -11,12 +11,25 @@ const mongoose = require('mongoose');
 const e = require('express');
 
 /* Create a new group */
+/* req.body
+  {group_name: string,
+    address:string
+  }
+*/
 groupRouter.post("/create", authMiddleware, (req, res) => {
+    if(!req.body.address){
+      res.status(400).send({
+        success: false,
+        error: "Please enter the property address"
+      });
+      return;
+    }
     let newGroup = {
         group_name: req.body.group_name,
         supervisor_id: req.user.user_info._id,
         is_private: true,
-        is_valid: false
+        is_approve: false,
+        address:req.body.address
     };
     if (req.user.user_info.is_supervisor !== true) {
       res.status(403).send({
@@ -85,7 +98,169 @@ groupRouter.post("/create", authMiddleware, (req, res) => {
     });
     
 });
+/* 
+  The following objects are updated in user's accounts
+    requested_groups_ids: the new group_id is added
+    requested_groups_files: the following file_info are added
+      {
+        requested_group_id:{
+            type: mongoose.ObjectId,
+            ref: "Group"
+        },
+        fileInfo:{
+          file_urls:[{
+              type: String
+          }],
+          file_storage_type:{
+             type: String
+          }
+        }
+      }
+*/
+function update_account(req,res,created_group_id){
+  var decoded = jwt_decode(req.token);
+  var criteria = {username: decoded.username}
+  // Update user account:
+  let add_files = {
+    requested_group_id:created_group_id,
+    fileInfo:{
+      file_urls: req.body.file_urls,
+      file_storage_type: req.body.file_storage_type
+    }
+  }
+  // check if the user already has requested_groups_ids and requested_groups_files
+  Account.findOne(criteria, function(groupErr, user){
+    console.log(1);
+    if(groupErr || !user){
+      console.log(2);
+      res.status(400).send({
+        success:false,
+        error: JSON.stringify(groupErr),
+      });
+      return;
+    } else {
+      // Get existing requested_groups_ids
+      console.log(3);
+      console.log(created_group_id);
+      listOfGroups = user.requested_groups_ids;
+      listOfGroups.push(created_group_id.toString());
 
+      //listOfFiles = Object.assign(user.requested_groups_files, add_files)
+      listOfFiles = user.requested_groups_files;
+      listOfFiles.push(add_files);
+
+      console.log(listOfGroups)
+      console.log(listOfFiles)
+      let fieldsToUpdate = { 
+        'requested_groups_ids': listOfGroups,
+        'requested_groups_files': listOfFiles
+      }
+
+      // Update admin's managed_groups_ids list
+      Account.findByIdAndUpdate(req.user.user_info._id,
+        { $set: fieldsToUpdate }, 
+        { useFindAndModify: false, new: true },  
+        function (accountErr, accountResult) {
+          if(accountErr){
+            console.log(4);
+            res.status(400).send({
+              success: false,
+              error: JSON.stringify(accountErr)
+              });
+          } else {
+            console.log(5);
+            res.status(201).send({
+              success: true,
+              new_group: accountResult,
+              msg:"Create/Join group request sent successfully"
+            });
+          }
+      })
+    }
+  });
+}
+
+/* Verify whether the admin is authorized to create/join a private group*/
+/* group_exists = string, 'false', 'true'*/
+/* req.body
+{ group_name: string // ??? only required if group_exists === false
+  address: string // only required if group_exists === false
+  file_urls: [string] // urls
+  file_storage_type: string // Google Drive, Dropbox, etc
+  is_private: boolean
+}*/
+groupRouter.post("/request/:group_exists", authMiddleware, (req, res) => {
+  var decoded = jwt_decode(req.token);
+  var criteria = {username: decoded.username}
+
+  // Find account based on username to ensure user is supervisor
+  Account.findOne(criteria, function(accountErr, user){
+    if(accountErr || !user){
+      res.status(400).send({
+        success: false,
+        error: JSON.stringify(accountErr),
+      });
+      return;
+    // User not supervisor, cannot make announcement
+    } else if (!user.is_supervisor) {
+      res.status(401).send({
+        success: false,
+        error: "User not supervisor."
+      });
+      return;
+    }
+  });
+  let created_group_id;
+  /* If the group does not exist
+  Create group with group_name, address, but still leaves it unverifed*/
+  //Get Mongo ID of group
+  if(req.params.group_exists === 'false'){
+    let newGroup = {
+      group_name: req.body.group_name,
+      supervisor_id: req.user.user_info._id,
+      is_private: true,
+      is_approve: false,
+      address:req.body.address
+    };
+    Group.create(newGroup, function(err, result) {
+      if(err){
+        if (JSON.stringify(err).includes('E11000')){
+          res.status(409).send({
+            success: false,
+            error: 'E11000, Duplcate'
+          });
+        } else{
+          res.status(400).send({
+            success: false,
+            error: 'Creating the group fail'
+          });
+        }
+      } else {
+        created_group_id = result._id;
+        update_account(req,res,created_group_id);
+      }
+    });
+  }
+  /* If the group already exists(same group name), send the request to join the group
+  */
+  // Get Mongo ID of existed group
+  else{
+    group_info = {group_name: req.body.group_name}
+    Group.findOne(group_info, function(groupFindErr, groupFind){
+      if(groupFindErr || !groupFind){
+        res.status(400).send({
+          success:false,
+          error: JSON.stringify(groupFindErr),
+        });
+        return;
+      // Successful so far
+      } else {
+        created_group_id = groupFind._id;
+        update_account(req,res,created_group_id);
+      }
+    });
+  }
+})
 
 // Get group info, posts in group, announcements in group, and user's groups list
 groupRouter.post("/:group_id", authMiddleware, (req, res) => {
@@ -163,7 +338,6 @@ groupRouter.post("/:group_id", authMiddleware, (req, res) => {
 
 ////////////////////////////////////////////////////////////////////////////////
 // Below is all for group invites
-
 // Verify user_ids to invite sent in body of /group/invite
 function verifyIds(req, res, next){
   // verify whether the user_id passed in are valid

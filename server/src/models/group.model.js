@@ -7,6 +7,11 @@ const groupSchema = new mongoose.Schema({
         required: true,
         unique: true
     },
+    // Street address of the property
+    address:{
+        type: String,
+        required: true
+    },
     post_ids: [{
         type: mongoose.ObjectId,
         ref: "Post"
@@ -19,7 +24,8 @@ const groupSchema = new mongoose.Schema({
         type: Boolean,
         required: true
     },
-    is_valid : {
+    // whether the group_creation is approved
+    is_approve : {
         type: Boolean,
         required: true
     },
