@@ -5,7 +5,8 @@ import { Button, Toast, ToastBody, ToastHeader, Badge, Collapse,
 import authorizeUser from './Auth';
 import Comments, { CreateComment } from './Comments';
 import { connect } from 'react-redux';
-import { AiFillHeart, AiOutlineHeart } from 'react-icons/ai';
+import { AiFillHeart, AiOutlineHeart, 
+  AiFillEye, AiFillEyeInvisible } from 'react-icons/ai';
 import { RiShoppingBasketLine,
   RiTimerLine } from 'react-icons/ri';
 import { TiDelete } from 'react-icons/ti';
@@ -112,14 +113,18 @@ const Post = (props) => {
   const [submitting_like, setSubmitting] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState(false);
   const [moreOptions, setMoreOptions] = useState(false);
+  const [unhide, setUnhide] = useState(false);
 
   return (
-    <Toast style={{width:"50em"}}>
+    <Toast style={{width:"50em", backgroundColor: (props.post.is_request && 
+      props.post.request_resolved ? '#92E89C' : 'white')}}>
     <ToastHeader style={{backgroundColor:(props.post.is_request ? 
-        (props.post.request_resolved ? "#92E89C" : "#FFD37C") 
+        (props.post.request_resolved ? "#92E89C" : "#2D70CE") 
         :"#FCFCFD")}}>
-      <h5 style={{padding:'0.4em'}}>
-      <b>{ props.post.title }</b>{' '}
+      <h5 style={{padding:'0.4em',margin:'0',}}>
+      <b style={{color: (props.post.is_request ? 
+        (props.post.request_resolved ? '#28A745' : 'white') : 'black' )}}>
+        { props.post.title }</b>{' '}
       {props.post.is_request ? 
       <Badge pill 
       color={props.post.request_resolved ? "success": "warning"}>
@@ -127,10 +132,11 @@ const Post = (props) => {
       {props.post.request_resolved ? 
       <MdDone style={{paddingBottom:'0.2em'}}/> 
       : <RiTimerLine style={{paddingBottom:'0.2em'}}/>}
-      </Badge>:null} {/*MdMoreHoriz*/}
+      </Badge>:null}
 
       {props.is_post_owner || props.is_supervisor ? 
-      <Button style={{padding:'0'}} 
+      <Button style={{padding:'0', paddingBottom:'0.4em', 
+      color:props.post.is_request ? 'white' : 'black'}} 
       onClick={()=>{setMoreOptions(!moreOptions)}}
       disabled={deleteConfirm} color="link"><MdMoreHoriz/>
       </Button>: null}
@@ -138,8 +144,16 @@ const Post = (props) => {
       {props.is_post_owner || props.is_supervisor ? 
       <Button onClick={()=>{setDeleteConfirm(!deleteConfirm)}} 
         disabled={moreOptions}
-        style={{padding:'0',paddingBottom:'0.3em',color:'#DC3545'}}
+        style={{padding:'0',paddingBottom:'0.3em',
+        color: props.post.is_request ? 'white':'#DC3545'}}
         size="lg" color="link"><TiDelete/></Button>: null}
+      {props.post.is_request && props.post.request_resolved ? 
+      <Button onClick={()=>{setUnhide(!unhide)}} 
+        style={{padding:'0',paddingBottom:'0.3em',
+        color: 'white'}} size="lg" color="link">
+        {unhide ? <AiFillEyeInvisible/> : <AiFillEye/>}
+      </Button>: null}
+
       {props.is_post_owner || props.is_supervisor ? 
       <Collapse isOpen={moreOptions || deleteConfirm}>
         
@@ -156,10 +170,10 @@ const Post = (props) => {
         (props.post.request_resolved ? 
         /* Request resolved options */
         <Button size="sm" onClick={()=>{resolvePost(props.post._id)}}
-        color="warning">Unresolve Request</Button>
+        color="warning">Unresolve</Button>
         : /* Request unresolved options */
         <Button size="sm" onClick={()=>{resolvePost(props.post._id)}}
-        color="success">Resolve Request</Button>)
+        color="success">Resolve</Button>)
 
         : <Button size="sm" /* Regular Post options */
         color="primary">Add more options here</Button>) : null}
@@ -167,22 +181,30 @@ const Post = (props) => {
       </Collapse>
       : null}
 
-      </h5>
-      <Badge color="dark">
-        @{ props.post.author }
-      </Badge>
-      {'  '}
-      <small style={{justifyContent:"right"}}>{props.post.created ? 
-      props.post.created.slice(0,10) : null}</small>
-
+      </h5 >
+      
+      <Button color="link" style={{padding:'0'}}>
+        <Badge color={(props.post.is_request ? 'light' : 'primary')}>
+        @{ props.post.author }</Badge>
+      </Button>
+      {'  '}<div>
+      <small style={{justifyContent:"right", marginTop:'1em',
+      color: (props.post.is_request ? 'white' : 'black')}}>
+        {props.post.created ? props.post.created.slice(0,10) 
+        : null}</small></div>
     </ToastHeader>
     
-    {props.post.is_request && props.post.request_resolved ? null :
+    {props.post.is_request && props.post.request_resolved &&
+     !unhide ? null :
     <div>
-      <ToastBody>
+      <ToastBody style={{backgroundColor: 
+        props.post.is_request && props.post.request_resolved ? 
+        '#70C182': 'white'}}>
         <p>{ props.post.body }</p>
       </ToastBody>
-      <ToastHeader>
+      <ToastHeader style={{backgroundColor: 
+        props.post.is_request && props.post.request_resolved ? 
+        '#70C182': 'white'}}>
         <Modal isOpen={likeList} toggle={toggleLikeList}>
           <ModalHeader>Likes</ModalHeader>
           <ModalBody>
@@ -206,13 +228,17 @@ const Post = (props) => {
             <AiOutlineHeart/>{' ' + props.post.likes}
           </Badge>}
         </Button>
-        <Button disabled={submitting_like} 
+        <Button disabled={submitting_like || 
+          (props.post.is_request && props.post.request_resolved)} 
           onClick={toggleLike} color='link' size="sm">
           {liked ? ' Unlike' : ' Like'}
         </Button>
       </ToastHeader>
-      <ToastBody>
+      <ToastBody style={{backgroundColor: 
+        props.post.is_request && props.post.request_resolved ? 
+        '#70C182': 'white'}}>
         {props.children && React.cloneElement(props.children, {
+          force_disable: props.post.is_request && props.post.request_resolved,
           group_id: props.group_id,
           post_id: props.post._id,
           username: props.username,
@@ -222,7 +248,7 @@ const Post = (props) => {
         })}
 
       </ToastBody>
-
+      {props.post.is_request && props.post.request_resolved ? null :
       <div style={{paddingLeft:'1em', paddingRight:'1em'}}>
         <CreateComment 
           username={props.username}
@@ -230,7 +256,7 @@ const Post = (props) => {
           cookies={props.cookies}
           post_id={props.post._id}
           post_owner={props.post.author}/>
-      </div>
+      </div>}
     </div>}
     </Toast>
   )
