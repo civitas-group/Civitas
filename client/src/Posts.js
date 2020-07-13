@@ -234,7 +234,7 @@ const Post = (props) => {
           {liked ? ' Unlike' : ' Like'}
         </Button>
       </ToastHeader>
-      { props.post.comment_ids.length !== 0 ?
+      { props.post.comment_ids.length !== 0 || !props.post.request_resolved ?
       <ToastBody style={{backgroundColor: 
         props.post.is_request && props.post.request_resolved ? 
         '#70C182': 'white'}}>
