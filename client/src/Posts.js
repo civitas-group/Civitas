@@ -234,6 +234,7 @@ const Post = (props) => {
           {liked ? ' Unlike' : ' Like'}
         </Button>
       </ToastHeader>
+      { props.post.comment_ids.length !== 0 ?
       <ToastBody style={{backgroundColor: 
         props.post.is_request && props.post.request_resolved ? 
         '#70C182': 'white'}}>
@@ -247,7 +248,7 @@ const Post = (props) => {
           is_supervisor: props.is_supervisor
         })}
 
-      </ToastBody>
+      </ToastBody> : null}
       {props.post.is_request && props.post.request_resolved ? null :
       <div style={{paddingLeft:'1em', paddingRight:'1em'}}>
         <CreateComment 
