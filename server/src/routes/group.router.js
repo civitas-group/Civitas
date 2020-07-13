@@ -10,92 +10,84 @@ const helper = require('./helper.js')
 const mongoose = require('mongoose');
 const e = require('express');
 
-/* Create a new group */
+
+/* Approve group creation/admin join request as super admin */
 /* req.body
-  {group_name: string,
-    address:string
+  {
+    group_id: string,
+    user_id: string (user of admin requesting)
   }
 */
-groupRouter.post("/create", authMiddleware, (req, res) => {
-    if(!req.body.address){
+groupRouter.post("/approve", (req, res) => {
+  let group_id = req.body.group_id;
+  let user_id = req.body.user_id;
+  let group_criteria = { _id: group_id }
+  Group.findOne(group_criteria, function(groupErr, group){
+    if(groupErr || !group){
       res.status(400).send({
         success: false,
-        error: "Please enter the property address"
+        error: JSON.stringify(groupErr),
       });
-      return;
-    }
-    let newGroup = {
-        group_name: req.body.group_name,
-        supervisor_id: req.user.user_info._id,
-        is_private: true,
-        is_approve: false,
-        address:req.body.address
-    };
-    if (req.user.user_info.is_supervisor !== true) {
-      res.status(403).send({
-        success: false,
-        error: "You are not an admin user!"
-      });
-      return;
-    }
-    Group.create(newGroup, function(err, result) {
-        if(err){
-          if (JSON.stringify(err).includes('E11000')){
-            res.status(409).send({
-              success: false,
-              error: 'E11000, Duplcate'
-            });
-          } else{
+    } else {
+      let fieldsToUpdate;
+      // If user is main supervisor (first one that created group),
+      // set approved to true since group hasn't been aproved yet
+      if (group.supervisor_id === user_id){
+        fieldsToUpdate = { '$set': { 'is_approved': true } }
+      }
+      // If user is 2nd+ supervisor, group already approved; add user
+      // to list of cosupervisor_ids
+      else {
+        if (group.cosupervisor_ids.indexOf(user_id) !== -1){
+          res.status(400).send({
+            success: false,
+            error: "User already a supervisor."
+          });
+          return;
+        }
+        fieldsToUpdate = { '$push': { 'cosupervisor_ids': user_id } }
+      }
+
+      // Update group based on fieldsToUpdate
+      Group.findByIdAndUpdate(group_criteria,
+        fieldsToUpdate, { useFindAndModify: false, new: true },  
+        function (accountErr, accountResult) {
+          if(accountErr){
             res.status(400).send({
               success: false,
-              error: JSON.stringify(err)
-            });
-          }
-        } else {
-          // Update user's managed_groups_ids list
-          
-          let listOfGroups = [];
-          var criteria = {_id: req.user.user_info._id};
-
-          // Check if user has existing managed groups
-          Account.findOne(criteria, function(groupErr, user){
-            if(groupErr || !user){
-              res.status(400).send({
-                success:false,
-                error: JSON.stringify(groupErr),
+              error: JSON.stringify(accountErr)
               });
-              return;
-            } else {
+          } else {
 
-              // Get existing managed groups list and push new group to list
-              listOfGroups = user.managed_groups_ids;
-              listOfGroups.push(result._id)
-
-              console.log(result._id)
-              console.log(listOfGroups)
-              let fieldsToUpdate = { 'managed_groups_ids': listOfGroups }
-
-              // Update admin's managed_groups_ids list
-              Account.findByIdAndUpdate(req.user.user_info._id,
-                { $set: fieldsToUpdate }, 
-                { useFindAndModify: false, new: true },  
-                function (accountErr, accountResult) {
-                  if(accountErr){
-                    res.status(400).send({
-                      success: false,
-                      error: JSON.stringify(accountErr)
-                      });
-                  } else {
-                    res.status(201).send({
-                      success: true,
-                      created_group: result
-                    });
-                  }
-              })
+            // Remove group_id from user's list of requested_groups_ids
+            // and push group_id to user's list of managed_groups_ids
+            fieldsToUpdate = { 
+              '$pull': { 'requested_groups_ids': group._id },
+              '$push': { 'managed_groups_ids': group._id }
             }
-          });
-        }
-    });
+
+            // Update account based on fieldsToUpdate
+            Account.findByIdAndUpdate(user_id,
+              fieldsToUpdate, { useFindAndModify: false, new: true },  
+              function (accountErr, accountResult) {
+                if(accountErr){
+                  res.status(400).send({
+                    success: false,
+                    error: JSON.stringify(accountErr)
+                    });
+                } else {
+                  res.status(201).send({
+                    success: true,
+                    created_group: accountResult
+                  });
+                }
+            })
+          }
+      })
+
+
+    }
+  });
     
 });
 /* 
@@ -117,84 +109,117 @@ groupRouter.post("/create", authMiddleware, (req, res) => {
         }
       }
 */
-function update_account(req,res,created_group_id){
-  var decoded = jwt_decode(req.token);
-  var criteria = {username: decoded.username}
+async function update_account(req,res,created_group_id){
   // Update user account:
   let add_files = {
-    requested_group_id:created_group_id,
+    requested_group_id: created_group_id._id,
     fileInfo:{
       file_urls: req.body.file_urls,
       file_storage_type: req.body.file_storage_type
     }
   }
-  // check if the user already has requested_groups_ids and requested_groups_files
-  Account.findOne(criteria, function(groupErr, user){
-    console.log(1);
-    if(groupErr || !user){
-      console.log(2);
-      res.status(400).send({
-        success:false,
-        error: JSON.stringify(groupErr),
-      });
-      return;
-    } else {
-      // Get existing requested_groups_ids
-      console.log(3);
-      console.log(created_group_id);
-      listOfGroups = user.requested_groups_ids;
-      listOfGroups.push(created_group_id.toString());
+  let fieldsToUpdate = {
+    'requested_groups_files': add_files,
+    'requested_groups_ids': created_group_id._id
+  }
+  // Update admin's managed_groups_ids list
+  await Account.findByIdAndUpdate(req.user.user_info._id,
+    { $addToSet: fieldsToUpdate },
+    { useFindAndModify: false, new: true },  
+    function (accountErr, accountResult) {
+      if(accountErr){
+        res.status(400).send({
+          success: false,
+          error: JSON.stringify(accountErr)
+          });
+      } else {
+        res.status(201).send({
+          success: true,
+          user: accountResult,
+          msg: "Create/Join group request sent successfully"
+        });
+      }
+  })
+}
 
-      //listOfFiles = Object.assign(user.requested_groups_files, add_files)
-      listOfFiles = user.requested_groups_files;
-      listOfFiles.push(add_files);
-
-      console.log(listOfGroups)
-      console.log(listOfFiles)
-      let fieldsToUpdate = { 
-        'requested_groups_ids': listOfGroups,
-        'requested_groups_files': listOfFiles
+// Before sending admin's request to create group be added to existing
+// group as admin, check if already requested or already group admin
+// body : { 
+//  group_name: string
+// }
+async function groupCreatePreflight(req, res, next){
+  let decoded = jwt_decode(req.token);
+  let username = decoded.username;
+  let criteria = { username: username }
+  let user_id = req.user.user_info._id;
+  let group_criteria = { group_name: req.body.group_name }
+  
+  return await Group.findOne(group_criteria)
+    .then(async function(group, err){ 
+      // If group already exists, continue to main function 
+      // with group_exists flag set to false
+      if(err || !group){
+        req.group_exists = false;
+        return;
       }
 
-      // Update admin's managed_groups_ids list
-      Account.findByIdAndUpdate(req.user.user_info._id,
-        { $set: fieldsToUpdate }, 
-        { useFindAndModify: false, new: true },  
-        function (accountErr, accountResult) {
-          if(accountErr){
-            console.log(4);
+      // If user is already supervisor of group, signal to frontend
+      // Signal is 200 status code with msg detailing
+      // (user_id === supervisor_id or in list of cosupervisor_ids) 
+      if (group.supervisor_id.toString() === user_id.toString() || 
+        group.cosupervisor_ids.indexOf(user_id.toString()) !== -1) {
+        res.status(200).send({
+          success: false,
+          msg: "Already supervisor.",
+        });
+      } else {
+        // If user has already requested to be group admin,
+        // also signal to frontend 
+        return await Account.findOne(criteria, function(accountErr, user){
+          if(accountErr || !user){
             res.status(400).send({
               success: false,
-              error: JSON.stringify(accountErr)
-              });
-          } else {
-            console.log(5);
-            res.status(201).send({
-              success: true,
-              new_group: accountResult,
-              msg:"Create/Join group request sent successfully"
+              error: JSON.stringify(accountErr),
             });
+
+          // User already requested
+          } else if (user.requested_groups_ids.indexOf(group._id) !== -1) {
+            res.status(200).send({
+              success: false,
+              msg: "Already requested."
+            });
+
+          // Everything good, continue to main with group_exists flag set
+          } else {
+            req.group_exists = true;
           }
-      })
-    }
-  });
+        });
+      } 
+    })
+    .catch(async function(err){
+      return res.status(400).json({error: "Error"});
+    });
 }
 
 /* Verify whether the admin is authorized to create/join a private group*/
 /* group_exists = string, 'false', 'true'*/
 /* req.body
-{ group_name: string // ??? only required if group_exists === false
+{ group_name: string // required
   address: string // only required if group_exists === false
-  file_urls: [string] // urls
-  file_storage_type: string // Google Drive, Dropbox, etc
+  file_urls: [string] // required, urls
+  file_storage_type: string // required, Google Drive, Dropbox, etc
   is_private: boolean
 }*/
-groupRouter.post("/request/:group_exists", authMiddleware, (req, res) => {
-  var decoded = jwt_decode(req.token);
-  var criteria = {username: decoded.username}
+groupRouter.post("/create", authMiddleware, async (req, res) => {
 
+  await groupCreatePreflight(req, res); 
+  // if response already sent - do not resend, return
+  if (res.headersSent) return;
+
+  let decoded = jwt_decode(req.token);
+  let criteria = { username: decoded.username }
   // Find account based on username to ensure user is supervisor
-  Account.findOne(criteria, function(accountErr, user){
+  await Account.findOne(criteria, function(accountErr, user){
     if(accountErr || !user){
       res.status(400).send({
         success: false,
@@ -214,15 +239,16 @@ groupRouter.post("/request/:group_exists", authMiddleware, (req, res) => {
   /* If the group does not exist
   Create group with group_name, address, but still leaves it unverifed*/
   //Get Mongo ID of group
-  if(req.params.group_exists === 'false'){
+  if(req.group_exists === false){
     let newGroup = {
       group_name: req.body.group_name,
       supervisor_id: req.user.user_info._id,
+      cosupervisor_ids: [],
       is_private: true,
-      is_approve: false,
+      is_approved: false,
       address:req.body.address
     };
-    Group.create(newGroup, function(err, result) {
+    Group.create(newGroup, async function(err, result) {
       if(err){
         if (JSON.stringify(err).includes('E11000')){
           res.status(409).send({
@@ -237,14 +263,15 @@ groupRouter.post("/request/:group_exists", authMiddleware, (req, res) => {
         }
       } else {
         created_group_id = result._id;
-        update_account(req,res,created_group_id);
+        await update_account(req,res,created_group_id);
+        return;
       }
     });
   }
   /* If the group already exists(same group name), send the request to join the group
   */
   // Get Mongo ID of existed group
-  else{
+  else {
     group_info = {group_name: req.body.group_name}
     Group.findOne(group_info, function(groupFindErr, groupFind){
       if(groupFindErr || !groupFind){
@@ -257,13 +284,14 @@ groupRouter.post("/request/:group_exists", authMiddleware, (req, res) => {
       } else {
         created_group_id = groupFind._id;
         update_account(req,res,created_group_id);
+        return;
       }
     });
   }
 })
 
 // Get group info, posts in group, announcements in group, and user's groups list
-groupRouter.post("/:group_id", authMiddleware, (req, res) => {
+groupRouter.post("/:group_id", authMiddleware, (req, res) => { 
   var decoded = jwt_decode(req.token);
   var criteria = {username: decoded.username}
   var group_criteria = {_id: req.params.group_id}
@@ -280,7 +308,7 @@ groupRouter.post("/:group_id", authMiddleware, (req, res) => {
 
       // Add user's group IDs to response 
       let full = helper.addGroupIDS(user, decoded);
-
+      
       // Find group based on specified group_id
       Group.findOne(group_criteria, function(err, group){
         if(err || !group){
@@ -290,7 +318,7 @@ groupRouter.post("/:group_id", authMiddleware, (req, res) => {
           });
           return;
         } else {
-          
+
           // append group name to result
           full = Object.assign(full, {
             group_name: group.group_name
@@ -307,7 +335,7 @@ groupRouter.post("/:group_id", authMiddleware, (req, res) => {
             } else {
               full = Object.assign(full, {
                 posts: records
-              })
+              })  
 
               // Get all posts in group
               Announcement.find().where('_id').in(
@@ -315,14 +343,16 @@ groupRouter.post("/:group_id", authMiddleware, (req, res) => {
                 if (announceErr || !announceRecords){
                   res.status(400).send({
                     success: false,
-                    error: announceErrrr
+                    error: announceErr
                   });
                   return;
                 } else {
+                  //console.log(full)
                   full = Object.assign(full, {
                     announcements: announceRecords,
                   })
                   res.json(full);
+                  return;
                 }
               });
               //res.json(full);
@@ -330,7 +360,6 @@ groupRouter.post("/:group_id", authMiddleware, (req, res) => {
           });
         }
       })
-      
     }
   })
 });

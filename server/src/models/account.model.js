@@ -37,7 +37,8 @@ const accountSchema = new mongoose.Schema({
        required: true
    },
    requested_groups_ids:[{
-       type: String
+      type: mongoose.ObjectId,
+      ref: "Group"
    }],
    requested_groups_files:[{
         requested_group_id:{

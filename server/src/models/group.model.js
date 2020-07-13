@@ -20,12 +20,16 @@ const groupSchema = new mongoose.Schema({
         type: mongoose.ObjectId,
         ref: "Account"
     },
+    cosupervisor_ids:[{
+        type: mongoose.ObjectId,
+        ref: "Account"
+    }],
     is_private: {
         type: Boolean,
         required: true
     },
     // whether the group_creation is approved
-    is_approve : {
+    is_approved : {
         type: Boolean,
         required: true
     },
