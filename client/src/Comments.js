@@ -70,8 +70,8 @@ const Comment = (props) => {
             author_replying_to={props.comment.author}/>
             </div>: null }
       {showOptions ? 
-      <Button onClick={makeReply}color="link" size="sm" 
-        style={{paddingLeft:'0.7em'}}>
+      <Button disabled={props.force_disable} onClick={makeReply} 
+        color="link" size="sm" style={{paddingLeft:'0.7em'}}>
         Reply</Button> : (makingReply ? 
         <Button onClick={cancelReply}color="link" size="sm" 
         style={{paddingLeft:'0.7em'}}>
@@ -86,7 +86,8 @@ const Comment = (props) => {
         <Button size="sm" outline 
           onClick={()=>{setDeleteConfirm(false)}}>Cancel</Button>
       </div> 
-      : <Button onClick={()=>{setDeleteConfirm(true)}} 
+      : <Button
+      onClick={()=>{setDeleteConfirm(true)}} 
       color="link" size="sm" style={{paddingLeft:'0.7em'}}>
       Delete</Button>:null}
     </Toast>
@@ -129,6 +130,7 @@ const Comments = (props) => {
           return (
             <div key={key}>
               <Comment comment={comments[key]}
+                force_disable={props.force_disable}
                 dispatch={props.dispatch}
                 cookies={props.cookies}
                 group_id={props.group_id}

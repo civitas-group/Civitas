@@ -10,14 +10,27 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 
 /* Create a regular user account */
+/*
+  req.body ={
+    username: string
+    password: string 
+    email: string
+    group_ids: [ids of group models],
+    managed_group_ids: [ids of group models],
+    full_legal_name: string
+  }
+*/
 signUpRouter.post("/regular", (req, res, next) => {
     let newAccount = {
         username: req.body.username,
         password: req.body.password,
 		    email: req.body.email,
         group_ids: req.body.group_ids,
-        is_supervisor: false,
-        managed_group_ids: req.body.managed_group_ids
+        is_supervisor: 0,
+        managed_group_ids: req.body.managed_group_ids,
+        requested_groups_ids:[],
+        requested_groups_files:[],
+        full_legal_name: req.body.full_legal_name
       };
       
       bcrypt.genSalt(10,(err,salt) => {
@@ -87,6 +100,16 @@ signUpRouter.post("/regular", (req, res, next) => {
 });
 
 /* Create an admin user account */
+/*
+  req.body ={
+    username: string
+    password: string 
+    email: string
+    group_ids: [ids of group models],
+    managed_group_ids: [ids of group models],
+    full_legal_name: string
+  }
+*/
 signUpRouter.post("/admin", (req, res, next) => {
   bcrypt.genSalt(10,(err,salt) => {
     if(err){
@@ -109,8 +132,11 @@ signUpRouter.post("/admin", (req, res, next) => {
         password: hash,
         email: req.body.email,
         group_ids: req.body.group_ids,
-        is_supervisor: true,
-        managed_group_ids: req.body.managed_group_ids
+        is_supervisor: 1,
+        managed_group_ids: req.body.managed_group_ids,
+        requested_groups_ids:[],
+        requested_groups_files:[],
+        full_legal_name: req.body.full_legal_name
        }, function(err, result) {
         if(err){
           res.status(400).send({

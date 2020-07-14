@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Button, Modal, ModalHeader, ModalBody,
+import { Button, Modal, ModalHeader, ModalBody, Media,
   Navbar, Container, ButtonDropdown, ButtonGroup,
   DropdownItem, DropdownToggle, DropdownMenu } from 'reactstrap';
 import { connect } from 'react-redux'
@@ -7,7 +7,8 @@ import { withCookies } from 'react-cookie';
 import { Link } from 'react-router-dom'
 import Register from '../Register'
 import Login from '../Login'
-
+import LogoImg from '../img/NavbarLogo2.png';
+import LogoHoverImg from '../img/NavbarLogoHover.png';
 
 const AppNavbar = (props) => {
 
@@ -16,6 +17,7 @@ const AppNavbar = (props) => {
   const [dropdownOpen, setDropdown] = useState(false);
   const [type, setType] = useState(false);
   const [typeText, setTypeText] = useState(false);
+  const [logoHover, setLogoHover] = useState(false);
 
   const toggle = () => setModal(!modal);
   const toggleDropdown = () => setDropdown(!dropdownOpen);
@@ -76,7 +78,12 @@ const AppNavbar = (props) => {
         style={{width:'100%',float: 'left'}}>
           <Container>
               <Link to={"/"}>
-              <Button color="primary">Civitas</Button>
+              <Media
+              onMouseLeave={()=>{setLogoHover(false)}} 
+              onMouseEnter={()=>{setLogoHover(true)}}
+              style={{width:'5em'}} 
+              object src={logoHover ? LogoHoverImg: LogoImg} 
+              alt="Civitas Logo"/>
               </Link>
               {props.logged_in ? <NavButtonsLoggedIn/> : <NavButtonsLoggedOut /> }
           </Container> 

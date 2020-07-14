@@ -7,6 +7,11 @@ const groupSchema = new mongoose.Schema({
         required: true,
         unique: true
     },
+    // Street address of the property
+    address:{
+        type: String,
+        required: true
+    },
     post_ids: [{
         type: mongoose.ObjectId,
         ref: "Post"
@@ -15,11 +20,16 @@ const groupSchema = new mongoose.Schema({
         type: mongoose.ObjectId,
         ref: "Account"
     },
+    cosupervisor_ids:[{
+        type: mongoose.ObjectId,
+        ref: "Account"
+    }],
     is_private: {
         type: Boolean,
         required: true
     },
-    is_valid : {
+    // whether the group_creation is approved
+    is_approved : {
         type: Boolean,
         required: true
     },

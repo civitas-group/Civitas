@@ -51,6 +51,7 @@ commentRouter.get('/get-comments/:post_id', authMiddleware, (req, res) => {
 
 /* Make a comment on a post */
 commentRouter.post('/create-comment', authMiddleware, (req, res) => {
+
     //console.log("CREATE COMMENT REQ: ", req);
     // TODO: check that user making req has proper permissions to comment on the specificed post
     let newComment = {
