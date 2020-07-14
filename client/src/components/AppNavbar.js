@@ -12,12 +12,16 @@ import Login from '../Login'
 const AppNavbar = (props) => {
 
   const [modal, setModal] = useState(false);
+  const [logoutModal, setLogoutModal] = useState(false);
   const [dropdownOpen, setDropdown] = useState(false);
   const [type, setType] = useState(false);
   const [typeText, setTypeText] = useState(false);
 
   const toggle = () => setModal(!modal);
   const toggleDropdown = () => setDropdown(!dropdownOpen);
+  const toggleLogoutModal = () => {
+    setLogoutModal(!logoutModal)
+  }
   const toggleLogin = () => {
     setType('login');
     setTypeText('Login');
@@ -45,12 +49,7 @@ const AppNavbar = (props) => {
           </DropdownToggle>
           <DropdownMenu>
             <DropdownItem>Profile</DropdownItem>
-            <DropdownItem 
-            onClick={() => {
-              props.cookies.remove('token', { path: '/' });
-              console.log('Removed Cookie!', props.cookies.get('token'))
-              props.dispatch({ type: 'LOGOUT' });
-            }}>Logout</DropdownItem>
+            <DropdownItem onClick={toggleLogoutModal}>Logout</DropdownItem>
           </DropdownMenu>
         </ButtonDropdown>
         </ButtonGroup>)
@@ -88,6 +87,21 @@ const AppNavbar = (props) => {
           <ModalBody>
             {type==='login' ? <Login cookies={props.cookies} toggleModal={toggle}/> : 
             <Register usertype={type} cookies={props.cookies} toggleModal={toggle}/>}
+          </ModalBody>
+        </Modal>
+        <Modal isOpen={logoutModal && props.logged_in} toggle={toggleLogoutModal} style={{opacity:"0.9"}}>
+          <ModalHeader toggle={toggleLogoutModal}>Confirm Logout</ModalHeader>
+          <ModalBody>
+            <h5 style={{textAlign: "center"}}>Are you sure you want to logout?</h5>
+            <div style={{textAlign: "center"}}>
+              <Button onClick={() => {
+                toggleLogoutModal();
+                props.cookies.remove('token', { path: '/' });
+                console.log('Removed Cookie!', props.cookies.get('token'))
+                props.dispatch({ type: 'LOGOUT' });
+              }} style={{marginRight: "10%"}} color="primary"> Yes, log me out. </Button>
+              <Button onClick={toggleLogoutModal}>Cancel</Button>
+            </div>
           </ModalBody>
         </Modal>
       </Navbar>

@@ -25,16 +25,33 @@ class Register extends Component {
       userText: "",
       validate: {
         emailState: "",
+        usernameState: "",
         userExists: false,
         passMatch: true,
-        passEmpty: ""
+        passState: ""
       },
+      showPass: false,
       loading: false
     };
     this.handleChange = this.handleChange.bind(this);
 	  this.submitForm = this.submitForm.bind(this);
   }
   
+
+  validateUsername(e) {
+    const usernameRex = /[@~`!#$%\^&*+=\-\[\]\\';,/{}\s|\\":<>\?]/g;
+    const { validate } = this.state;
+
+    if (usernameRex.test(e.target.value) || e.target.value === '') {
+      // if username contains char from usernameRex, it is invalid
+      validate.usernameState = "has-danger";
+      console.log("username invalid");
+    } else {
+      validate.usernameState = "has-success";
+      console.log("username valid");
+    }
+    this.setState({ validate });
+  }
 
   validateEmail(e) {
     const emailRex = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
@@ -46,15 +63,26 @@ class Register extends Component {
     }
     this.setState({ validate });
   }
+
   validatePass(e) {
+    const passwordRex = /[\s~`!@#$%\^&*+=\-\[\]\\';,/{}|\\":<>\?()\._]/g;
     const { validate } = this.state;
-    if (e.target.value === ''){
-      validate.passEmpty = 'empty';
+
+    if (passwordRex.test(e.target.value) || e.target.value === '' || e.target.value.length < 8){
+      validate.passState = 'has-danger';
     } else {
-      validate.passEmpty = 'not-empty';
+      validate.passState = 'has-success';
     }
     this.setState({ validate });
   }
+
+  toggleShowPass(e) {
+    let { showPass } = this.state;
+    showPass = e.target.checked === true;
+    this.setState({ showPass });
+  }
+
+
   handleChange = async (event) => {
     const { target } = event;
     const value = target.type === "checkbox" ? target.checked : target.value;
@@ -66,9 +94,9 @@ class Register extends Component {
 
   submitForm(e) {
     e.preventDefault();
-    let is_supervisor = 0;
+    let is_supervisor = false;
     if (this.props.usertype === 'admin'){
-      is_supervisor = 1;
+      is_supervisor = true;
     }
     if (this.state.email === '') {
       this.setState({
@@ -80,9 +108,18 @@ class Register extends Component {
       })
       return;
     }
+    if (this.state.username === '') {
+      this.setState({
+        validate: {
+          usernameState: "has-danger",
+          userExists: false,
+          passMatch: true
+        }
+      })
+    }
     if (this.state.password === '' || this.state.password2 === '') {
       this.setState({ validate: { userExists: false, 
-        passEmpty: 'empty' } })
+        passState: 'has-danger' } })
       return;
     }
     this.setState({loading: true})
@@ -97,7 +134,6 @@ class Register extends Component {
           "is_supervisor": is_supervisor
         })
     };
-    //fetch('http://' + process.env.host + ':8080/api/signup/regular', requestOptions)
     let apiurl = '';
     if (process.env.NODE_ENV  === 'development') {
       apiurl = 'http://localhost:8080/api/signup/' 
@@ -141,7 +177,6 @@ class Register extends Component {
             
             this.setState({ validate });
             this.props.dispatch({ type: 'LOGIN' });         
-            //return (<Redirect to={"/home"} />)
         }
       })
       .catch(error => {
@@ -194,36 +229,42 @@ class Register extends Component {
                 id="exampleUsername"
                 placeholder="Username"
                 value={username}
-                onChange={(e) => this.handleChange(e)}
+                valid={this.state.validate.usernameState === "has-success"}
+                invalid={this.state.validate.usernameState === "has-danger"}
+                onChange={(e) => {
+                  this.validateUsername(e);
+                  this.handleChange(e);
+                }}
               />
+              <FormFeedback valid>Valid Username.</FormFeedback>
+              <FormFeedback>Invalid Username. Please use only alphanumeric characters!</FormFeedback>
             </FormGroup>
           </Col>
           <Col>
             <FormGroup>
               <Input
-                type="password"
+                type={this.state.showPass ? "text" : "password"}
                 name="password"
                 id="examplePassword"
                 placeholder="Password"
                 value={password}
-                valid={this.state.validate.passEmpty === "not-empty"}
-                invalid={this.state.validate.passEmpty === "empty"}
+                valid={this.state.validate.passState === "has-success"}
+                invalid={this.state.validate.passState === "has-danger"}
                 onChange={(e) => {
                   const {  validate } = this.state;
                   validate.passMatch = (e['target']['value'] === this.state.validate.password2);
                   this.validatePass(e);
                   this.handleChange(e)
                 }}
-				        //onChange = { console.log('e') }
               />
-              <FormFeedback valid>Password okay.</FormFeedback>
-              <FormFeedback>Please enter a password.</FormFeedback>
+              <FormFeedback valid>Valid Password</FormFeedback>
+              <FormFeedback>Password must be at least 8 characters, cannot contain special characters</FormFeedback>
             </FormGroup>
           </Col>
           <Col>
             <FormGroup>
               <Input
-                type="password"
+                type={this.state.showPass ? "text" : "password"}
                 name="password2"
                 id="exampleConfirmPassword"
                 placeholder="Confirm Password"
@@ -237,6 +278,11 @@ class Register extends Component {
                 }}
               />
 			      <FormFeedback>Passwords don't match.</FormFeedback>
+            </FormGroup>
+          </Col>
+          <Col>
+            <FormGroup>
+              <Input type='checkbox' onClick={(e) => this.toggleShowPass(e)} /> Show Password
             </FormGroup>
           </Col>
           <div>

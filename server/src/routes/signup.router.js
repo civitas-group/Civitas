@@ -16,7 +16,7 @@ signUpRouter.post("/regular", (req, res, next) => {
         password: req.body.password,
 		    email: req.body.email,
         group_ids: req.body.group_ids,
-        is_supervisor: 0,
+        is_supervisor: false,
         managed_group_ids: req.body.managed_group_ids
       };
       
@@ -52,7 +52,7 @@ signUpRouter.post("/regular", (req, res, next) => {
               { 
                 username:result.username,
                 email:result.email,
-                is_supervisor: 0
+                is_supervisor: false
               },
               process.env.JWT_SECRET,
               // token expires 1 hour
@@ -109,7 +109,7 @@ signUpRouter.post("/admin", (req, res, next) => {
         password: hash,
         email: req.body.email,
         group_ids: req.body.group_ids,
-        is_supervisor: 1,
+        is_supervisor: true,
         managed_group_ids: req.body.managed_group_ids
        }, function(err, result) {
         if(err){
@@ -124,7 +124,7 @@ signUpRouter.post("/admin", (req, res, next) => {
           { 
             username:result.username,
             email:result.email,
-            is_supervisor:1
+            is_supervisor:true
           },
           process.env.JWT_SECRET,
           // token expires 1 hour
