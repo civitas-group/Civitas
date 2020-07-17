@@ -44,6 +44,10 @@ const groupSchema = new mongoose.Schema({
     announcement_ids: [{
         type: mongoose.ObjectId,
         ref: "Announcement"
+    }],
+    requested_to_join_user_ids:[{
+        type: mongoose.ObjectId,
+        ref: "Account"
     }]
 });
 

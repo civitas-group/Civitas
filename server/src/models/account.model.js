@@ -54,6 +54,10 @@ const accountSchema = new mongoose.Schema({
    invited_groups_ids: [{
        type: mongoose.ObjectId,
        ref: "Group"
+   }],
+   requested_to_join_groups_ids: [{
+        type: mongoose.ObjectId,
+        ref: "Group"
    }]
 });
 
