@@ -108,15 +108,15 @@ class PublicHome extends Component {
             </h5>
           </Jumbotron> 
           :
-          <Media left top >
-                <Lottie options={{
-                  loop: true,
-                  autoplay: true,
-                  animationData: LogoAnim,
-                  rendererSettings: {
-                    preserveAspectRatio: 'xMidYMid slice'
-                  }}}
-                  width={500}/>
+          <Media left top style={{paddingLeft:'3.75em'}}>
+            <Lottie options={{
+              loop: true,
+              autoplay: true,
+              animationData: LogoAnim,
+              rendererSettings: {
+                preserveAspectRatio: 'xMidYMid slice'
+              }}}
+              width={500}/>
           </Media>}
           {this.props.logged_in ? 
           <Jumbotron style={{paddingLeft:'5em',
