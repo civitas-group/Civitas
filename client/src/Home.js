@@ -3,10 +3,20 @@ import authorizeUser from './Auth'
 import { Redirect } from 'react-router';
 import { connect } from 'react-redux'
 import Loading from './components/Loading'
+import GroupSearch from './components/GroupSearch'
 import UserHomeOptions from './components/UserHomeOptions'
-import { Jumbotron } from 'reactstrap';
+import { Jumbotron, Button, Col } from 'reactstrap';
+import Collapse from 'reactstrap/lib/Collapse';
+import { GoSearch } from 'react-icons/go';
 
 class Home extends Component {
+  constructor(props){
+    super(props);
+    this.state = {
+      searching: false,
+      lock: false
+    }
+  }
   async componentDidMount() {
     console.log('home mounted')
     this.props.dispatch({ type: 'LOADING' });
@@ -44,19 +54,51 @@ class Home extends Component {
     else if (!this.props.logged_in){
       return (<Redirect to="/" />);
     }
+    else if (Object.keys(this.props.user_info).length === 0){
+      return (<Loading />);
+    }
     else {
       return (
+      <div style={{padding:'2em'}}>
+      <Jumbotron style={{minHeight:'27em', paddingTop:'0', 
+        textAlign:'center'}}>
+        <Button color="primary" onClick={()=>{
+          this.setState({searching: !this.state.searching})
+        }}>{this.state.searching ? ' Your Groups':
+          <div>{' Search Groups '} <GoSearch/></div> }</Button>
         
-      <div  style={{padding:'2em'}}>
-      <Jumbotron>
-        <h4>Username: {this.props.user_info.username}</h4>
-        <h4>Email: {this.props.user_info.email}</h4>
-        <h4>Is supervisor?: {this.props.user_info.is_supervisor ? 
-          <p>Yes</p> : <p>No</p> }</h4>
+        <Collapse isOpen={!this.state.searching}>
+        <div style={{paddingTop:'1em'}}>
+        <h6>Username: {this.props.user_info.username}, 
+        Email: {this.props.user_info.email},
+        {this.props.user_info.is_supervisor ? 
+          ' Supervisor' : ' Regular User' }</h6>
         
         <h4>{'group_ids' || 
           'managed_group_ids' in this.props.user_info ? 
-          <UserHomeOptions cookies={this.props.cookies} info={this.props.user_info}/> : null}</h4>
+          <UserHomeOptions cookies={this.props.cookies} 
+            info={this.props.user_info}/> : null}</h4>
+
+        </div>
+        </Collapse>
+        <Collapse isOpen={this.state.searching} style={{padding:'0'}}>
+        <Col>
+          {this.props.user_info.is_supervisor ?
+          <div style={{display:'flex', justifyContent:'center', 
+            paddingTop:'0.5em'}}>
+            <p style={{fontSize:'12px', margin: '0', color:'#474747'}}>
+            Admin accounts are for creating and managing groups. 
+            You can only join other groups with a regular user account.</p>
+          </div> : null }
+          <div style={{display:'flex', justifyContent:'center'}}>
+            <GroupSearch 
+              is_supervisor={this.props.user_info.is_supervisor}
+              token={this.props.cookies.get('token')}
+              group_ids={this.props.user_info.group_ids.concat(
+                this.props.user_info.managed_groups_ids)}/> 
+          </div>
+        </Col>
+        </Collapse>
       </Jumbotron>
       </div>
       );

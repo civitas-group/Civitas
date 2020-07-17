@@ -9,9 +9,10 @@ class Loading extends Component {
         transform: 'translate(-50%, -50%)'
         }}> 
         <div style={{display:'flex', justifyContent:'center'}}>
-          <Spinner color="primary" style={{ width: '2rem', height: '2rem' }} />
+          <Spinner color="light" style={{ width: '2rem', height: '2rem' }} />
         </div>
-        <div style={{display:'flex', justifyContent:'center'}}>
+        <div style={{display:'flex', justifyContent:'center', 
+          color:'white'}}>
           Loading...
         </div>
       </div>

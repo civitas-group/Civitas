@@ -10,6 +10,27 @@ const helper = require('./helper.js')
 const mongoose = require('mongoose');
 const e = require('express');
 
+/* Get all Posts */
+groupRouter.get('/query', authMiddleware, (req, res, next) => {
+
+  Group.find(
+    { "group_name": { "$regex": req.query.search, "$options": "i" } },
+    function(err, result) { 
+      if (err){
+        res.status(400).send({
+          success: false,
+          error: JSON.stringify(err),
+        });
+        return;
+      } else {
+        res.status(200).send({
+          success: true,
+          results: result
+        });
+      }
+    } 
+  );
+});
 
 /* Approve group creation/admin join request as super admin */
 /* req.body
@@ -18,7 +39,7 @@ const e = require('express');
     user_id: string (user of admin requesting)
   }
 */
-groupRouter.post("/approve", (req, res) => {
+groupRouter.post("/approve", authMiddleware,(req, res) => {
   let group_id = req.body.group_id;
   let user_id = req.body.user_id;
   let group_criteria = { _id: group_id }
