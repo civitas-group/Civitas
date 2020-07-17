@@ -41,15 +41,17 @@ const AppNavbar = (props) => {
   }
   function NavButtonsLoggedIn() {
     return (
-        <ButtonGroup>
-          <Link to="/groups">
-            <Button color="primary">Groups</Button>
-          </Link>
+        <ButtonGroup> 
+          <Button color="primary">
+            <Link to="/groups" style={{color:'white'}}>
+              Groups
+            </Link>
+          </Button> 
           <ButtonDropdown isOpen={dropdownOpen} toggle={toggleDropdown}>
           <DropdownToggle color="primary" caret>
             Settings
           </DropdownToggle>
-          <DropdownMenu>
+          <DropdownMenu right>
             <DropdownItem>Profile</DropdownItem>
             <DropdownItem onClick={toggleLogoutModal}>Logout</DropdownItem>
           </DropdownMenu>
@@ -60,15 +62,15 @@ const AppNavbar = (props) => {
     return (
       <ButtonGroup>
         <ButtonDropdown isOpen={dropdownOpen} toggle={toggleDropdown}>
+          <Button color="primary" onClick={toggleLogin}>Login</Button>
           <DropdownToggle color="primary" caret>
             Register
           </DropdownToggle>
-          <DropdownMenu>
+          <DropdownMenu right>
             <DropdownItem onClick={toggleRegAdmin}>Register as Admin User</DropdownItem>
             <DropdownItem onClick={toggleRegRegular}>Register as Regular User</DropdownItem>
           </DropdownMenu>
         </ButtonDropdown>
-        <Button color="primary" onClick={toggleLogin}>Login</Button>
       </ButtonGroup>)
   }
 
@@ -77,15 +79,17 @@ const AppNavbar = (props) => {
       <Navbar color="#2D70CE" dark expand="lg" className="mb-5" 
         style={{width:'100%',float: 'left'}}>
           <Container>
-              <Link to={"/"}>
-              <Media
-              onMouseLeave={()=>{setLogoHover(false)}} 
-              onMouseEnter={()=>{setLogoHover(true)}}
-              style={{width:'5em'}} 
-              object src={logoHover ? LogoHoverImg: LogoImg} 
-              alt="Civitas Logo"/>
-              </Link>
-              {props.logged_in ? <NavButtonsLoggedIn/> : <NavButtonsLoggedOut /> }
+          <Link to={"/"} >
+          <Media
+          onMouseLeave={()=>{setLogoHover(false)}} 
+          onMouseEnter={()=>{setLogoHover(true)}}
+          style={{width:'5em'}} 
+          object src={logoHover ? LogoHoverImg: LogoImg} 
+          alt="Civitas Logo"/>
+          </Link>
+          <div style={{marginLeft:'40em'}}>
+          {props.logged_in ? <NavButtonsLoggedIn/> : <NavButtonsLoggedOut /> }
+          </div>
           </Container> 
 
 

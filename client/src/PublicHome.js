@@ -87,9 +87,9 @@ class PublicHome extends Component {
     }
     else {
       return (
-        <div>
+        <div >
         <Jumbotron style={{paddingBottom:'0'}}>
-        <Media>
+        <Media style={{display:'flex', justifyContent:'center'}}>
 
           { this.state.show_info ? 
           <Jumbotron style={{paddingLeft:'5em',paddingTop:'2em',
@@ -186,7 +186,8 @@ class PublicHome extends Component {
               </Jumbotron>
             </Fade>
         </Media>
-        <Media style={{paddingLeft:'16em'}} >
+        <Media style={{display:'flex', justifyContent:'center',
+            paddingRight:'23.5em'}} >
           <Button onClick={() => {
             this.setState({show_info: !this.state.show_info})}} 
             color="link">Guide 
@@ -200,7 +201,7 @@ class PublicHome extends Component {
           <Media left bottom               
               onMouseLeave={()=>{this.setState({houses_hover: false})}} 
               onMouseEnter={()=>{this.setState({houses_hover: true})}}>
-            <Media object style={{maxWidth:'80em'}} 
+            <Media object style={{maxWidth:'84em'}} 
             src={this.state.houses_hover ? HousesHoverImg: 
             HousesImg} alt="Civitas Houses Graphic" />
           </Media>
