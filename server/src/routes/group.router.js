@@ -580,6 +580,7 @@ groupRouter.patch("/invite/:group_id", [authMiddleware,verifyIds], (req, res, ne
 
 });
 
+/*This api can be used as the api for user to join after its request is approved*/
 groupRouter.patch("/join/:group_id", authMiddleware, (req, res, next) => {
 	if(!req.params.group_id){
       return res.status(400).json({
@@ -733,5 +734,315 @@ function UpdateGroupForJoin(req, res, new_user_ids, new_invited_user_ids){
     }
   );
 }
+/*
+  This api enables users to sent a request to join a private group.
+  Add group_id to requested_to_join_groups_ids in account.model
+  Add user_id to requested_to_join_user_ids in group.model
 
+  req.body is not used, group_id of the group is passed in req.params
+*/
+groupRouter.patch("/user_request/:group_id", authMiddleware, (req, res, next)=>{
+  if(!req.params.group_id){
+    return res.status(400).json({
+        success:false,
+        error:"Please indicate the group_id."
+    });
+  }
+  var decoded = jwt_decode(req.token);
+  var user_info = {username: decoded.username}
+  Group.findOne({'_id':req.params.group_id}).then(function(result){
+    if(!result){
+      res.status(400).json({
+          success:false,
+          error:"Invalid group_id. Please try another one."
+      });
+      return;
+    }
+    else if(result.user_ids.indexOf(req.user.user_info._id) >=0){
+      // if the member has already become a group member
+      res.status(400).json({
+        success:false,
+        error:"Sorry, you are currently inside the group."
+      });
+      return;
+    }
+    else{
+      update = {
+        $push: {requested_to_join_groups_ids: req.params.group_id}
+      },
+      options = {
+        useFindAndModify: false
+      };
+      Account.findOneAndUpdate(user_info, update, options, (accountUpdateErr, updatedAccount) => {
+        if(!updatedAccount || accountUpdateErr){
+          res.status(400).send({
+              success:false,
+              error: JSON.stringify(commentFindErr)
+          });
+          return;
+        }
+        else{
+          // update the group, add user_ids inside requested_to_join_user_ids
+          var group_info = {
+            '_id': req.params.group_id
+          },
+          updateGroup = {
+            $push: {requested_to_join_user_ids: updatedAccount._id}
+          },
+          options = {
+            useFindAndModify: false
+          };
+          Group.findOneAndUpdate(group_info, updateGroup, options, (groupUpdateErr, updatedGroup) => {
+            if(!updatedGroup || groupUpdateErr){
+              res.status(400).send({
+                  success:false,
+                  error: JSON.stringify(commentFindErr)
+              });
+              return;
+            }
+            else{
+              res.status(200).send({
+                success:true,
+                msg:"Joining request sent successfully."
+              });
+              return;
+            }
+          })
+        }
+      })
+    }
+  });
+});
+
+/*
+  Call this api if the admin approves the request for user to join in a group
+  delete group_id from requested_to_join_groups_ids, add to groups_ids in account.model
+  delete user_id from requested_to_join_user_ids, add to user_ids in group.model
+
+  user_id are passed in req.body
+*/
+groupRouter.patch("/accept_user_request/:group_id", authMiddleware, (req, res, next) =>{
+  if(!req.body.user_id){
+    return res.status(400).json({
+      success:false,
+      error:"Please indicate the user_id you want to accept into the group."
+    });
+  }
+  else if(!req.params.group_id){
+    return res.status(400).json({
+      success:false,
+      error:"Please indicate the group_id you want to modify."
+    });
+  }
+  else{
+    var decoded = jwt_decode(req.token);
+    let admin_id =  req.user.user_info._id
+    Group.findOne({'_id':req.params.group_id}, (err,result) =>{
+      if(err || !result){
+        res.status(400).json({
+            success:false,
+            error:"Invalid group_id. Please try another one."
+        });
+        return;
+      }
+      else if(result.supervisor_id.equals(admin_id) === false && 
+        result.cosupervisor_ids.indexOf(admin_id) < 0){
+          res.status(400).json({
+            success:false,
+            error:"Sorry, you are not the admin of the group."
+          });
+          return;
+         }
+      else if(result.user_ids.indexOf(req.body.user_id) >=0){
+        // if the user has already become a group member
+        res.status(400).json({
+          success:false,
+          error:"Sorry, the user is currently inside the group."
+        });
+        return;
+      }
+      else{
+        var user_info = {
+          '_id': req.body.user_id
+        },
+        update = {
+          // delete
+          $pull: {requested_to_join_groups_ids: req.params.group_id},
+          // add
+          $push: {group_ids: req.params.group_id}
+        },
+        options = {
+          useFindAndModify: false
+        };
+        Account.findOneAndUpdate(user_info, update, options, (accountErr, updatedAcc) => {
+          if(accountErr || !updatedAcc){
+            res.status(400).send({
+              success:false,
+              error: JSON.stringify(accountErr),
+              msg:"Fail to update the account"
+            });
+            return;
+          }
+          else{
+            // update the group info
+            var group_info = {
+              '_id': req.params.group_id
+            },
+            update = {
+              $push: {user_ids: req.body.user_id},
+              // delete
+              $pull: {requested_to_join_user_ids: req.body.user_id}
+            },
+            options = {
+              useFindAndModify: false
+            };
+            Group.findOneAndUpdate(group_info, update, options, (groupErr, groupRes) => {
+              if(groupErr || !groupRes){
+                res.status(400).send({
+                  success:false,
+                  error: JSON.stringify(groupErr),
+                  msg:"Fail to update the group"
+                });
+                return;
+              }
+              else{
+                res.status(200).send({
+                  success:true,
+                  msg:"Successfully added the user to the requested group."
+                })
+                return;
+              }
+            })
+          }
+        })
+      }
+    });
+  }
+});
+
+/* If a user's join group request gets rejected by admin, calls this api
+  delete group_id from requested_to_join_groups_ids in account  
+  delete user_id from requested_to_join_user_ids in group
+  user_id are passed in req.body
+*/
+groupRouter.patch("/deny_user_request/:group_id", authMiddleware, (req, res, next) =>{
+  if(!req.body.user_id){
+    return res.status(400).json({
+      success:false,
+      error:"Please indicate the user_id you want to reject from the group ."
+    });
+  }
+  else if(!req.params.group_id){
+    return res.status(400).json({
+      success:false,
+      error:"Please indicate the group_id you want to modify."
+    });
+  }
+  else{
+    var decoded = jwt_decode(req.token);
+    let admin_id =  req.user.user_info._id
+    Group.findOne({'_id':req.params.group_id},(err,result) =>{
+      if(err || !result){
+        res.status(400).json({
+            success:false,
+            error:"Invalid group_id. Please try another one."
+        });
+        return;
+      }
+      else if(result.supervisor_id.equals(admin_id) === false && 
+        result.cosupervisor_ids.indexOf(admin_id) < 0){
+          res.status(400).json({
+            success:false,
+            error:"Sorry, you are not the admin of the group."
+          });
+          return;
+      }
+      else if(result.user_ids.indexOf(req.body.user_id) >=0){
+        // if the user has already become a group member
+        res.status(400).json({
+          success:false,
+          error:"Sorry, the user is currently inside the group."
+        });
+        return;
+      }
+      else{
+        // update the account info
+        // delete group_id from requested_to_join_groups_ids in account 
+        var user_info = {
+          '_id': req.body.user_id
+        },
+        update = {
+          // delete
+          $pull: {requested_to_join_groups_ids: req.params.group_id}
+        },
+        options = {
+          useFindAndModify: false
+        };
+        Account.findOneAndUpdate(user_info, update, options, (accountErr, updatedAcc) => {
+          if(accountErr || !updatedAcc){
+            res.status(400).send({
+              success:false,
+              error: JSON.stringify(accountErr),
+              msg:"Fail to update the account"
+            });
+            return;
+          }
+          else{
+            // update the group info
+            // delete user_id from requested_to_join_user_ids in group
+            var group_info = {
+              '_id': req.params.group_id
+            },
+            update = {
+              // delete
+              $pull: {requested_to_join_user_ids: req.body.user_id}
+            },
+            options = {
+              useFindAndModify: false
+            };
+            Group.findOneAndUpdate(group_info, update, options, (groupErr, groupRes) => {
+              if(groupErr || !groupRes){
+                res.status(400).send({
+                  success:false,
+                  error: JSON.stringify(groupErr),
+                  msg:"Fail to update the group"
+                });
+                return;
+              }
+              else{
+                res.status(200).send({
+                  success:true,
+                  msg:"The user has been rejected to join the group."
+                })
+                return;
+              }
+            });
+          }
+        });
+      }
+    });
+  }
+});
+// set the denied field to true.
+
+/* add new apis
+// combined api for user_request and join
+
+// delete from requested_to_join_groups_ids, add to groups_ids in account.model
+// delete from requested_to_join_user_ids add to user_ids in group.model
+// send notification
+groupRouter.patch("/accept_user_request/:group_id", authMiddleware, (req, res, next)
+
+// delete from requested_to_join_groups_ids, delete from requested_to_join_user_ids
+// send notification
+groupRouter.patch("/deny_user_request/:group_id", authMiddleware, (req, res, next)
+// set the denied field to true.
+
+/*
+  For the notification system:
+  admin: user's join group request, user is accepted/rejected for request (creating group approved)
+  user: get invited to join a group, admin's responce for joining group request
+
+  // new comment for post????
+*/
 module.exports = groupRouter;
