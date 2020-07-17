@@ -21,6 +21,8 @@ import LogoHoverImg from './img/LogoHover.png';
 import HousesImg from './img/HousesMedium.png';
 import HousesHoverImg from './img/HousesMediumHover.png';
 import { AiTwotoneHome } from 'react-icons/ai';
+import Lottie from 'react-lottie'
+import LogoAnim from './img/LogoAnim.json'
 
 class PublicHome extends Component {
   constructor(props){
@@ -106,13 +108,15 @@ class PublicHome extends Component {
             </h5>
           </Jumbotron> 
           :
-          <Media left top >
-            <Media
-              onMouseLeave={()=>{this.setState({logo_hover: false})}} 
-              onMouseEnter={()=>{this.setState({logo_hover: true})}}
-              style={{paddingLeft:'5em',paddingTop:'2em',maxWidth:'35em'}} 
-              object src={this.state.logo_hover ? LogoHoverImg: LogoImg} 
-              alt="Civitas Logo"/>
+          <Media left top style={{paddingLeft:'3.75em'}}>
+            <Lottie options={{
+              loop: true,
+              autoplay: true,
+              animationData: LogoAnim,
+              rendererSettings: {
+                preserveAspectRatio: 'xMidYMid slice'
+              }}}
+              width={500}/>
           </Media>}
           {this.props.logged_in ? 
           <Jumbotron style={{paddingLeft:'5em',
