@@ -10,7 +10,10 @@ const helper = require('./helper.js')
 const mongoose = require('mongoose');
 const e = require('express');
 
-/* Get all Posts */
+/* 
+  Query posts based on search term 
+  /query?search=searchterm
+*/
 groupRouter.get('/query', authMiddleware, (req, res, next) => {
 
   Group.find(
