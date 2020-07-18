@@ -41,6 +41,7 @@ groupRouter.get('/query', authMiddleware, (req, res, next) => {
     group_id: string,
     user_id: string (user of admin requesting)
   }
+  check if the user_id is supervisor if front-end doesn't check.
 */
 groupRouter.post("/approve", authMiddleware,(req, res) => {
   let group_id = req.body.group_id;
