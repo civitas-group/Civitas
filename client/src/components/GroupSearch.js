@@ -40,6 +40,7 @@ class GroupSearch extends Component {
       show_results: true,
       results: [],
       result_group: 0,
+      max_results: 10
 
     }
     this.handleClickOutside = this.handleClickOutside.bind(this);
@@ -56,12 +57,12 @@ class GroupSearch extends Component {
   handleClickOutside = event => {
     const domNode = ReactDOM.findDOMNode(this);
     if (!domNode || !domNode.contains(event.target)) {
-      this.setState({ show_results: false })
+      this.setState({ show_results: false, max_results: 10 })
     }
   }
   handleChange = async (event) => {
     if (event.target.value === '') {
-      this.setState({ results: [] })
+      this.setState({ results: [], max_results: 10 })
       return;
     } 
     this.setState({ search: event.target.value })
@@ -70,7 +71,7 @@ class GroupSearch extends Component {
       .then(result => {
         console.log("result:",result)
         if (result){
-          this.setState({ results: result.data.results })
+          this.setState({ results: result.data.results, max_results: 10 })
         }
       })
       .catch(error => {
@@ -97,14 +98,28 @@ class GroupSearch extends Component {
         </Fade>
         { this.state.show_results ? 
           Object.keys(this.state.results).map(function(key) {
-          return (
-            <Result key={key} group={this.state.results[key]}
-              is_supervisor={this.props.is_supervisor}
-              joined={this.props.group_ids.indexOf(this.state.results[key]._id)
-              !== -1  ? true : false}/>
-          );
-        }.bind(this)) : null}
+            return (
+              key < (this.state.max_results - 1) ?
+              <div style={{paddingBottom: 
+                key.toString() === (this.state.results.length - 1).toString()
+                 ? '4em' : '0'}}>
+               
+              <Result key={key} group={this.state.results[key]}
+                joined={this.props.group_ids.indexOf(this.state.results[key]._id)
+                  !== -1 ? true : false}/>
+                  
+              </div> : null 
+            );
+          }.bind(this)) : null}
 
+        {!this.state.show_results || 
+        (this.state.max_results > this.state.results.length) ? null :
+        <div style={{display:'flex', justifyContent:'center', paddingBottom: '4em'}}>
+          <Button color="light" size="sm"
+            onMouseEnter={()=>{
+              this.setState({max_results: this.state.max_results + 10})
+            }}>See More</Button>
+        </div> }
         </Col>
 
         </div>
