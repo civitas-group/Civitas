@@ -105,6 +105,7 @@ class GroupSearch extends Component {
                  ? '4em' : '0'}}>
                
               <Result key={key} group={this.state.results[key]}
+                is_supervisor={this.props.is_supervisor}
                 joined={this.props.group_ids.indexOf(this.state.results[key]._id)
                   !== -1 ? true : false}/>
                   
