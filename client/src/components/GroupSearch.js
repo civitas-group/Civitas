@@ -118,7 +118,11 @@ class GroupSearch extends Component {
           <Button color="light" size="sm"
             onMouseEnter={()=>{
               this.setState({max_results: this.state.max_results + 10})
-            }}>See More</Button>
+            }}
+            onClick={()=>{
+              this.setState({max_results: this.state.max_results + 10})
+            }}
+            >See More</Button>
         </div> }
         </Col>
 
