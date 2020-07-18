@@ -197,7 +197,9 @@ commentRouter.delete("/:comment_id", authMiddleware, (req, res, next) => {
                 }
                 // check whether the user is authorized to delete the post
                  // check if the user is the group supervisor
-                else if(req.user.user_info._id.equals(groupFind.supervisor_id)){
+                 // check managed_groups ids/ is_supervior -> Account
+                else if(req.user.user_info.is_supervisor === true && 
+                 req.user.user_info.managed_groups_ids.indexOf(groupFind._id) !== -1) {
                     // delete the commend and update the post
                     console.log("authorized as group supervisor");
                     update_comment_and_post(req,res);
