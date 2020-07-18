@@ -58,6 +58,7 @@ class Home extends Component {
       return (<Loading />);
     }
     else {
+
       return (
       <div style={{padding:'2em'}}>
       <Jumbotron style={{minHeight:'27em', paddingTop:'0', 
@@ -95,7 +96,11 @@ class Home extends Component {
               is_supervisor={this.props.user_info.is_supervisor}
               token={this.props.cookies.get('token')}
               group_ids={this.props.user_info.group_ids.concat(
-                this.props.user_info.managed_groups_ids)}/> 
+                this.props.user_info.managed_groups_ids)}
+              requested_to_join_groups_ids=
+                {this.props.user_info.requested_to_join_groups_ids}
+              invited_groups_ids=
+                {this.props.user_info.invited_groups_ids}/> 
           </div>
         </Col>
         </Collapse>

@@ -23,7 +23,14 @@ const Result = props => {
           : props.is_supervisor ?
           <Button  
           size="sm" color="warning">Must join as Regular User</Button>
-          :<Button size="sm" color="danger">Request to Join</Button>}
+          : props.requested ? 
+          <Button disabled
+          size="sm" color="warning">Requested</Button>
+          : props.invited ? 
+          <Button
+          size="sm" color="success">Invited! Join</Button>
+          :
+          <Button size="sm" color="danger">Request to Join</Button>}
           </Col>
         </Row>
         </ToastHeader>
@@ -100,14 +107,20 @@ class GroupSearch extends Component {
           Object.keys(this.state.results).map(function(key) {
             return (
               key < (this.state.max_results - 1) ?
-              <div style={{paddingBottom: 
+              <div key={key} style={{paddingBottom: 
                 key.toString() === (this.state.results.length - 1).toString()
-                 ? '4em' : '0'}}>
+                 ? '6em' : '0'}}>
                
-              <Result key={key} group={this.state.results[key]}
+              <Result  group={this.state.results[key]}
                 is_supervisor={this.props.is_supervisor}
                 joined={this.props.group_ids.indexOf(this.state.results[key]._id)
-                  !== -1 ? true : false}/>
+                  !== -1 ? true : false}
+                requested=
+                {this.props.requested_to_join_groups_ids.indexOf(
+                  this.state.results[key]._id) !== -1 ? true : false}
+                invited=
+                {this.props.invited_groups_ids.indexOf(
+                  this.state.results[key]._id) !== -1 ? true : false}/>
                   
               </div> : null 
             );
@@ -115,7 +128,8 @@ class GroupSearch extends Component {
 
         {!this.state.show_results || 
         (this.state.max_results > this.state.results.length) ? null :
-        <div style={{display:'flex', justifyContent:'center', paddingBottom: '4em'}}>
+        <div style={{display:'flex', justifyContent:'center', 
+          paddingTop:'0.5em', paddingBottom: '4em'}}>
           <Button color="light" size="sm"
             onMouseEnter={()=>{
               this.setState({max_results: this.state.max_results + 10})
@@ -123,7 +137,7 @@ class GroupSearch extends Component {
             onClick={()=>{
               this.setState({max_results: this.state.max_results + 10})
             }}
-            >See More</Button>
+            >See More...</Button>
         </div> }
         </Col>
 
