@@ -49,13 +49,13 @@ class Home extends Component {
     this.props.logged_in);
 
     if (this.props.loading){
-      return (<Loading />);
+      return (<Loading component="Groups"/>);
     }
     else if (!this.props.logged_in){
       return (<Redirect to="/" />);
     }
     else if (Object.keys(this.props.user_info).length === 0){
-      return (<Loading />);
+      return (<Loading component="Groups"/>);
     }
     else {
 
@@ -100,7 +100,9 @@ class Home extends Component {
               requested_to_join_groups_ids=
                 {this.props.user_info.requested_to_join_groups_ids}
               invited_groups_ids=
-                {this.props.user_info.invited_groups_ids}/> 
+                {this.props.user_info.invited_groups_ids}
+              cookies={this.props.cookies}
+              dispatch={this.props.dispatch}/> 
           </div>
         </Col>
         </Collapse>

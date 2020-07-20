@@ -91,12 +91,32 @@ class AdminVerification extends Component {
             + 'civitasmain@gmail.com if you need your documents to be '
             + 'updated or have any other concerns.' });
           }
-          this.setState({ submitting: false })
           return;
         } else {
           console.log("Requested group creation successfully");
-          this.setState ({ submitting: false, submitted: true })
-          return;
+
+          // Refresh user info in redux
+          authorizeUser(token, '/authorize')
+            .then(async result => {
+              if (result){
+                await this.props.dispatch({ 
+                  type: 'INFO_RELOAD',
+                  payload: result.data,
+                });
+                this.setState ({ submitting: false, submitted: true })
+                return;
+              }
+              else {
+                console.log('Reload notifs error')
+                this.setState ({ submitting: false, submitted: true })
+                return;
+              }
+            })
+          .catch(error => {
+            console.log('Reload notifs error', error)
+            this.setState ({ submitting: false, submitted: true })
+            return;
+          })
         }
       })
       .catch(error => {

@@ -6,11 +6,13 @@ import authorizeUser from '../Auth'
 
 function CreateGroupLink(props){
   return(
+    <div style={{paddingTop:'1em'}}>
     <Link to="/creategroup">
       <Button color="primary">
         Create {props.additional} Group as Admin
       </Button>
     </Link>
+    </div>
   )
 }
 const JoinGroupLink = (props) => {
@@ -42,7 +44,8 @@ const JoinGroupLink = (props) => {
           console.log(result)
           setError(true)
           setRedirectEndpoint("/group/" + joinGroupID)
-          setRedirect(true)          
+          window.location.reload(false); 
+          //setRedirect(true)
         }
         else {
           setError(true);
@@ -53,47 +56,48 @@ const JoinGroupLink = (props) => {
         console.log(error)
         try{
           if (error.response['data']['error'].includes("General error")){
-            setErrMsg("Error: no group found.")
+            setErrMsg("No group found. " +
+              "Are you sure you are entering the Group ID and not the name?")
           }
           else {
             setErrMsg(error.response['data']['error'])
           }
         }
         catch{
-          setErrMsg("Error: no group found.") 
+          setErrMsg("No group found. " +
+          "Are you sure you are entering the Group ID and not the name?") 
         }
         setError(true);
       })
   }
-  if (redirectToGroup){
-    return (<Redirect to={redirectEndpoint} />);
-  }
-  else {
-    return(
-      <div>
-      <span><Alert color="danger" isOpen={error}> 
-        {errMsg !== "" ? errMsg : defaultErrMsg}</Alert></span>
-      <Button color="link"size="sm">
-      <Input bsSize="sm" placeholder="Group ID" 
-        onChange={(e) => {handleChange(e)}}/></Button>
 
-      <Button id="JoinToolTip" size="sm" 
-        onClick={()=> join()}>Join {props.additional} Group</Button>
-      
-      <UncontrolledTooltip placement="right" target="JoinToolTip">
-          Enter the Group ID given by the admin of the group.
-      </UncontrolledTooltip>
-      </div>
-    )
-  }
+  return(
+    <div>
+    <span style={{display:'flex', justifyContent:'center'}} >
+      <Alert style={{fontSize:'12px', maxWidth:'30em'}} 
+        color="danger" isOpen={error}> 
+      {errMsg !== "" ? errMsg : defaultErrMsg}</Alert>
+    </span>
+    <Button color="link"size="sm">
+    <Input bsSize="sm" placeholder="Group ID" 
+      onChange={(e) => {handleChange(e)}}/></Button>
 
+    <Button id="JoinToolTip" size="sm" 
+      onClick={()=> join()}>Join {props.additional} Group</Button>
+    
+    <UncontrolledTooltip placement="right" target="JoinToolTip">
+        Enter the Group ID (not name) given by the admin of the group.
+    </UncontrolledTooltip>
+    </div>
+  )
 }
 
-const GroupLinks = (props) =>  {
+const GroupLink = (props) =>  {
 
   const [inviteUsername, setInvite] = useState("");
   const [errMsg, setErrMsg] = useState("");
   const [error, setError] = useState(false);
+  const [showInvite, setShowInvite] = useState(false);
 
   let defaultErrMsg = "An error has occurred. The user could not be found.";
   const handleChange = async (event) => {
@@ -153,33 +157,61 @@ const GroupLinks = (props) =>  {
       })
   }
 
-  let endpoint = "";
-  let group_links = []
-  for (let i = 0; i < props.ids.length; ++i){
-    endpoint = "/groups/" + props.ids[i];
-    group_links.push(
-    <div key={i}>
-      <Link to={endpoint}>
-        <Button outline color="primary">{props.ids[i]}</Button>
-      </Link>
+  return(
+    <div style={{paddingTop:'0.1em', paddingBottom:'0.1em'}}>
+      <span style={{display:'flex', justifyContent:'center'}} >
+        <Alert style={{fontSize:'12px', maxWidth:'30em'}} isOpen={error}
+          color={errMsg.includes("Invited") ? "success" : "danger"}>
+        {errMsg !== "" ? errMsg : defaultErrMsg}</Alert>
+      </span>
 
-      {props.admin ? <Button color="link"size="sm">
+      {!showInvite ? 
+      <Link to={"/groups/" + props.id} style={{padding:'0.5em'}}>
+        <Button outline color="primary">{props.id}</Button>
+      </Link> : null}
+
+      {props.admin && !showInvite ? 
+      <Link to={"/groups/" + props.id + "/console"} 
+        style={{padding:'0.5em'}}>
+        <Button outline color="primary">Admin Console</Button>
+      </Link> : null }
+
+      {props.admin && !showInvite ? 
+      <Button size="sm" 
+        onClick={()=> setShowInvite(true)}>Invite User</Button> : null}
+
+      
+      {props.admin && showInvite ? 
+        <Button color="link"size="sm">
          <Input bsSize="sm" placeholder="Username or Email" 
         onChange={(e) => {handleChange(e)}}/></Button> : null}
-      {props.admin ? 
-      <Button size="sm" 
-        onClick={()=> invite(props.ids[i])}>Invite User</Button> : null}
-
+        
+      {props.admin && showInvite ? 
+      <Button size="sm" color="primary" 
+        onClick={()=> invite(props.id)}>Invite User</Button> : null}
+      
+      {props.admin && showInvite ? 
+      <Button size="sm" outline color="danger" 
+        onClick={()=> setShowInvite(false)}>Cancel</Button> : null}
     </div>
     )
-  }
+
+
+}
+
+const GroupLinks = (props) =>  {
+
   return (
   <div>
     <h5>Your {props.admin ? "administered" : "" } groups:</h5>
-    <span><Alert  color={errMsg.includes("Invited") ? "success" : "danger"} isOpen={error}>
-      {errMsg !== "" ? errMsg : defaultErrMsg}</Alert></span>
-    {group_links}
-  </div>)
+
+    { Object.keys(props.ids).map(function(key) {
+        return (
+          <GroupLink key={key} admin={props.admin}
+          id={props.ids[key]} cookies={props.cookies}
+          />
+        )})}
+    </div>)
 
 }
 

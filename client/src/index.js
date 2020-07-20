@@ -7,6 +7,11 @@ import './css/index.css';
 import App from './App';
 import * as serviceWorker from './serviceWorker';
 
+function listReplace(list, index, value) {
+  list[index] = value
+  return list;
+}
+
 const initialState = {
   logged_in: false,
   user_info: {
@@ -40,6 +45,22 @@ function reducer(state = initialState, action) {
         user_info: action.payload,
         logged_in: true,
         loading: false
+      }
+    case "NOTIFICATIONS_MARK_RELOAD":
+      return {
+        ...state,
+        user_info: {
+          ...state.user_info,
+          notifications: listReplace(state.user_info.notifications, 
+            action.index, action.value),
+          unread_notifications_count: 
+          state.user_info.unread_notifications_count + action.increment
+        }
+      }
+    case "INFO_RELOAD":
+      return {
+        ...state,
+        user_info: action.payload
       }
     case "LOADING":
       return {
