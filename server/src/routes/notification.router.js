@@ -4,7 +4,8 @@ var Account = require('../models/account.model');
 const authMiddleware = require('../middleware/auth');
 const helper = require('./helper.js')
 
-/*
+/* 
+  Pushes notification to specified user
   body: {
     user_id: ObjectId
     content: string
@@ -37,6 +38,9 @@ notificationRouter.post('/push', authMiddleware, async (req, res) => {
 });
 
 /* 
+  Marks notification as read/unread of specified user
+  Notification identified by index in list of user's notifications
+  
   /mark?index=int&read=boolean
   index: int, required (index of notification in user's notification list)
   read: boolean, required (true if mark as read, else false)
@@ -83,14 +87,9 @@ notificationRouter.patch('/mark', authMiddleware, async (req, res) => {
   })
 });
 
+
+// for dev purposes
 notificationRouter.post('/push_to_supervisors', authMiddleware, async (req, res) => {
-  /*let findField = req.user.user_info._id;
-  
-  // for dev only
-  if (req.body.hasOwnProperty('username_dev')){
-    findField = { username: req.body.username_dev }
-  }
-  console.log(findField)*/
   let Group = { 
     supervisor_id: req.body.supervisor_id,
     cosupervisor_ids:  req.body.cosupervisor_ids 

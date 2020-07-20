@@ -46,6 +46,8 @@ function addGroupIDS(user, decoded_jwt){
 
 // NOTIFICATIONS
 
+// Helper function for pushing notification to user_id
+// Content is notification content, default to unread
 function pushNotification (user_id, content){
   let fieldsToUpdate = {
     'notifications': {
@@ -91,8 +93,12 @@ function pushNotification (user_id, content){
 
 }
 
+// Use pushNotification to send notifications to all supervisors of group
+// supervisor + all cosupervisors
+// Group is Group object based on Mongoose schema,
+//    uses supervisor_id and cosupervisor_ids
+// Content is notification content    
 async function pushNotificationToSupervisors (Group, content){
-  //console.log(Group, Group.supervi)
   await pushNotification(Group.supervisor_id, content)
   for (let i = 0; i < Group.cosupervisor_ids.length; ++i){
     await pushNotification(Group.cosupervisor_ids[i], content)

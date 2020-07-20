@@ -3,7 +3,8 @@ const userRouter = express.Router();
 var Account = require('../models/account.model');
 const authMiddleware = require('../middleware/auth');
 /*
-  return full name, username and email of all users in user_ids list
+  Return full name, username and email of all users in user_ids list
+  Used when only have list of user_ids and need more info
   body: {
     user_ids: [string]
   }
