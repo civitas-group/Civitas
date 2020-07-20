@@ -3,40 +3,46 @@ import { connect } from 'react-redux'
 import { Redirect, withRouter } from 'react-router';
 import Loading from './components/Loading'
 import authorizeUser from './Auth'
-import { Jumbotron, Badge, Row, Col} from 'reactstrap';
+import { Button, Jumbotron, Badge, Row, Col} from 'reactstrap';
 import { CreatePost } from './Posts'
 import Announcements, { CreateAnnouncement } from './Announcements';
 
 class Group extends Component {
   state = {
-    posts: [],
-    announcements: [],
-    redirect_to_root: false,
-    group_name: "",
-    group_id: "",
-    post_body_error: false,
-    post_title_error: false
+      shown_posts: [],
+      posts: [],
+      announcements: [],
+      redirect_to_root: false,
+      group_name: "",
+      group_id: "",
+      post_body_error: false,
+      post_title_error: false,
+      can_show_more_posts: false
   };
+
+  POST_PAGE_SIZE = 10;
+
   componentDidMount() {
-    console.log('Group mount')
     this.props.dispatch({ type: 'LOADING' });
     const { cookies } = this.props;
     let token = cookies.get('token');
     let endpoint = '/group/' + this.props.match.params.group_id;
-    console.log('group check endpoint:', endpoint)
     authorizeUser(token, endpoint)
       .then(result => {
-        console.log("result group:",result)
         if (result){
           if (!result.data.group_ids.includes(this.props.match.params.group_id)
             && !result.data.managed_groups_ids.includes(this.props.match.params.group_id)){
             this.setState({redirect_to_root:true})
             return;
           }
-          this.setState({posts: result.data.posts,
-                        announcements: result.data.announcements,
-                        group_name: result.data.group_name,
-                        group_id: this.props.match.params.group_id})
+          this.setState({
+            shown_posts: result.data.posts.length > this.POST_PAGE_SIZE ? result.data.posts.slice(0, this.POST_PAGE_SIZE) : result.data.posts,
+            posts: result.data.posts.length > this.POST_PAGE_SIZE ? result.data.posts.slice(this.POST_PAGE_SIZE) : [],
+            can_show_more_posts: result.data.posts.length > this.POST_PAGE_SIZE ? true : false,
+            announcements: result.data.announcements,
+            group_name: result.data.group_name,
+            group_id: this.props.match.params.group_id
+          });
           delete result.data.posts;
           if (result.data.hasOwnProperty('announcements')) {
             delete result.data.announcements;
@@ -63,15 +69,31 @@ class Group extends Component {
           this.props.dispatch({ type: 'LOGOUT' });
         }
         
-      })
+      });
+      console.log("MOUNTED STATE: ", this.state);
+  }
+
+  showMorePosts = () => {
+    var new_shown_posts = [], new_posts = [];
+    var new_can_show_more_posts;
+    if (this.state.posts.length > this.POST_PAGE_SIZE) {
+      new_shown_posts = this.state.shown_posts.concat(this.state.posts.slice(0, this.POST_PAGE_SIZE));
+      new_posts = this.state.posts.slice(this.POST_PAGE_SIZE);
+      new_can_show_more_posts = true;
+    } else {
+      new_shown_posts = this.state.shown_posts.concat(this.state.posts);
+      new_posts = [];
+      new_can_show_more_posts = false;
+    }
+
+    this.setState({
+      shown_posts: new_shown_posts,
+      posts: new_posts,
+      can_show_more_posts: new_can_show_more_posts
+    });
   }
 
   render() {
-
-    console.log(this.props.loading, this.props.logged_in)
-    console.log("token group",
-    this.props.cookies.get('token'), this.props.logged_in)
-
     if (this.props.loading){
       return (<Loading/>);
     }
@@ -109,12 +131,24 @@ class Group extends Component {
               cookies={this.props.cookies}/> : null }</Row>
             {this.props.children && React.cloneElement(this.props.children, {
               announcements: this.state.announcements,
-              posts: this.state.posts,
+              posts: this.state.shown_posts,
               group_id: this.props.match.params.group_id,
               username: this.props.user_info.username,
               cookies: this.props.cookies
             })}
           </Jumbotron>
+          {this.state.can_show_more_posts ? 
+            <div style={{display:'flex', justifyContent:'center', paddingTop:'0.5em', paddingBottom: '4em'}}>
+              <Button color="light" size="sm" onClick={this.showMorePosts}>
+                See More...
+              </Button>
+            </div>
+            :
+            <div style={{display:'flex', justifyContent:'center', paddingTop:'0.5em', paddingBottom: '4em'}}>
+              <h4>No more posts to show!</h4>
+            </div>
+          }
+          
         </div>
       );
     }

@@ -21,7 +21,6 @@ async function authorizeUser(token, endpoint, body={}, type='post') {
       };
     return new Promise((resolve, reject) => {
         axios(options).then((response) => {
-            console.log("Auth.js res:", response)
             resolve(response);
         })
         .catch((error) => {
@@ -36,7 +35,6 @@ async function authorizeUser(token, endpoint, body={}, type='post') {
             } else {
                 console.log('Error', error.message);
             }
-            console.log("fulltoken", fulltoken);
             reject(error);
         });
     });

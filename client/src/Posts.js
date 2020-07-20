@@ -274,7 +274,7 @@ const Posts = (props) =>  {
   return (
     <div style={{display:"flex"}}>
       <div id="Posts">
-        { Object.keys(posts).reverse().map(function(key) {
+        { Object.keys(posts).map(function(key) {
           return (
             <div key={key}  style={{paddingTop:"2em"}}>
               <Post email={props.user_info.email}

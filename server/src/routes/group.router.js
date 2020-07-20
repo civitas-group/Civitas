@@ -350,7 +350,10 @@ groupRouter.post("/:group_id", authMiddleware, (req, res) => {
           })
 
           // Get all posts in group
-          Post.find().where('_id').in(group.post_ids).exec((err, records) => {
+          Post.find().where('_id')
+          .in(group.post_ids)
+          .sort({'created': -1})
+          .exec((err, records) => {
             if (err || !records){
               res.status(400).send({
                 success:false,
