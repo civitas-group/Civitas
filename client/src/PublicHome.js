@@ -35,13 +35,17 @@ class PublicHome extends Component {
       logo_hover: false,
       modal: false,
       type: false,
-      typeText: "login"
+      typeText: "login",
+      login_form: {},
+      register_form: {}
     };
     this.toggleRegister = this.toggleRegister.bind(this);
     this.toggle = this.toggle.bind(this);
     this.toggleLogin = this.toggleLogin.bind(this);
     this.toggleRegAdmin = this.toggleRegAdmin.bind(this);
     this.toggleRegRegular = this.toggleRegRegular.bind(this);
+    this.setLoginForm = this.setLoginForm.bind(this);
+    this.setRegisterForm = this.setRegisterForm.bind(this);
   }
 
   toggle = () => this.setState({modal: !this.state.modal});
@@ -71,6 +75,17 @@ class PublicHome extends Component {
       show_register_info: !this.state.show_register_info
     }) 
   }
+  setLoginForm = (formData) => {
+    this.setState({
+      login_form: formData
+    });
+  }
+  setRegisterForm = (formData) => {
+    this.setState({
+      register_form: formData
+    });
+  }
+
   componentDidMount() {
     document.body.style.overflow = 'hidden';
   }
@@ -212,9 +227,8 @@ class PublicHome extends Component {
         <ModalHeader toggle={this.toggle}>{this.state.typeText}</ModalHeader>
         <ModalBody>
           {this.state.type==='login' ? 
-          <Login cookies={this.props.cookies} toggleModal={this.toggle}/> : 
-          <Register usertype={this.state.type} 
-          cookies={this.props.cookies} toggleModal={this.toggle}/>}
+          <Login formData={this.state.login_form} setFormData={this.setLoginForm} cookies={this.props.cookies} toggleModal={this.toggle} /> : 
+          <Register formData={this.state.register_form} setFormData={this.setRegisterForm} usertype={this.state.type} cookies={this.props.cookies} toggleModal={this.toggle} />}
         </ModalBody>
       </Modal>
       </div>
