@@ -21,6 +21,8 @@ import LogoHoverImg from './img/LogoHover.png';
 import HousesImg from './img/HousesMedium.png';
 import HousesHoverImg from './img/HousesMediumHover.png';
 import { AiTwotoneHome } from 'react-icons/ai';
+import Lottie from 'react-lottie'
+import LogoAnim from './img/LogoAnim.json'
 
 class PublicHome extends Component {
   constructor(props){
@@ -102,9 +104,9 @@ class PublicHome extends Component {
     }
     else {
       return (
-        <div>
+        <div >
         <Jumbotron style={{paddingBottom:'0'}}>
-        <Media>
+        <Media style={{display:'flex', justifyContent:'center'}}>
 
           { this.state.show_info ? 
           <Jumbotron style={{paddingLeft:'5em',paddingTop:'2em',
@@ -121,13 +123,15 @@ class PublicHome extends Component {
             </h5>
           </Jumbotron> 
           :
-          <Media left top >
-            <Media
-              onMouseLeave={()=>{this.setState({logo_hover: false})}} 
-              onMouseEnter={()=>{this.setState({logo_hover: true})}}
-              style={{paddingLeft:'5em',paddingTop:'2em',maxWidth:'35em'}} 
-              object src={this.state.logo_hover ? LogoHoverImg: LogoImg} 
-              alt="Civitas Logo"/>
+          <Media left top style={{paddingLeft:'3.75em'}}>
+            <Lottie options={{
+              loop: true,
+              autoplay: true,
+              animationData: LogoAnim,
+              rendererSettings: {
+                preserveAspectRatio: 'xMidYMid slice'
+              }}}
+              width={500}/>
           </Media>}
           {this.props.logged_in ? 
           <Jumbotron style={{paddingLeft:'5em',
@@ -201,7 +205,8 @@ class PublicHome extends Component {
               </Jumbotron>
             </Fade>
         </Media>
-        <Media style={{paddingLeft:'16em'}} >
+        <Media style={{display:'flex', justifyContent:'center',
+            paddingRight:'23.5em'}} >
           <Button onClick={() => {
             this.setState({show_info: !this.state.show_info})}} 
             color="link">Guide 
@@ -215,7 +220,7 @@ class PublicHome extends Component {
           <Media left bottom               
               onMouseLeave={()=>{this.setState({houses_hover: false})}} 
               onMouseEnter={()=>{this.setState({houses_hover: true})}}>
-            <Media object style={{maxWidth:'80em'}} 
+            <Media object style={{maxWidth:'84em'}} 
             src={this.state.houses_hover ? HousesHoverImg: 
             HousesImg} alt="Civitas Houses Graphic" />
           </Media>

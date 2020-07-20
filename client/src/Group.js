@@ -84,7 +84,7 @@ class Group extends Component {
         <div>
           <Jumbotron style={{paddingTop:'0'}}>
             <h1 className="display-5">{this.state.group_name}</h1>
-            <p><Badge color="danger" pill>Private</Badge></p>
+            <p><Badge color="primary" pill>Private</Badge></p>
             <Announcements
               dispatch={this.props.dispatch}
               cookies={this.props.cookies}

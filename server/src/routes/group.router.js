@@ -10,6 +10,30 @@ const helper = require('./helper.js')
 const mongoose = require('mongoose');
 const e = require('express');
 
+/* 
+  Query posts based on search term 
+  /query?search=searchterm
+*/
+groupRouter.get('/query', authMiddleware, (req, res, next) => {
+
+  Group.find(
+    { "group_name": { "$regex": req.query.search, "$options": "i" } },
+    function(err, result) { 
+      if (err){
+        res.status(400).send({
+          success: false,
+          error: JSON.stringify(err),
+        });
+        return;
+      } else {
+        res.status(200).send({
+          success: true,
+          results: result
+        });
+      }
+    } 
+  );
+});
 
 /* Approve group creation/admin join request as super admin */
 /* req.body
@@ -17,8 +41,9 @@ const e = require('express');
     group_id: string,
     user_id: string (user of admin requesting)
   }
+  check if the user_id is supervisor if front-end doesn't check.
 */
-groupRouter.post("/approve", (req, res) => {
+groupRouter.post("/approve", authMiddleware,(req, res) => {
   let group_id = req.body.group_id;
   let user_id = req.body.user_id;
   let group_criteria = { _id: group_id }

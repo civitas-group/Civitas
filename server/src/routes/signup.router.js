@@ -30,6 +30,8 @@ signUpRouter.post("/regular", (req, res, next) => {
         managed_group_ids: req.body.managed_group_ids,
         requested_groups_ids:[],
         requested_groups_files:[],
+        requested_to_join_groups_ids: [],
+        invited_user_ids: [],
         full_legal_name: req.body.full_legal_name
       };
       
@@ -136,6 +138,8 @@ signUpRouter.post("/admin", (req, res, next) => {
         managed_group_ids: req.body.managed_group_ids,
         requested_groups_ids:[],
         requested_groups_files:[],
+        requested_to_join_groups_ids: [],
+        invited_user_ids: [],
         full_legal_name: req.body.full_legal_name
        }, function(err, result) {
         if(err){

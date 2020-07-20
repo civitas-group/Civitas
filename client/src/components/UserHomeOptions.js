@@ -7,7 +7,7 @@ import authorizeUser from '../Auth'
 function CreateGroupLink(props){
   return(
     <Link to="/creategroup">
-      <Button>
+      <Button color="primary">
         Create {props.additional} Group as Admin
       </Button>
     </Link>
@@ -175,7 +175,7 @@ const GroupLinks = (props) =>  {
   }
   return (
   <div>
-    <h3>Your {props.admin ? "administered" : "" } groups:</h3>
+    <h5>Your {props.admin ? "administered" : "" } groups:</h5>
     <span><Alert  color={errMsg.includes("Invited") ? "success" : "danger"} isOpen={error}>
       {errMsg !== "" ? errMsg : defaultErrMsg}</Alert></span>
     {group_links}

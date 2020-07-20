@@ -39,7 +39,7 @@ class App extends Component {
 
   render() {
     return (
-      <div style={{ backgroundColor: '#2D70CE'}}> 
+      <div style={{ backgroundColor: '#E9ECEF', height: "100%"}}> 
       <Router>
       <AppNavbar cookies={this.props.cookies}/>
       <Switch>

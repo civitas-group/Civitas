@@ -19,6 +19,7 @@ class Register extends Component {
     super(props);
     this.state = {
       email: "",
+      full_legal_name: "",
       username: "",
       password: "",
       password2: "",
@@ -129,6 +130,7 @@ class Register extends Component {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           "username": this.state.username,
+          "full_legal_name": this.state.full_legal_name,
           "password": this.state.password,
           "email": this.state.email,
           "is_supervisor": is_supervisor
@@ -189,7 +191,7 @@ class Register extends Component {
       });
   }
   render() {
-    const { email, username, password } = this.state;
+    const { email, username, full_legal_name, password } = this.state;
     if (this.props.logged_in){
       return (<Redirect to="/groups" />);
     }
@@ -207,7 +209,6 @@ class Register extends Component {
               <Input
                 type="email"
                 name="email"
-                id="exampleEmail"
                 placeholder="Email Address"
                 value={email}
                 valid={this.state.validate.emailState === "has-success"}
@@ -224,9 +225,21 @@ class Register extends Component {
           <Col>
             <FormGroup>
               <Input
+                type="text"
+                name="full_legal_name"
+                placeholder="Full Legal Name"
+                value={full_legal_name}
+                onChange={(e) => {
+                  this.handleChange(e);
+                }}
+              />
+            </FormGroup>
+          </Col>
+          <Col>
+            <FormGroup>
+              <Input
                 type="username"
                 name="username"
-                id="exampleUsername"
                 placeholder="Username"
                 value={username}
                 valid={this.state.validate.usernameState === "has-success"}
@@ -245,7 +258,6 @@ class Register extends Component {
               <Input
                 type={this.state.showPass ? "text" : "password"}
                 name="password"
-                id="examplePassword"
                 placeholder="Password"
                 value={password}
                 valid={this.state.validate.passState === "has-success"}
