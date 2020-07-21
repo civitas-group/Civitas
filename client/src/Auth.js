@@ -12,14 +12,15 @@ async function authorizeUser(token, endpoint, body={}, type='post') {
     const options = {
         method: type,
         url: apiurl,
-        headers: { 'Content-Type': 'application/json', 
-        'authorization': fulltoken, 
-        'Access-Control-Allow-Origin': 'http://localhost:3000/*' },
+        headers: { 
+            'Content-Type': 'application/json', 
+            'authorization': fulltoken, 
+            'Access-Control-Allow-Origin': 'http://localhost:3000/*' 
+        },
         data: body
       };
     return new Promise((resolve, reject) => {
         axios(options).then((response) => {
-            console.log("Auth.js res:", response)
             resolve(response);
         })
         .catch((error) => {
@@ -34,7 +35,6 @@ async function authorizeUser(token, endpoint, body={}, type='post') {
             } else {
                 console.log('Error', error.message);
             }
-            console.log("fulltoken", fulltoken);
             reject(error);
         });
     });

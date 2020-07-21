@@ -24,21 +24,17 @@ const Comment = (props) => {
     props.dispatch({ type: 'LOADING' });
     let token = props.cookies.get('token');
     let endpoint = '/comments/' + comment_id;
-    console.log('comment delete endpoint:', endpoint)
     authorizeUser(token, endpoint, 
       {group_id: props.group_id, 
         post_id: props.post_id}, 'delete')
       .then(result => {
-        console.log("result delete comment:",result)
         if (result){
           window.location.reload(false);
         } else {
-          console.log('Error: no result on deleting comment.')
           props.dispatch({ type: 'LOGOUT' });
         }
       })
       .catch(error => {
-        console.log(error)
         props.dispatch({ type: 'LOGOUT' });
       })
   }
@@ -103,25 +99,19 @@ const Comments = (props) => {
 
   useEffect(() => {
     authorizeUser(token, endpoint, null, 'get').then(result => {
-      console.log("result comments: ", result);
       if (result) {
         setComments(result.data.data.comments);
         setLoadingComments(false);
-        console.log("LOADED COMMENTS");
       }
     }).catch(error => {
       console.log("error getting comments: ", error);
     });
   }, []);
 
-  console.log("is loading comments: ", isLoadingComments);
   if (!comments || comments.length === 0) {
-    console.log("NULL COMMENTS");
     return (null);
   }
 
-  console.log("NON NULL COMMENTS");
-  console.log("is loading comments: ", isLoadingComments);
   return (
     <div style={{display:"flex"}}>
       { isLoadingComments ? (<h4>Loading Comments</h4>) : (
@@ -197,10 +187,8 @@ class CreateComment extends Component {
 
     // make api request to create comment
     authorizeUser(token, endpoint, req_body).then(result => {
-      console.log("result comment: ", result);
       window.location.reload(false);
     }).catch(error => {
-      console.log(error);
       window.location.reload(false);
     });
   }

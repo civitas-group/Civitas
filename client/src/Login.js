@@ -11,9 +11,10 @@ import './css/Login.css';
 class Login extends Component {
   constructor(props) {
     super(props);
+    console.log("PROPS:", props);
     this.state = {
-      email_username: "",
-      password: "",
+      email_username: Object.keys(this.props.formData).length === 0 ? "" : this.props.formData.email_username,
+      password: Object.keys(this.props.formData).length === 0 ? "" : this.props.formData.password,
       login_result: {
         error: ""
       },
@@ -29,6 +30,14 @@ class Login extends Component {
     const { name } = target;
     await this.setState({
       [name]: value,
+    });
+    console.log("SETLOGIN PARAM OBJECT:", {
+      email_username: this.state.email_username,
+      password: this.state.password
+    });
+    this.props.setFormData({
+      email_username: this.state.email_username,
+      password: this.state.password
     });
   };
 
@@ -119,6 +128,7 @@ class Login extends Component {
                 name="email_username"
                 id="example_email_username"
                 placeholder="Email or Username"
+                value={this.state.email_username}
                 onChange={(e) => {
                   this.handleChange(e);
                 }}
@@ -133,6 +143,7 @@ class Login extends Component {
                 name="password"
                 id="examplePassword"
                 placeholder="Password"
+                value={this.state.password}
                 onChange={(e) => {
                   this.handleChange(e);
                 }}
@@ -150,9 +161,8 @@ class Login extends Component {
     );
   }
 }
+
 const mapStateToProps = (state) => ({
   logged_in: state.logged_in
 });
 export default connect(mapStateToProps)(Login);
-
-//export default Login;

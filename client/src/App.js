@@ -8,6 +8,7 @@ import Group from './Group';
 import Posts from './Posts';
 import Console from './Console';
 import CreateGroup from './CreateGroup';
+import PageNotFound from './PageNotFound';
 import Notifications from './Notifications';
 import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css'
@@ -43,7 +44,6 @@ class App extends Component {
       <div style={{ backgroundColor: '#E9ECEF', height: "100%"}}> 
       <Router>
       <AppNavbar cookies={this.props.cookies}/>
-      
       <Switch>
         <Route exact path="/">{() => (<PublicHome cookies={this.props.cookies}/>)}</Route>
         <Route exact path="/groups">{() => (<Home cookies={this.props.cookies}/>)}</Route>
@@ -59,6 +59,7 @@ class App extends Component {
           render={() => (<Group cookies={this.props.cookies}/>)} />
         <Route exact path="/creategroup"
           render={() => (<CreateGroup cookies={this.props.cookies}/>)} />
+        <Route component={PageNotFound}/>
         <Route exact path="/notifications"
           render={() => (<Notifications cookies={this.props.cookies}/>)} />
       </Switch>

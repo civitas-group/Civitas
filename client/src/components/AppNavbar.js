@@ -22,6 +22,8 @@ const AppNavbar = (props) => {
   const [type, setType] = useState(false);
   const [typeText, setTypeText] = useState(false);
   const [logoHover, setLogoHover] = useState(false);
+  const [loginFormData, setLoginFormData] = useState({});
+  const [registerFormData, setRegisterFormData] = useState({});
 
   const toggle = () => setModal(!modal);
   const toggleDropdown = () => setDropdown(!dropdownOpen);
@@ -43,6 +45,14 @@ const AppNavbar = (props) => {
     setType('regular');
     setTypeText('Register as Regular User');
     setModal(!modal);
+  }
+
+  const setLoginForm = (formData) => {
+    console.log("CALLED SET LOGIN FORM: ", formData);
+    setLoginFormData(formData);
+  }
+  const setRegisterForm = (formData) => {
+    setRegisterFormData(formData);
   }
   function NavButtonsLoggedIn(props) {
     return (
@@ -157,8 +167,8 @@ const AppNavbar = (props) => {
         <Modal isOpen={modal && !props.logged_in} toggle={toggle} style={{opacity:"0.9"}}>
           <ModalHeader toggle={toggle}>{typeText}</ModalHeader>
           <ModalBody>
-            {type==='login' ? <Login cookies={props.cookies} toggleModal={toggle}/> : 
-            <Register usertype={type} cookies={props.cookies} toggleModal={toggle}/>}
+            {type==='login' ? <Login cookies={props.cookies} toggleModal={toggle} formData={loginFormData} setFormData={setLoginForm}/> : 
+            <Register usertype={type} cookies={props.cookies} toggleModal={toggle} formData={registerFormData} setFormData={setRegisterForm}/>}
           </ModalBody>
         </Modal>
         <Modal isOpen={logoutModal && props.logged_in} toggle={toggleLogoutModal} style={{opacity:"0.9"}}>
