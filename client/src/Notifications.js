@@ -8,12 +8,14 @@ import Loading from './components/Loading';
 import Notification from './components/Notification';
 
 class Notifications extends Component {
+  page_size = 10;
   constructor(props){
     super(props);
     this.state = {
-      max_results: 10
+      max_results: this.page_size
     }
   }
+  
   async componentDidMount() {
     console.log('notifications mounted')
     this.props.dispatch({ type: 'LOADING' });
@@ -103,10 +105,10 @@ class Notifications extends Component {
           paddingTop:'0.5em', paddingBottom: '4em'}}>
           <Button color="light" size="sm"
             onMouseEnter={()=>{
-              this.setState({max_results: this.state.max_results + 10})
+              this.setState({max_results: this.state.max_results + this.page_size})
             }}
             onClick={()=>{
-              this.setState({max_results: this.state.max_results + 10})
+              this.setState({max_results: this.state.max_results + this.page_size})
             }}
             >See More...</Button>
         </div> }
