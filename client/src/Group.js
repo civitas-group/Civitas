@@ -73,7 +73,7 @@ class Group extends Component {
     this.props.cookies.get('token'), this.props.logged_in)
 
     if (this.props.loading){
-      return (<Loading/>);
+      return (<Loading component="Group"/>);
     }
     else if (!this.props.logged_in || this.state.redirect_to_root){
       return (<Redirect to="/" />);

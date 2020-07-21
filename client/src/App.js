@@ -6,7 +6,9 @@ import Home from './Home';
 import PublicHome from './PublicHome';
 import Group from './Group';
 import Posts from './Posts';
+import Console from './Console';
 import CreateGroup from './CreateGroup';
+import Notifications from './Notifications';
 import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css'
 import './css/App.css';
@@ -50,10 +52,15 @@ class App extends Component {
             <Posts cookies={this.props.cookies}/>
           </Group>
         </Route>
+        <Route exact path="/groups/:group_id/console">
+          <Console cookies={this.props.cookies}/>
+        </Route>
         <Route exact path="/joingroup"
           render={() => (<Group cookies={this.props.cookies}/>)} />
         <Route exact path="/creategroup"
           render={() => (<CreateGroup cookies={this.props.cookies}/>)} />
+        <Route exact path="/notifications"
+          render={() => (<Notifications cookies={this.props.cookies}/>)} />
       </Switch>
       </Router>
       </div>

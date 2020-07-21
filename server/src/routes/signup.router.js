@@ -8,6 +8,8 @@ const Account = require('../models/account.model'); // account model
 // After the user creates an account, a JWT token is signed to grant user access.
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
+const dotenv = require('dotenv');
+dotenv.config();
 
 /* Create a regular user account */
 /*
@@ -32,6 +34,13 @@ signUpRouter.post("/regular", (req, res, next) => {
         requested_groups_files:[],
         requested_to_join_groups_ids: [],
         invited_user_ids: [],
+        notifications: [{ read: false,
+        content: "Welcome to Civitas! Congratulations on taking part"
+        + " in a simpler communication experience for your residential area"
+        + " community. Go ahead and join your administrator's group! If you"
+        + " meant to create your own residential area group, please create an"
+        + " administrator account instead."}],
+        unread_notifications_count: 1,
         full_legal_name: req.body.full_legal_name
       };
       
@@ -140,6 +149,14 @@ signUpRouter.post("/admin", (req, res, next) => {
         requested_groups_files:[],
         requested_to_join_groups_ids: [],
         invited_user_ids: [],
+        notifications: [{ read: false,
+        content: "Welcome to Civitas! Congratulations on taking the first"
+        + " step to providing a more fluid experience for your residential"
+        + " community during such difficult times. Please feel free to reach out"
+        + " to civitasmain@gmail.com for any concerns or difficulties. Do note"
+        + " that administrator accounts are only meant for creating and managing"
+        + " your own groups - not joining any groups as a regular member."}],
+        unread_notifications_count: 1,
         full_legal_name: req.body.full_legal_name
        }, function(err, result) {
         if(err){
