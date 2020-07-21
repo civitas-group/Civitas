@@ -10,7 +10,7 @@ const Notification = props => {
   const [marking, setMarking] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
   const [fullNotification, setFullNotification] 
-    = useState(props.is_main_page ? true : false);
+    = useState(props.is_main_page && !props.read ? true : false);
 
   const mark = () => {
     if (marking) return;
