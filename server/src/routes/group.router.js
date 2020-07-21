@@ -94,13 +94,16 @@ groupRouter.post("/approve", authMiddleware,(req, res) => {
             // Update account based on fieldsToUpdate
             Account.findByIdAndUpdate(user_id,
               fieldsToUpdate, { useFindAndModify: false, new: true },  
-              function (accountErr, accountResult) {
+              async function (accountErr, accountResult) {
                 if(accountErr){
                   res.status(400).send({
                     success: false,
                     error: JSON.stringify(accountErr)
                     });
                 } else {
+                  await helper.pushNotification(user_id, 
+                    'Your group creation request has been approved!'
+                    + ' Navigate to groups to get started.')
                   res.status(201).send({
                     success: true,
                     created_group: accountResult
@@ -134,7 +137,10 @@ groupRouter.post("/approve", authMiddleware,(req, res) => {
         }
       }
 */
-async function update_account(req,res,created_group_id){
+async function update_account(req,res,created_group_id,group_name){
+  console.log(created_group_id, created_group_id._id)
+  console.log(typeof created_group_id, typeof created_group_id._id)
+  console.log(created_group_id.toString(), created_group_id._id.toString())
   // Update user account:
   let add_files = {
     requested_group_id: created_group_id._id,
@@ -151,18 +157,21 @@ async function update_account(req,res,created_group_id){
   await Account.findByIdAndUpdate(req.user.user_info._id,
     { $addToSet: fieldsToUpdate },
     { useFindAndModify: false, new: true },  
-    function (accountErr, accountResult) {
+    async function (accountErr, accountResult) {
       if(accountErr){
         res.status(400).send({
           success: false,
           error: JSON.stringify(accountErr)
           });
       } else {
+        await helper.pushNotification(String(req.user.user_info._id), 
+          'Your request to create ' + group_name + ' has been sent.')
         res.status(201).send({
           success: true,
           user: accountResult,
           msg: "Create/Join group request sent successfully"
         });
+        return;
       }
   })
 }
@@ -288,7 +297,8 @@ groupRouter.post("/create", authMiddleware, async (req, res) => {
         }
       } else {
         created_group_id = result._id;
-        await update_account(req,res,created_group_id);
+        await update_account(req,res,created_group_id, 
+          req.body.group_name);
         return;
       }
     });
@@ -308,7 +318,8 @@ groupRouter.post("/create", authMiddleware, async (req, res) => {
       // Successful so far
       } else {
         created_group_id = groupFind._id;
-        update_account(req,res,created_group_id);
+        update_account(req,res,created_group_id, 
+          req.body.group_name);
         return;
       }
     });
@@ -344,9 +355,16 @@ groupRouter.post("/:group_id", authMiddleware, (req, res) => {
           return;
         } else {
 
-          // append group name to result
+          // append info to result
+          console.log(group)
           full = Object.assign(full, {
-            group_name: group.group_name
+            group_name: group.group_name,
+            address: group.address,
+            supervisor_id: group.supervisor_id,
+            cosupervisor_ids: group.cosupervisor_ids,
+            user_ids: group.user_ids,
+            invited_user_ids: group.invited_user_ids,
+            requested_to_join_user_ids: group.requested_to_join_user_ids
           })
 
           // Get all posts in group
@@ -430,7 +448,7 @@ function verifyIds(req, res, next){
 // adds invited group to user's invited_groups_ids field
 // if account update was successful, returns boolean (true)
 // else, returns error message 
-function asyncAccount(req, user_id){
+function asyncAccount(req, user_id, group_name){
   console.log('async')
   return Account.findById(user_id) 
     .then(async function(accountResult) {
@@ -438,15 +456,22 @@ function asyncAccount(req, user_id){
         console.log('error', err);
         return "Account not found."
       }
+      else if (accountResult.is_supervisor){
+        return "Account is supervisor."
+      }
       else {
         console.log('here1', req.params.group_id)
         if(accountResult.invited_groups_ids.indexOf(req.params.group_id) < 0){
           accountResult.invited_groups_ids.push(req.params.group_id);
           console.log('here2')
-          accountResult.save(function(err){
+          accountResult.save(async function(err){
             if (err){
               return "Update account model fail."
             } else {
+              await helper.pushNotification(user_id, 
+                'Your have been invited to join ' + group_name 
+                + '! Navigate to groups and enter the group id: '
+                 + req.params.group_id + ' in the Join Group field.')
               return true;
             }
           });
@@ -496,7 +521,8 @@ function UpdateGroupAndUsers(req, res, NewInvitedUserList, updated_user_ids){
       // update the invited_groups_ids in accounts that are updated
       // needed async/await because for loop is synchronous and db call is asynchronous
       for (let i = 0; i < updated_user_ids.length; ++i){
-        user_result = await asyncAccount(req, updated_user_ids[i])
+        user_result = await asyncAccount(req, updated_user_ids[i], 
+          groupResult.group_name)
 
         // user_result can return either a string or an boolean
         // as specified above in declaration of user_result
@@ -712,7 +738,8 @@ groupRouter.patch("/join/:group_id", authMiddleware, (req, res, next) => {
                                   console.log("step 3");
                                   // update the invited_user_ids and user_ids in the group model
 											            UpdateGroupForJoin(req, res,new_user_ids,
-												            new_invited_user_ids);
+                                    new_invited_user_ids, 
+                                    acc_update_result.username);
 										          }	
 									          });	
 								          }
@@ -726,6 +753,7 @@ groupRouter.patch("/join/:group_id", authMiddleware, (req, res, next) => {
       }
       //NewInvitedUserList = result.invited_user_ids.push(req.params.user_id);
   }).catch(function(err){
+    console.log('ERR',err)
       res.status(400).send({
         success:false,
         error: "General error."
@@ -733,7 +761,8 @@ groupRouter.patch("/join/:group_id", authMiddleware, (req, res, next) => {
   });
 });
 
-function UpdateGroupForJoin(req, res, new_user_ids, new_invited_user_ids){
+function UpdateGroupForJoin(req, res, new_user_ids, new_invited_user_ids, 
+  username){
   // update the group's invited_user_ids and user_ids
   let updated_fields = {user_ids : new_user_ids,
                         invited_user_ids : new_invited_user_ids};
@@ -741,7 +770,7 @@ function UpdateGroupForJoin(req, res, new_user_ids, new_invited_user_ids){
   Group.findByIdAndUpdate(req.params.group_id, 
     { $set: updated_fields},
     { useFindAndModify: false, new: true },
-    function(updateErr, group_update_result){
+    async function(updateErr, group_update_result){
       if(updateErr){
         res.status(400).send({
           success: false,
@@ -752,6 +781,8 @@ function UpdateGroupForJoin(req, res, new_user_ids, new_invited_user_ids){
       }
       else{
         console.log("step 5");
+        await helper.pushNotificationToSupervisors(group_update_result, 
+          username + ' has joined your group!')
         res.status(200).send({
           success: true,
           msg:"Joined the group successfully",
@@ -801,7 +832,8 @@ groupRouter.patch("/user_request/:group_id", authMiddleware, (req, res, next)=>{
       options = {
         useFindAndModify: false
       };
-      Account.findOneAndUpdate(user_info, update, options, (accountUpdateErr, updatedAccount) => {
+      Account.findOneAndUpdate(user_info, update, options, 
+        (accountUpdateErr, updatedAccount) => {
         if(!updatedAccount || accountUpdateErr){
           res.status(400).send({
               success:false,
@@ -820,7 +852,8 @@ groupRouter.patch("/user_request/:group_id", authMiddleware, (req, res, next)=>{
           options = {
             useFindAndModify: false
           };
-          Group.findOneAndUpdate(group_info, updateGroup, options, (groupUpdateErr, updatedGroup) => {
+          Group.findOneAndUpdate(group_info, updateGroup, options, 
+            async (groupUpdateErr, updatedGroup) => {
             if(!updatedGroup || groupUpdateErr){
               res.status(400).send({
                   success:false,
@@ -828,7 +861,11 @@ groupRouter.patch("/user_request/:group_id", authMiddleware, (req, res, next)=>{
               });
               return;
             }
-            else{
+            else {
+              await helper.pushNotificationToSupervisors(updatedGroup, 
+                user_info.username + ' has requested to join your group. '
+                + 'Visit the administrator console for further action.')
+
               res.status(200).send({
                 success:true,
                 msg:"Joining request sent successfully."
@@ -924,7 +961,8 @@ groupRouter.patch("/accept_user_request/:group_id", authMiddleware, (req, res, n
             options = {
               useFindAndModify: false
             };
-            Group.findOneAndUpdate(group_info, update, options, (groupErr, groupRes) => {
+            Group.findOneAndUpdate(group_info, update, options, 
+              async (groupErr, groupRes) => {
               if(groupErr || !groupRes){
                 res.status(400).send({
                   success:false,
@@ -934,6 +972,9 @@ groupRouter.patch("/accept_user_request/:group_id", authMiddleware, (req, res, n
                 return;
               }
               else{
+                await helper.pushNotification(req.body.user_id, 
+                  'Your request to join ' + groupRes.group_name + 
+                  ' has been approved! Navigate to groups to get started.')
                 res.status(200).send({
                   success:true,
                   msg:"Successfully added the user to the requested group."
@@ -1028,7 +1069,8 @@ groupRouter.patch("/deny_user_request/:group_id", authMiddleware, (req, res, nex
             options = {
               useFindAndModify: false
             };
-            Group.findOneAndUpdate(group_info, update, options, (groupErr, groupRes) => {
+            Group.findOneAndUpdate(group_info, update, options, 
+              async (groupErr, groupRes) => {
               if(groupErr || !groupRes){
                 res.status(400).send({
                   success:false,
@@ -1038,6 +1080,11 @@ groupRouter.patch("/deny_user_request/:group_id", authMiddleware, (req, res, nex
                 return;
               }
               else{
+                await helper.pushNotification(req.body.user_id, 
+                  'Sorry, your request to join ' + groupRes.group_name + 
+                  ' has been denied. Please contact your administrator if you'
+                  + ' believe this to be an issue, or contact'
+                  + ' civitasmain@gmail.com.')
                 res.status(200).send({
                   success:true,
                   msg:"The user has been rejected to join the group."

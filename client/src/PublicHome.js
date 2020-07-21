@@ -90,6 +90,32 @@ class PublicHome extends Component {
 
   componentDidMount() {
     document.body.style.overflow = 'hidden';
+
+    if (this.props.hasOwnProperty('cookies')){
+      this.props.dispatch({ type: 'LOADING' });
+      const { cookies } = this.props;
+      let token = cookies.get('token');
+      
+      authorizeUser(token, '/authorize')
+        .then(result => {
+          console.log("result home:",result)
+          if (result){
+  
+            this.props.dispatch({ 
+              type: 'HOMEPAGE_ACCESS',
+              payload: result.data });
+          }
+          else {
+            console.log('Error: no result on mount.')
+            this.props.dispatch({ type: 'LOGOUT' });
+          }
+        })
+        .catch(error => {
+          console.log(error)
+          this.props.dispatch({ type: 'LOGOUT' });
+        })
+    }
+
   }
   componentWillUnmount() {
     document.body.style.overflow = 'unset';

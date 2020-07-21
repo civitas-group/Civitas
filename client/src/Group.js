@@ -95,7 +95,7 @@ class Group extends Component {
 
   render() {
     if (this.props.loading){
-      return (<Loading/>);
+      return (<Loading component="Group"/>);
     }
     else if (!this.props.logged_in || this.state.redirect_to_root){
       return (<Redirect to="/" />);

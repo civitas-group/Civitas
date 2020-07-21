@@ -58,6 +58,20 @@ const accountSchema = new mongoose.Schema({
    requested_to_join_groups_ids: [{
         type: mongoose.ObjectId,
         ref: "Group"
+   }],
+   unread_notifications_count: {
+        type: Number
+   },
+   notifications: [{
+        _id : false,
+        read: {
+            type: Boolean,
+            required:true
+        },
+        content: {
+            type: String,
+            required:true
+        }
    }]
 });
 

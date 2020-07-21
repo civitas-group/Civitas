@@ -6,7 +6,6 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-
 const bodyParser = require('body-parser');
 
 // Routes
@@ -17,12 +16,13 @@ const authRouter = require('./src/routes/auth.router');
 const groupRouter = require('./src/routes/group.router');
 const devRouter = require('./src/routes/dev.router');
 const announcementRouter = require('./src/routes/announcement.router');
+const notificationRouter = require('./src/routes/notification.router');
+const userRouter = require('./src/routes/user.router');
 
 const SESSION_DURATION = 1000 * 60 * 60// 1 hour
 
 const CLIENT_BUILD_PATH = path.join(__dirname, "../client/build");
 require('./src/database');
-
 
 app.get('/', (req, res) => {
     res.send("<Server>");
@@ -35,6 +35,8 @@ app.use(
   })
 );
 
+app.use('/api/users', userRouter)
+app.use('/api/notifications', notificationRouter);
 app.use('/api/announcements', announcementRouter);
 app.use('/api/posts', postRouter);
 app.use('/api/comments', commentRouter);
