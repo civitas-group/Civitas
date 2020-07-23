@@ -1,14 +1,13 @@
-import React, { Component, useState } from 'react';
+import React, { Component, useState, useEffect } from 'react';
 import { Button, Toast, ToastBody, ToastHeader, Badge, Collapse, 
   Modal, ModalHeader, ModalBody, Form, FormGroup,
   Input, Alert, ButtonGroup } from 'reactstrap';
 import authorizeUser from './Auth';
 import Comments, { CreateComment } from './Comments';
 import { connect } from 'react-redux';
-import { AiFillHeart, AiOutlineHeart, 
+import { AiFillHeart, AiOutlineHeart, AiOutlineStop,
   AiFillEye, AiFillEyeInvisible } from 'react-icons/ai';
-import { RiShoppingBasketLine,
-  RiTimerLine } from 'react-icons/ri';
+import { RiTimerLine } from 'react-icons/ri';
 import { TiDelete } from 'react-icons/ti';
 import { MdDone, MdMoreHoriz }from 'react-icons/md';
 import './css/Posts.css';
@@ -20,6 +19,40 @@ function EmptyPosts(){
 }
 
 const Post = (props) => {
+
+  // if post: status is post
+  // if request: status can be: open, closed, resolved
+  const [status, setStatus] = useState('post');
+  const [toastBGColor, setToastBGColor] = useState('white');
+  const [titleToastHeaderBGColor, setTitleToastHeaderBGColor] 
+    = useState('#FCFCFD');
+  const [badgeColor, setBadgeColor] = useState('warning');
+  const [titleColor, setTitleColor] = useState('black');
+  const [bodyToastBGColor, setBodyToastBGColor] = useState('white');
+  useEffect(() => {
+    if(props.post.is_request){
+      setStatus(props.post.request_status)
+      if (props.post.request_status === 'open'){
+        setBadgeColor('warning');
+        setToastBGColor('white');
+        setTitleToastHeaderBGColor('#2D70CE');
+        setTitleColor('white');
+      } else if (props.post.request_status === 'resolved'){
+        setBadgeColor('success');
+        setToastBGColor('#92E89C');
+        setTitleToastHeaderBGColor('#92E89C');
+        setTitleColor('#28A745');
+        setBodyToastBGColor('#70C182');
+      } else if (props.post.request_status === 'closed'){
+        setBadgeColor('danger');
+        setToastBGColor('#D60606');
+        setTitleToastHeaderBGColor('#D60606');
+        setTitleColor('#3F0F14');
+        setBodyToastBGColor('#C1303E');
+      }
+    }
+  });
+
   const [likeChanged, setLikeChanged] = useState(false);
   const [liked, setLiked] = 
     useState(props.post.like_ids.indexOf(props.email) !== -1);
@@ -79,24 +112,21 @@ const Post = (props) => {
         props.dispatch({ type: 'LOGOUT' });
       })
   }
-  const resolvePost = (post_id) => {
+  const changeRequestStatus = (post_id, status_param) => {
     if (deleteConfirm) return;
     props.dispatch({ type: 'LOADING' });
     let token = props.cookies.get('token');
-    let resolve_param;
-    if (props.post.request_resolved) resolve_param = 'false';
-    else resolve_param = 'true';
-    let endpoint = '/posts/resolve?resolved=' + resolve_param;
+    let endpoint = '/posts/change_status?status=' + status_param;
 
-    console.log('posts resolve (' + resolve_param  + 
-      ') endpoint:', endpoint)
+    console.log('posts change_status (' + status_param  + ') endpoint:', 
+      endpoint)
     authorizeUser(token, endpoint, 
       {post_id: post_id}, 'patch')
       .then(result => {
         console.log("result resolve post:",result)
         if (result){ window.location.reload(false);}
         else {
-          console.log('Error: no result on resolving post.')
+          console.log('Error: no result on changing request.')
           props.dispatch({ type: 'LOGOUT' });
         }
       })
@@ -116,22 +146,25 @@ const Post = (props) => {
   const [unhide, setUnhide] = useState(false);
 
   return (
-    <Toast style={{width:"50em", backgroundColor: (props.post.is_request && 
-      props.post.request_resolved ? '#92E89C' : 'white')}}>
-    <ToastHeader style={{backgroundColor:(props.post.is_request ? 
-        (props.post.request_resolved ? "#92E89C" : "#2D70CE") 
-        :"#FCFCFD")}}>
-      <h5 style={{padding:'0.4em',margin:'0',}}>
-      <b style={{color: (props.post.is_request ? 
-        (props.post.request_resolved ? '#28A745' : 'white') : 'black' )}}>
+    <Toast style={{width:"50em", backgroundColor: toastBGColor}}>
+    <ToastHeader style={{backgroundColor: titleToastHeaderBGColor }}>
+      <h5 style={{padding:'0.4em',margin:'0'}}>
+      <b style={{color: titleColor}}>
         { props.post.title }</b>{' '}
       {props.post.is_request ? 
-      <Badge pill 
-      color={props.post.request_resolved ? "success": "warning"}>
+      <Badge pill  color={badgeColor}>
       Request {' '}
-      {props.post.request_resolved ? 
+      {status === 'closed' ? <AiOutlineStop/> :
+      status === 'resolved' ? 
       <MdDone style={{paddingBottom:'0.2em'}}/> 
-      : <RiTimerLine style={{paddingBottom:'0.2em'}}/>}
+      : props.post.is_timed ? 
+      <RiTimerLine style={{paddingBottom:'0.2em'}}/>
+      : null}
+      {status === 'closed' || status === 'open' ? 
+      <a style={{fontSize:'11px'}}>
+      {props.post.is_timed && !props.post.timed_request_info.expired ?
+        props.post.timed_request_info.time_left : null }</a>
+      : null}
       </Badge>:null}
 
       {props.is_post_owner || props.is_supervisor ? 
@@ -147,11 +180,11 @@ const Post = (props) => {
         style={{padding:'0',paddingBottom:'0.3em',
         color: props.post.is_request ? 'white':'#DC3545'}}
         size="lg" color="link"><TiDelete/></Button>: null}
-      {props.post.is_request && props.post.request_resolved ? 
+      {status === 'resolved' || status === 'closed'? 
       <Button onClick={()=>{setUnhide(!unhide)}} 
         style={{padding:'0',paddingBottom:'0.3em',
         color: 'white'}} size="lg" color="link">
-        {unhide ? <AiFillEyeInvisible/> : <AiFillEye/>}
+        {unhide ? <AiFillEye/> : <AiFillEyeInvisible/>}
       </Button>: null}
 
       {props.is_post_owner || props.is_supervisor ? 
@@ -167,16 +200,29 @@ const Post = (props) => {
         {moreOptions ? 
         (props.post.is_request ? /* Request options */
         
-        (props.post.request_resolved ? 
-        /* Request resolved options */
-        <Button size="sm" onClick={()=>{resolvePost(props.post._id)}}
-        color="warning">Unresolve</Button>
-        : /* Request unresolved options */
-        <Button size="sm" onClick={()=>{resolvePost(props.post._id)}}
-        color="success">Resolve</Button>)
+        (status === 'resolved' || status === 'closed' ? 
 
+        <Button size="sm" 
+        disabled={props.post.hasOwnProperty('timed_request_info') ? 
+        props.post.timed_request_info.expired ? true : false : false}
+          onClick={()=>{
+          changeRequestStatus(props.post._id, 'open')}}
+        color="warning">
+        {props.post.hasOwnProperty('timed_request_info') ?
+          props.post.timed_request_info.expired ? 
+          'You cannot reopen an expired request.' : 'Reopen': 'Reopen'}
+        </Button>
+        : null)
         : <Button size="sm" /* Regular Post options */
         color="primary">Add more options here</Button>) : null}
+        {moreOptions && status === 'open' ? 
+        <Button size="sm" onClick={()=>{
+          changeRequestStatus(props.post._id, 'resolved')}}
+        color="success">Resolve</Button> : null }
+        {moreOptions && status === 'open' ? 
+        <Button size="sm" onClick={()=>{
+          changeRequestStatus(props.post._id, 'closed')}}
+        color="danger">Close</Button> : null}
         </ButtonGroup>
       </Collapse>
       : null}
@@ -194,17 +240,12 @@ const Post = (props) => {
         : null}</small></div>
     </ToastHeader>
     
-    {props.post.is_request && props.post.request_resolved &&
-     !unhide ? null :
+    {(status === 'resolved' || status === 'closed') && !unhide ? null :
     <div>
-      <ToastBody style={{backgroundColor: 
-        props.post.is_request && props.post.request_resolved ? 
-        '#70C182': 'white'}}>
+      <ToastBody style={{backgroundColor: bodyToastBGColor}}>
         <p>{ props.post.body }</p>
       </ToastBody>
-      <ToastHeader style={{backgroundColor: 
-        props.post.is_request && props.post.request_resolved ? 
-        '#70C182': 'white'}}>
+      <ToastHeader style={{backgroundColor: bodyToastBGColor}}>
         <Modal isOpen={likeList} toggle={toggleLikeList}>
           <ModalHeader>Likes</ModalHeader>
           <ModalBody>
@@ -229,17 +270,16 @@ const Post = (props) => {
           </Badge>}
         </Button>
         <Button disabled={submitting_like || 
-          (props.post.is_request && props.post.request_resolved)} 
+          status === 'resolved' || status === 'closed'} 
           onClick={toggleLike} color='link' size="sm">
           {liked ? ' Unlike' : ' Like'}
         </Button>
       </ToastHeader>
-      { props.post.comment_ids.length !== 0 || !props.post.request_resolved ?
-      <ToastBody style={{backgroundColor: 
-        props.post.is_request && props.post.request_resolved ? 
-        '#70C182': 'white'}}>
+      { props.post.comment_ids.length !== 0 || 
+      (status !== 'resolved' && status !== 'closed')  ?
+      <ToastBody style={{backgroundColor: bodyToastBGColor}}>
         {props.children && React.cloneElement(props.children, {
-          force_disable: props.post.is_request && props.post.request_resolved,
+          force_disable: status === 'resolved' || status === 'closed',
           group_id: props.group_id,
           post_id: props.post._id,
           username: props.username,
@@ -249,7 +289,7 @@ const Post = (props) => {
         })}
 
       </ToastBody> : null}
-      {props.post.is_request && props.post.request_resolved ? null :
+      {status === 'resolved' || status === 'closed' ? null :
       <div style={{paddingLeft:'1em', paddingRight:'1em'}}>
         <CreateComment 
           username={props.username}
@@ -297,125 +337,9 @@ const Posts = (props) =>  {
 
 }
 
-class CreatePost extends Component {
-  constructor(props){
-    super(props);
-    this.state ={
-      modal: false,
-      alertOpen: false,
-      body_error: false,
-      title_error: false,
-      title: "",
-      body: "",
-      title_text: this.props.is_request ? 'Request Title' : 'Title',
-      body_text: this.props.is_request ? 'Request Body' : 'Body',
-    };
-  }
-
-  handleChange = async (event) => {
-    const { target } = event;
-    const value = target.type === "checkbox" ? target.checked : target.value;
-    const { name } = target;
-    this.setState({
-      [name]: value,
-    });
-  };
-
-  submitForm(e) {
-    e.preventDefault();
-    this.setState({ submit_loading: true })
-    if (this.state.title === '') {
-      this.setState({
-        title_error: true,
-        alertOpen: true,
-        submit_loading: false
-      })
-      return;
-    } else if (this.state.body === '') {
-      this.setState({
-        body_error: true,
-        alertOpen: true,
-        submit_loading: false
-      })
-      return;
-    }
-    let req_body = {
-      'title':this.state.title, 
-      'body': this.state.body,
-      'author': this.props.username,
-      'group_id': this.props.group_id,
-      'is_request': this.props.is_request
-    };
-    let endpoint = "/posts";
-    let token = this.props.cookies.get('token');
-    authorizeUser(token, endpoint, req_body)
-      .then(result => {
-        console.log("result group:",result)
-        if (result){
-          this.toggle();
-          window.location.reload(false);
-        }
-        else {
-          console.log('Error: no result on mount.')
-          window.location.reload(false);
-        }
-      })
-      .catch(error => {
-        console.log(error)
-        window.location.reload(false);
-      })
-  }
-
-  toggle = () => this.setState({modal: !this.state.modal});
-  DismissAlert = () => this.setState({alertOpen: !this.state.alertOpen})
-  render(){
-    return (
-      <div style={{paddingLeft: this.props.is_request ? '0.5em' :'0'}}> 
-        <Button outline={this.props.is_request} color="primary" onClick={this.toggle} >
-          {this.props.is_request ? 'Make Request' :'Create Post'} {' '}
-          {this.props.is_request ? <RiShoppingBasketLine/> : null}
-          </Button>
-        <Modal isOpen={this.state.modal} toggle={this.toggle} style={{opacity:"0.9"}}>
-          <ModalHeader toggle={this.toggle}>
-          {this.props.is_request ? <Badge color="primary">
-          Make a Request <RiShoppingBasketLine/></Badge> :'Create a Post'}
-          
-          </ModalHeader>
-          <ModalBody>
-            <Alert isOpen={this.state.title_error && this.state.alertOpen}
-                toggle={this.DismissAlert} color="danger">
-              Title and Body must not be empty
-            </Alert>
-            <Form onSubmit={(e) => this.submitForm(e)}>
-              <FormGroup>
-                <Input 
-                  type="text" name="title" id="title" 
-                  placeholder={this.state.title_text}
-                  onChange={(e) => { this.handleChange(e);}}/>
-              </FormGroup>
-              <FormGroup >
-                <Input 
-                  type="textarea" name="body" id="body" 
-                  placeholder={this.state.body_text}
-                  onChange={(e) => { this.handleChange(e);}}/>
-              </FormGroup>
-              <Button color="link" disabled={this.state.submit_loading} 
-                onClick={this.toggle}>Cancel</Button>
-              <Button color="primary" disabled={this.state.submit_loading} 
-                onClick={(e) => { this.submitForm(e)} }>Submit</Button>
-            </Form>
-          </ModalBody>
-        </Modal>
-
-      </div>
-    );
-  }
-}
-
 
 const mapStateToProps = (state) => ({
   user_info: state.user_info,
 });
 
 export default connect(mapStateToProps, null)(Posts);
-export { CreatePost };

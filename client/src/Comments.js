@@ -199,7 +199,7 @@ class CreateComment extends Component {
         <Form onSubmit={this.submitForm}>
           <FormGroup>
             <Input type="text" name="commentBody" id="commentBody" 
-              placeholder={this.props.is_reply ? "Reply" : "Comment here"}
+              placeholder={this.props.is_reply ? "Reply" : "Leave a comment"}
               onChange={(e) => { this.handleChange(e); }} />
               <Alert style={{padding:'0.7em'}}
                 isOpen={this.state.commentBodyError} color="danger">

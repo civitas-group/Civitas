@@ -6,7 +6,7 @@ import Loading from './components/Loading'
 import ConsoleUsersListGroup from './components/ConsoleUsersListGroup'
 import { Jumbotron, Button, Badge, ButtonGroup } from 'reactstrap';
 
-class Console extends Component {
+class AdminConsole extends Component {
   constructor(props){
     super(props);
     this.state = {
@@ -32,15 +32,15 @@ class Console extends Component {
     this.toggleRegular = this.toggleRegular.bind(this);
   }
   componentDidMount() {
-    console.log('Group mount')
+    console.log('Console mount')
     this.props.dispatch({ type: 'LOADING' });
     const { cookies } = this.props;
     let token = cookies.get('token');
     let endpoint = '/group/' + this.props.match.params.group_id;
-    console.log('group check endpoint:', endpoint)
+    console.log('console check endpoint:', endpoint)
     authorizeUser(token, endpoint)
       .then(result => {
-        console.log("result group:",result)
+        console.log("result console:",result)
         if (result){
           if (!result.data.group_ids.includes(this.props.match.params.group_id)
             && !result.data.managed_groups_ids.includes(this.props.match.params.group_id)){
@@ -204,4 +204,4 @@ const mapStateToProps = (state, ownProps) => ({
   user_info: state.user_info,
   loading: state.loading
 });
-export default withRouter(connect(mapStateToProps)(Console));
+export default withRouter(connect(mapStateToProps)(AdminConsole));

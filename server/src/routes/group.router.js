@@ -9,6 +9,7 @@ var jwt_decode = require('jwt-decode');
 const helper = require('./helper.js')
 const mongoose = require('mongoose');
 const e = require('express');
+const moment = require('moment')
 
 /* 
   Query posts based on search term 
@@ -166,6 +167,11 @@ async function update_account(req,res,created_group_id,group_name){
       } else {
         await helper.pushNotification(String(req.user.user_info._id), 
           'Your request to create ' + group_name + ' has been sent.')
+        //Push notif to super admin
+        await helper.pushNotification('5f18c2b5101864004d273a12', 
+          accountResult.username + ' has requested to create ' 
+          + group_name + '.')
+        
         res.status(201).send({
           success: true,
           user: accountResult,
@@ -343,7 +349,7 @@ groupRouter.post("/:group_id", authMiddleware, (req, res) => {
     } else {
 
       // Add user's group IDs to response 
-      let full = helper.addGroupIDS(user, decoded);
+      let full = helper.addUserInfo(user, decoded);
       
       // Find group based on specified group_id
       Group.findOne(group_criteria, function(err, group){
@@ -356,7 +362,7 @@ groupRouter.post("/:group_id", authMiddleware, (req, res) => {
         } else {
 
           // append info to result
-          console.log(group)
+          //console.log(group)
           full = Object.assign(full, {
             group_name: group.group_name,
             address: group.address,
@@ -379,6 +385,26 @@ groupRouter.post("/:group_id", authMiddleware, (req, res) => {
               });
               return;
             } else {
+              let updated_time_left
+              for(let i = 0; i < records.length; ++i){
+                //console.log(records[i], records[i].is_timed, records[i].timed_request_info)
+                if (records[i].is_timed){
+                  updated_time_left = 
+                    moment.utc(records[i].timed_request_info.expires_on).fromNow();
+                  
+                  if (updated_time_left.includes('ago')){
+                    records[i].timed_request_info.time_left 
+                      = 'Expired ' + updated_time_left;
+                    records[i].timed_request_info.expired = true;
+                    records[i].request_status = 'closed';
+                  } else {
+                    records[i].timed_request_info.time_left 
+                      = 'Expires in ' + updated_time_left;
+                  }
+                }
+              }
+              
+              //console.log(records)
               full = Object.assign(full, {
                 posts: records
               })  

@@ -27,7 +27,7 @@ authRouter.post('/', verifyToken, (req, res) => {
           } else {
 
             // Add user's group IDs to response 
-            res.json(helper.addGroupIDS(user, decoded));
+            res.json(helper.addUserInfo(user, decoded));
           }
         });
 

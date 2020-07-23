@@ -5,7 +5,7 @@ import { connect } from 'react-redux'
 import Loading from './components/Loading'
 import GroupSearch from './components/GroupSearch'
 import UserHomeOptions from './components/UserHomeOptions'
-import { Jumbotron, Button, Col } from 'reactstrap';
+import { Jumbotron, Button, Col, NavLink } from 'reactstrap';
 import Collapse from 'reactstrap/lib/Collapse';
 import { GoSearch } from 'react-icons/go';
 
@@ -72,8 +72,14 @@ class Home extends Component {
         <div style={{paddingTop:'1em'}}>
         <h6>Username: {this.props.user_info.username}, 
         Email: {this.props.user_info.email},
-        {this.props.user_info.is_supervisor ? 
+        
+        {this.props.user_info.is_super_admin ? ' Super Admin':
+          this.props.user_info.is_supervisor ? 
           ' Supervisor' : ' Regular User' }</h6>
+        {this.props.user_info.is_super_admin ? 
+        <Button color="primary" href="/superadminconsole">
+          Super Admin Console</Button>
+        :null}
         
         <h4>{'group_ids' || 
           'managed_group_ids' in this.props.user_info ? 

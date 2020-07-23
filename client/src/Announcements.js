@@ -1,7 +1,7 @@
 import React, { Component, useState } from 'react';
 import { Button, Badge, Modal, ModalHeader, ModalBody, 
-  Form, FormGroup, UncontrolledTooltip,
-  Input, Alert, Collapse, Card, CardBody } from 'reactstrap';
+  Form, FormGroup, ButtonGroup,
+  Input, Alert, Collapse } from 'reactstrap';
 import authorizeUser from './Auth';
 import { connect } from 'react-redux'
 import { AiFillCaretUp, AiFillCaretDown, 
@@ -52,24 +52,21 @@ const Announcement = (props) => {
             <AiFillCaretDown onClick={bodyToggle}/>}
           {props.is_supervisor ? 
           deleteConfirm ?
-          <div>
+          <ButtonGroup>
             <Button size="sm" outline color="danger"
               onClick={()=>{deleteAnnouncement(props.announcement._id)}}>
                 Delete Announcement?</Button>
             <Button size="sm" outline 
               onClick={()=>{setDeleteConfirm(false)}}>Cancel</Button>
-          </div> 
+          </ButtonGroup> 
           :<Button onClick={()=>{setDeleteConfirm(true)}} 
             outline size="sm" color="link" 
-            style={{padding:'0', color:"red"}}>
+            style={{padding:'0', color:"#9B0404"}}>
             Delete Announcement</Button> : null }
         </p>
         <Collapse isOpen={bodyIsOpen} >
-          <Card>
-            <CardBody style={{padding:'0.5em', fontSize:"14px"}}>
-            {props.announcement.body}
-            </CardBody>
-          </Card>
+          <a style={{fontSize:'13px'}}>{props.announcement.body}
+          </a>
         </Collapse>
       </Alert>
     </div>
