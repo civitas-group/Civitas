@@ -50,11 +50,17 @@ postRouter.post("/", authMiddleware, (req, res, next) => {
     body: req.body.body,
     author: req.body.author,
     is_request: req.body.is_request,
+    is_timed: req.body.is_timed,
+    timed_request_info: {
+      expires_on: req.body.expires_on,
+      expired: false,
+      time_left: -1
+    },
     likes: 0,
     created: Date.now(),
   };
   if (req.body.is_request) {
-    newPost = Object.assign(newPost, { request_resolved: false  });
+    newPost = Object.assign(newPost, { request_status: 'open'  });
   }
   Post.create(newPost, function(err, result) {
     if(err){
@@ -150,9 +156,9 @@ postRouter.patch("/:post_id/like", authMiddleware, (req, res, next) => {
 
 /* Resolve/Unresolve Single Post */
 // Requires:
-// query: ?resolved=boolean
-// params: post_id
-postRouter.patch("/resolve", authMiddleware, (req, res, next) => {
+// query: ?status=string ('open', 'resolved', 'closed')
+// body: { post_id: string }
+postRouter.patch("/change_status", authMiddleware, (req, res, next) => {
   // if resolve, resolve will be set to 1; if unresolve, will be set to -1
   let post_id = req.body.post_id;
   var decoded = jwt_decode(req.token);
@@ -160,18 +166,16 @@ postRouter.patch("/resolve", authMiddleware, (req, res, next) => {
   let authorized_to_resolve = false;
   let fieldsToUpdate;
 
-  if (req.query.resolved === 'true') { 
-    fieldsToUpdate = { '$set': { 'request_resolved': true }}
-  }
-  else if (req.query.resolved === 'false'){ 
-    fieldsToUpdate = { '$set': { 'request_resolved': false }}
-  } else {
+  if (req.query.status !== 'open' && req.query.status !== 'resolved'
+    && req.query.status !== 'closed'){
     res.status(400).send({
       success:false,
       error: "Invalid option.",
     });
     return;
   }
+
+  fieldsToUpdate = { '$set': { 'request_status': req.query.status }}
 
   // Find account based on username
   Account.findOne(criteria, function(accountErr, user){

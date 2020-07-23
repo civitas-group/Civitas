@@ -36,10 +36,24 @@ const postSchema = new mongoose.Schema({
     type: Boolean,
     required: true
   },
-  request_resolved: {
+  is_timed: {
     type: Boolean,
-    required: false
-  }
+    required: true
+  },
+  timed_request_info: {
+    expires_on: {
+      type: Date
+    },
+    expired: {
+      type: Boolean
+    },
+    time_left: {
+      type: String
+    }
+  },
+  request_status: {
+    type: String
+  } 
 });
 
 const Post = mongoose.model("Post", postSchema);

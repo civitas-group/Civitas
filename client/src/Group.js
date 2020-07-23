@@ -4,20 +4,20 @@ import { Redirect, withRouter } from 'react-router';
 import Loading from './components/Loading'
 import authorizeUser from './Auth'
 import { Button, Jumbotron, Badge, Row, Col} from 'reactstrap';
-import { CreatePost } from './Posts'
+import CreatePost from './components/CreatePost'
 import Announcements, { CreateAnnouncement } from './Announcements';
 
 class Group extends Component {
   state = {
-      shown_posts: [],
-      posts: [],
-      announcements: [],
-      redirect_to_root: false,
-      group_name: "",
-      group_id: "",
-      post_body_error: false,
-      post_title_error: false,
-      can_show_more_posts: false
+    shown_posts: [],
+    posts: [],
+    announcements: [],
+    redirect_to_root: false,
+    group_name: "",
+    group_id: "",
+    post_body_error: false,
+    post_title_error: false,
+    can_show_more_posts: false
   };
 
   POST_PAGE_SIZE = 10;
@@ -31,7 +31,8 @@ class Group extends Component {
       .then(result => {
         if (result){
           if (!result.data.group_ids.includes(this.props.match.params.group_id)
-            && !result.data.managed_groups_ids.includes(this.props.match.params.group_id)){
+            && !result.data.managed_groups_ids.includes(this.props.match.params.group_id)
+            && !result.data.is_super_admin){
             this.setState({redirect_to_root:true})
             return;
           }

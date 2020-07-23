@@ -22,7 +22,7 @@ const ConsoleUsersList = props => {
     console.log(props.group_id, apiendpoint)
     authorizeUser(token, apiendpoint, {'user_id':user_id}, 'patch')
       .then(result => {
-        console.log("result request to join:",result)
+        console.log("result approve request:",result)
         if (result){
           console.log(result)
           window.location.reload(false);

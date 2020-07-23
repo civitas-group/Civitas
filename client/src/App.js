@@ -6,7 +6,8 @@ import Home from './Home';
 import PublicHome from './PublicHome';
 import Group from './Group';
 import Posts from './Posts';
-import Console from './Console';
+import AdminConsole from './AdminConsole';
+import SuperAdminConsole from './SuperAdminConsole/SuperAdminConsole';
 import CreateGroup from './CreateGroup';
 import PageNotFound from './PageNotFound';
 import Notifications from './Notifications';
@@ -53,15 +54,18 @@ class App extends Component {
           </Group>
         </Route>
         <Route exact path="/groups/:group_id/console">
-          <Console cookies={this.props.cookies}/>
+          <AdminConsole cookies={this.props.cookies}/>
         </Route>
         <Route exact path="/joingroup"
           render={() => (<Group cookies={this.props.cookies}/>)} />
         <Route exact path="/creategroup"
           render={() => (<CreateGroup cookies={this.props.cookies}/>)} />
-        <Route component={PageNotFound}/>
         <Route exact path="/notifications"
           render={() => (<Notifications cookies={this.props.cookies}/>)} />
+        <Route exact path="/superadminconsole">
+          <SuperAdminConsole cookies={this.props.cookies}/>
+        </Route>
+        <Route component={PageNotFound}/>
       </Switch>
       </Router>
       </div>

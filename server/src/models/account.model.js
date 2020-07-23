@@ -36,6 +36,10 @@ const accountSchema = new mongoose.Schema({
        type: Boolean,
        required: true
    },
+   is_super_admin: {
+        type: Boolean,
+        required: true
+    },
    requested_groups_ids:[{
       type: mongoose.ObjectId,
       ref: "Group"

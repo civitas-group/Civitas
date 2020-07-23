@@ -29,6 +29,7 @@ signUpRouter.post("/regular", (req, res, next) => {
 		    email: req.body.email,
         group_ids: req.body.group_ids,
         is_supervisor: 0,
+        is_super_admin: false,
         managed_group_ids: req.body.managed_group_ids,
         requested_groups_ids:[],
         requested_groups_files:[],
@@ -62,6 +63,7 @@ signUpRouter.post("/regular", (req, res, next) => {
           }
           newAccount.password = hash;
           //newAccount.save()
+
           Account.create(newAccount, function(err, result){
             if(err){
               res.status(400).send({
@@ -70,6 +72,7 @@ signUpRouter.post("/regular", (req, res, next) => {
               });
               return;
             }
+
             // sign the token
             jwt.sign(
               // payload info
@@ -105,7 +108,8 @@ signUpRouter.post("/regular", (req, res, next) => {
                 }
               }
             );  
-         });
+          });
+
       });
     }) 
 });
@@ -138,12 +142,13 @@ signUpRouter.post("/admin", (req, res, next) => {
         });
         return;
       }
-      Account.create({
+      let accountInfo = {
         username: req.body.username,
         password: hash,
         email: req.body.email,
         group_ids: req.body.group_ids,
         is_supervisor: 1,
+        is_super_admin: false,
         managed_group_ids: req.body.managed_group_ids,
         requested_groups_ids:[],
         requested_groups_files:[],
@@ -158,7 +163,9 @@ signUpRouter.post("/admin", (req, res, next) => {
         + " your own groups - not joining any groups as a regular member."}],
         unread_notifications_count: 1,
         full_legal_name: req.body.full_legal_name
-       }, function(err, result) {
+       }
+
+      Account.create(accountInfo, function(err, result) {
         if(err){
           res.status(400).send({
             success: false,
@@ -201,6 +208,7 @@ signUpRouter.post("/admin", (req, res, next) => {
           }
         );  
       });
+
     });
   });
 });

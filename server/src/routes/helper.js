@@ -1,6 +1,6 @@
 var Account = require('../models/account.model');
 
-function addGroupIDS(user, decoded_jwt){
+function addUserInfo(user, decoded_jwt){
   let group_ids = [];
   let managed_groups_ids = [];
   let requested_groups_ids = [];
@@ -8,6 +8,7 @@ function addGroupIDS(user, decoded_jwt){
   let requested_to_join_groups_ids = [];
   let notifications = [];
   let unread_notifications_count = 0;
+  let is_super_admin = false;
 
   if ('group_ids' in user){ 
     group_ids = user.group_ids; 
@@ -30,7 +31,9 @@ function addGroupIDS(user, decoded_jwt){
   if ('unread_notifications_count' in user){
     unread_notifications_count = user.unread_notifications_count;
   }
-
+  if ('is_super_admin' in user){
+    is_super_admin = user.is_super_admin;
+  }
   let full = Object.assign(decoded_jwt, {
     group_ids: group_ids,
     managed_groups_ids: managed_groups_ids,
@@ -38,11 +41,11 @@ function addGroupIDS(user, decoded_jwt){
     invited_groups_ids: invited_groups_ids,
     requested_to_join_groups_ids: requested_to_join_groups_ids,
     notifications: notifications,
-    unread_notifications_count: unread_notifications_count
+    unread_notifications_count: unread_notifications_count,
+    is_super_admin: is_super_admin 
   })
   return full;
 }
-
 
 // NOTIFICATIONS
 
@@ -105,6 +108,6 @@ async function pushNotificationToSupervisors (Group, content){
   }
 }
 
-exports.addGroupIDS = addGroupIDS;
+exports.addUserInfo = addUserInfo;
 exports.pushNotification = pushNotification;
 exports.pushNotificationToSupervisors = pushNotificationToSupervisors;
