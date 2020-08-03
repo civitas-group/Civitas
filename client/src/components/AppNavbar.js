@@ -118,7 +118,11 @@ const AppNavbar = (props) => {
             Settings
           </DropdownToggle>
           <DropdownMenu right>
-            <DropdownItem>Profile</DropdownItem>
+            <Link to="/user-profile" style={{color:'white'}}>
+              <DropdownItem>
+                Profile
+              </DropdownItem>
+            </Link>
             <DropdownItem onClick={toggleLogoutModal}>Logout</DropdownItem>
           </DropdownMenu>
         </ButtonDropdown>
