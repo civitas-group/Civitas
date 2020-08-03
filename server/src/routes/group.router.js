@@ -1124,26 +1124,4 @@ groupRouter.patch("/deny_user_request/:group_id", authMiddleware, (req, res, nex
     });
   }
 });
-// set the denied field to true.
-
-/* add new apis
-// combined api for user_request and join
-
-// delete from requested_to_join_groups_ids, add to groups_ids in account.model
-// delete from requested_to_join_user_ids add to user_ids in group.model
-// send notification
-groupRouter.patch("/accept_user_request/:group_id", authMiddleware, (req, res, next)
-
-// delete from requested_to_join_groups_ids, delete from requested_to_join_user_ids
-// send notification
-groupRouter.patch("/deny_user_request/:group_id", authMiddleware, (req, res, next)
-// set the denied field to true.
-
-/*
-  For the notification system:
-  admin: user's join group request, user is accepted/rejected for request (creating group approved)
-  user: get invited to join a group, admin's responce for joining group request
-
-  // new comment for post????
-*/
 module.exports = groupRouter;
