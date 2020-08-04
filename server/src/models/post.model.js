@@ -1,6 +1,16 @@
 // Mongoose schema that represents a Post.
 
 const mongoose = require('mongoose');
+const tag_info = new mongoose.Schema({
+  _id:false,
+  tag_name:{
+      type: String
+  },
+  // user name of the tag author
+  author:{
+      type: String
+  }
+});
 const postSchema = new mongoose.Schema({
   title: {
     type: String,
@@ -53,7 +63,8 @@ const postSchema = new mongoose.Schema({
   },
   request_status: {
     type: String
-  } 
+  },
+  tags_info:[tag_info]
 });
 
 const Post = mongoose.model("Post", postSchema);
