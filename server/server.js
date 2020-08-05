@@ -19,6 +19,7 @@ const devRouter = require('./src/routes/dev.router');
 const announcementRouter = require('./src/routes/announcement.router');
 const notificationRouter = require('./src/routes/notification.router');
 const userRouter = require('./src/routes/user.router');
+const tagRouter = require('./src/routes/tag.router');
 
 const SESSION_DURATION = 1000 * 60 * 60// 1 hour
 
@@ -46,6 +47,7 @@ app.use('/api/account', accountRouter);
 app.use('/api/authorize',authRouter);
 app.use('/api/group', groupRouter);
 app.use('/api/dev', devRouter);
+app.use('/api/tag', tagRouter);
 
 // listen
 app.listen(PORT, function () {
