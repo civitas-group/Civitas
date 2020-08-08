@@ -464,15 +464,27 @@ tagRouter.patch("/edit_post_tag",authMiddleware,(req,res,next) => {
                 // update both the post and group
                 else{
                     var new_tags = groupFind.tags
-                    for (i = 0; i < req.body.tag_names.length; i++) {
-                        var tag_index = groupFind.tags.findIndex(i => i.key === req.body.tag_names[i])
-                        // check whether the tag exists in the post
-                        // only add those that are not existed
-                        let post_index = new_tags[tag_index]['post_ids'].findIndex(i => i.post_id === req.body.post_id)
+                    // use is_deleted_tags to track which of the old tags are deleted
+                    let is_deleted_tags = Array(postFind.tags_info.length).fill(1);
+                    for (j = 0; j < req.body.tag_names.length; j++) {
+                        let tag_index = groupFind.tags.findIndex(i => i.key === req.body.tag_names[j])
+                        let index_in_postFind = postFind.tags_info.findIndex(i => i.tag_name === req.body.tag_names[j])
+                        is_deleted_tags[index_in_postFind] = 0
+                        // add to that are not existed
+                        let post_index = new_tags[tag_index]['post_ids'].findIndex
+                        (i => i.post_id.toString() === req.body.post_id.toString())
                         if(post_index === -1){
                             new_tags[tag_index]['post_ids'].push({"post_id":req.body.post_id})
                         }
-                        
+                    }
+                    // delete tags that are now missing in Group db
+                    for (k = 0; k < is_deleted_tags.length; k++) {
+                        if(is_deleted_tags[k] === 1){
+                            let tag_name = postFind.tags_info[k]['tag_name']
+                            let tag_index = new_tags.findIndex(i => i.key === tag_name)
+                            let post_index = new_tags[tag_index]['post_ids'].indexOf({"post_id":req.body.post_id})
+                            new_tags[tag_index]['post_ids'].splice(post_index,1)
+                        }
                     }
                     var group_fields_to_update = {'$set':{"tags":new_tags}}
                     // update the post
