@@ -78,7 +78,8 @@ const accountSchema = new mongoose.Schema({
         }
    }],
    total_points:{
-    type: Number
+    type: Number,
+    default:0
    }
 });
 
