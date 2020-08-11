@@ -71,7 +71,7 @@ reviewRouter.patch("/approve",authMiddleware,(req,res,next) => {
                 return;
             } 
             else{
-                let review_updates = {'$set': {"verification_status" : 'accepted'}};
+                let review_updates = {'$set': {"verification_status" : 'approved'}};
                 Review.findByIdAndUpdate(review_id, review_updates, { useFindAndModify: false },
                 async function (review_update_err, new_review) {
                     if(review_update_err || !new_review){
