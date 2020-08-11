@@ -75,16 +75,15 @@ const groupSchema = new mongoose.Schema({
             unique: true
         },
         post_ids:[post_info]
+    }],
+    completed_reviews:[{
+        type: mongoose.ObjectId,
+        ref: "Review"
+    }],
+    pending_reviews:[{
+        type: mongoose.ObjectId,
+        ref: "Review"
     }]
-    /*
-    tags:[{
-        key:tag_name,
-        post_ids:[{
-            type: mongoose.ObjectId,
-            ref: "Post"
-        }]
-    }]
-    */
 });
 
 const Group = mongoose.model("Group", groupSchema);

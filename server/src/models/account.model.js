@@ -76,7 +76,10 @@ const accountSchema = new mongoose.Schema({
             type: String,
             required:true
         }
-   }]
+   }],
+   total_points:{
+    type: Number
+   }
 });
 
 const Account = mongoose.model("Account", accountSchema);
