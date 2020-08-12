@@ -45,7 +45,7 @@ class UserProfile extends Component {
     render() {
         console.log("User info: ", this.props.user_info);
         if (!this.props.logged_in) {
-            return (<Redirect to="/" />);
+            return (<Redirect to="/" />)
         }
         return (
         <div style={{textAlign: "center"}}>

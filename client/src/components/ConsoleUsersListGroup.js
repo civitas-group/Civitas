@@ -48,9 +48,8 @@ const ConsoleUsersList = props => {
         {(key.toString() === (props.users.length - 1).toString()) ? 
           <ToastHeader>
           <Row>
-            <Col style={{marginTop:'0.35em',
-            paddingLeft:'1em', paddingRight:'1em', display:'flex',
-              justifyContent: 'left'}}>
+            <Col style={{paddingLeft:'1em', paddingRight:'1em', 
+              display:'flex', justifyContent: 'left'}}>
             Full Legal Name
             </Col>
             <Col style={{display:'flex',justifyContent: 'left'}}>

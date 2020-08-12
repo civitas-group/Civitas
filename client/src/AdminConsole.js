@@ -4,7 +4,8 @@ import { Redirect, withRouter} from 'react-router';
 import { connect } from 'react-redux'
 import Loading from './components/Loading'
 import ConsoleUsersListGroup from './components/ConsoleUsersListGroup'
-import { Jumbotron, Button, Badge, ButtonGroup } from 'reactstrap';
+import ConsoleReviewsListGroup from './components/ConsoleReviewsListGroup'
+import { Jumbotron, Button, Badge, ButtonGroup, Collapse } from 'reactstrap';
 
 class AdminConsole extends Component {
   constructor(props){
@@ -16,20 +17,26 @@ class AdminConsole extends Component {
       loading_users: true,
       loading_invited_users: true,
       loading_requested_to_join_users: true,
+      loading_reviews: true,
       cosupervisor_ids: [],
       user_ids: [],
       users: [],
       invited_user_ids: [],
       invited_users: [],
+      requested_to_join_user_ids: [],
+      requested_to_join_users: [],
+      pending_reviews: [],
+      completed_reviews: [],
+      ratings: [],
       show_users: false,
       show_requested_to_join_users: false,
       show_invited_users: false,
-      requested_to_join_user_ids: [],
-      requested_to_join_users: []
+      show_reviews: false,
     }
     this.toggleRequested = this.toggleRequested.bind(this);
     this.toggleInvited = this.toggleInvited.bind(this);
     this.toggleRegular = this.toggleRegular.bind(this);
+    this.toggleReviews = this.toggleReviews.bind(this);
   }
   componentDidMount() {
     console.log('Console mount')
@@ -100,6 +107,35 @@ class AdminConsole extends Component {
         //this.props.dispatch({ type: 'LOGOUT' });
       })
   }
+  loadReviews(pending_reviews, completed_reviews){
+    console.log('load reviews:', pending_reviews, completed_reviews)
+    this.setState({ loading_reviews: true })
+    let token = this.props.cookies.get('token');
+    let req_body = {
+      'pending_reviews': pending_reviews,
+      'completed_reviews': completed_reviews
+    }
+    authorizeUser(token, '/review/findmultiple', req_body)
+      .then(result => {
+        console.log("result reviews:",result)
+        if (result){
+          this.setState({
+            pending_reviews: result.data.pending_reviews,
+            completed_reviews: result.data.completed_reviews,
+            ratings: result.data.ratings,
+            loading_reviews: false,
+          })
+        }
+        else {
+          console.log('Error: no result on mount.')
+          //this.props.dispatch({ type: 'LOGOUT' });
+        }
+      })
+      .catch(error => {
+        console.log(error)
+        //this.props.dispatch({ type: 'LOGOUT' });
+      })
+  }
   toggleRequested(){
     if(this.props.user_info.requested_to_join_user_ids.length !==
       this.state.requested_to_join_users.length){
@@ -110,6 +146,7 @@ class AdminConsole extends Component {
     this.setState({
       show_requested_to_join_users: !this.state.show_requested_to_join_users,
       show_invited_users: false,
+      show_reviews: false,
       show_users: false
     })
   }
@@ -122,6 +159,7 @@ class AdminConsole extends Component {
     this.setState({
       show_requested_to_join_users: false,
       show_invited_users: !this.state.show_invited_users,
+      show_reviews: false,
       show_users: false
     })
   }
@@ -133,7 +171,24 @@ class AdminConsole extends Component {
     this.setState({
       show_requested_to_join_users: false,
       show_invited_users: false,
+      show_reviews: false,
       show_users: !this.state.show_users
+    })
+  }
+  toggleReviews(){
+    if(this.props.user_info.pending_reviews.length !==
+      this.state.pending_reviews.length ||
+      this.props.user_info.completed_reviews.length !==
+      this.state.completed_reviews.length){
+      this.loadReviews(this.props.user_info.pending_reviews, 
+        this.props.user_info.completed_reviews);
+    }
+    
+    this.setState({
+      show_requested_to_join_users: false,
+      show_invited_users: false,
+      show_users: false,
+      show_reviews: !this.state.show_reviews
     })
   }
   render() {
@@ -169,13 +224,28 @@ class AdminConsole extends Component {
         <ButtonGroup>
           <Button color="primary" onClick={this.toggleRequested}
             active={this.state.show_requested_to_join_users}>
-            Show Requested Users</Button>
+            Requested Users {' '}
+            {this.props.user_info.requested_to_join_user_ids.length > 0 ?
+              <Badge color="primary" pill>
+                {this.props.user_info.requested_to_join_user_ids.length}
+              </Badge>      
+            : null }
+          </Button>
           <Button color="primary" onClick={this.toggleInvited}
             active={this.state.show_invited_users}>
-            Show Invited Users</Button>
+            Invited Users</Button>
           <Button color="primary" onClick={this.toggleRegular}
             active={this.state.show_users}>
-            Show Joined Users</Button>
+            Joined Users</Button>
+          <Button color="light" onClick={this.toggleReviews}
+            active={this.state.show_reviews}>
+            Approve Reviews {' '}
+            {this.props.user_info.pending_reviews.length > 0 ?
+              <Badge color="primary" pill>
+                {this.props.user_info.pending_reviews.length}
+              </Badge> 
+            : null}
+          </Button>
         </ButtonGroup>
 
         <ConsoleUsersListGroup
@@ -192,6 +262,27 @@ class AdminConsole extends Component {
           token={this.props.cookies.get('token')}
           dispatch={this.props.dispatch}
         />
+        <ConsoleReviewsListGroup
+          show_reviews={this.state.show_reviews}
+          pending_reviews_ids={this.props.user_info.pending_reviews}
+          completed_reviews_ids={this.props.user_info.completed_reviews}
+          pending_reviews={this.state.pending_reviews}
+          completed_reviews={this.state.completed_reviews}
+          ratings={this.state.ratings}
+          group_id={this.props.match.params.group_id}
+          token={this.props.cookies.get('token')}
+          dispatch={this.props.dispatch}
+        />
+        {/*<Collapse isOpen={this.state.show_reviews}>
+          {Object.keys(this.state.pending_reviews).map(function(key) {
+            return (
+              <div key={key}>
+                <span>{this.state.pending_reviews[key].requester}</span>
+              </div>
+            )
+
+          }.bind(this))}
+        </Collapse>*/}
       </Jumbotron>
       </div>
       );

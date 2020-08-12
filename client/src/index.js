@@ -16,7 +16,9 @@ const initialState = {
   logged_in: false,
   user_info: {
   },
-  loading: true
+  loading: true,
+  group_users_map: {},
+  group_users_loading: true
 };
 function reducer(state = initialState, action) {
   switch(action.type){
@@ -46,6 +48,12 @@ function reducer(state = initialState, action) {
         logged_in: true,
         loading: false
       }
+    case "GROUP_USERS_MAP_ADD":
+      return {
+        ...state,
+        group_users_map: action.payload,
+        group_users_loading: false
+      }
     case "NOTIFICATIONS_MARK_RELOAD":
       return {
         ...state,
@@ -65,7 +73,8 @@ function reducer(state = initialState, action) {
     case "LOADING":
       return {
         ...state,
-        loading: true
+        loading: true,
+        group_users_loading: true
       };
     case "STOP_LOADING":
       return {

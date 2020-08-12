@@ -9,6 +9,7 @@ function addUserInfo(user, decoded_jwt){
   let notifications = [];
   let unread_notifications_count = 0;
   let is_super_admin = false;
+  let total_points = 0;
 
   if ('group_ids' in user){ 
     group_ids = user.group_ids; 
@@ -34,6 +35,9 @@ function addUserInfo(user, decoded_jwt){
   if ('is_super_admin' in user){
     is_super_admin = user.is_super_admin;
   }
+  if ('total_points' in user){
+    total_points = user.total_points;
+  }
   let full = Object.assign(decoded_jwt, {
     group_ids: group_ids,
     managed_groups_ids: managed_groups_ids,
@@ -42,7 +46,8 @@ function addUserInfo(user, decoded_jwt){
     requested_to_join_groups_ids: requested_to_join_groups_ids,
     notifications: notifications,
     unread_notifications_count: unread_notifications_count,
-    is_super_admin: is_super_admin 
+    is_super_admin: is_super_admin,
+    total_points: total_points
   })
   return full;
 }

@@ -1,7 +1,7 @@
-import React, { Component, useState, useEffect } from 'react';
-import { Button, Toast, ToastBody, ToastHeader, Badge, Collapse, 
-  Modal, ModalHeader, ModalBody, Form, FormGroup,
-  Input, Alert, ButtonGroup } from 'reactstrap';
+import React, { Component, useState, updateState, useEffect } from 'react';
+import { Button, Toast, ToastBody, ToastHeader, 
+  Badge, Collapse, Modal, ModalHeader, ModalBody, 
+  ModalFooter, ButtonGroup, Row, Col } from 'reactstrap';
 import authorizeUser from './Auth';
 import Comments, { CreateComment } from './Comments';
 import { connect } from 'react-redux';
@@ -11,47 +11,272 @@ import { RiTimerLine } from 'react-icons/ri';
 import { TiDelete } from 'react-icons/ti';
 import { MdDone, MdMoreHoriz }from 'react-icons/md';
 import './css/Posts.css';
+import CivitasLogoSmall from './img/CivitasLogoSmall.png';
+import CivitasLogoSmallWhite from './img/CivitasLogoSmallWhite.png';
+import { IoIosCheckmarkCircle } from 'react-icons/io';
 
 function EmptyPosts(){
   return(
-    <h5 style={{color:'grey'}}>No posts made yet.</h5>
+    <h5 style={{color:'grey'}}>No posts found.</h5>
   )
 }
 
-const Post = (props) => {
+class ResolveModal extends Component {
+  constructor(props){
+    super(props);
+    this.state = {
+      show_users: false,
+      chosenResolvers: [],
+      chosenResolversRatings: []
+    }
+    this.toggleChooseResolver = this.toggleChooseResolver.bind(this);
+    this.chooseResolverRating = this.chooseResolverRating.bind(this);
+  }
 
-  // if post: status is post
-  // if request: status can be: open, closed, resolved
-  const [status, setStatus] = useState('post');
-  const [toastBGColor, setToastBGColor] = useState('white');
-  const [titleToastHeaderBGColor, setTitleToastHeaderBGColor] 
-    = useState('#FCFCFD');
-  const [badgeColor, setBadgeColor] = useState('warning');
-  const [titleColor, setTitleColor] = useState('black');
-  const [bodyToastBGColor, setBodyToastBGColor] = useState('white');
-  useEffect(() => {
-    if(props.post.is_request){
-      setStatus(props.post.request_status)
-      if (props.post.request_status === 'open'){
-        setBadgeColor('warning');
-        setToastBGColor('white');
-        setTitleToastHeaderBGColor('#2D70CE');
-        setTitleColor('white');
-      } else if (props.post.request_status === 'resolved'){
-        setBadgeColor('success');
-        setToastBGColor('#92E89C');
-        setTitleToastHeaderBGColor('#92E89C');
-        setTitleColor('#28A745');
-        setBodyToastBGColor('#70C182');
-      } else if (props.post.request_status === 'closed'){
-        setBadgeColor('danger');
-        setToastBGColor('#D60606');
-        setTitleToastHeaderBGColor('#D60606');
-        setTitleColor('#3F0F14');
-        setBodyToastBGColor('#C1303E');
+  toggleChooseResolver = async (index) => {
+    if (this.state.chosenResolvers.length !== 
+      (Object.keys(this.props.group_users_map)).length){
+        await this.setState({
+          chosenResolvers: Array.from({
+            length: (Object.keys(this.props.group_users_map)).length
+          }).map(x => false)
+        })
+
+        await this.setState({
+          chosenResolversRatings: Array.from({
+            length: (Object.keys(this.props.group_users_map)).length
+          }).map(x => 5)
+        })
+      }
+    let tempChosenResolvers = this.state.chosenResolvers;
+    tempChosenResolvers[index] = !tempChosenResolvers[index];
+    await this.setState({
+      chosenResolvers: tempChosenResolvers
+    })
+  }
+  chooseResolverRating = async (index, rating) => {
+    let tempChosenResolverRatings = this.state.chosenResolversRatings;
+    tempChosenResolverRatings[index] = rating;
+    console.log(tempChosenResolverRatings)
+    await this.setState({
+      chosenResolversRatings: tempChosenResolverRatings
+    })
+  } 
+
+  resolveRequest = (post_id) => {
+    if (this.props.deleteConfirm) return;
+    //console.log(this.state.chosenResolvers, this.state.chosenResolversRatings)
+    let resolvers_ids = []
+    let resolvers_usernames = []
+    let ratings = []
+    if (this.state.show_users){
+      for (let i = 0; i < Object.keys(this.props.group_users_map).length; ++i){
+        //console.log(Object.keys(this.props.group_users_map)[i])
+        if (this.state.chosenResolvers[i]){
+          resolvers_usernames.push(Object.keys(this.props.group_users_map)[i])
+          resolvers_ids.push(
+            this.props.group_users_map[Object.keys(this.props.group_users_map)[i]].id
+          )
+          ratings.push(this.state.chosenResolversRatings[i])
+        }
       }
     }
-  });
+
+
+    this.props.dispatch({ type: 'LOADING' });
+    let token = this.props.cookies.get('token');
+    let endpoint = '/posts/change_status?status=resolved';
+
+    console.log('post resolved endpoint:', 
+      endpoint)
+    let req_body = {
+      'post_id': post_id,
+      'group_id': this.props.group_id,
+      'resolvers_ids': resolvers_ids,
+      'resolvers_usernames': resolvers_usernames,
+      'ratings': ratings
+    }
+    authorizeUser(token, endpoint, req_body, 'patch')
+      .then(result => {
+        console.log("result resolved post:",result)
+        if (result){ window.location.reload(false);}
+        else {
+          console.log('Error: no result on resolving request.')
+          this.props.dispatch({ type: 'LOGOUT' });
+        }
+      })
+      .catch(error => {
+        console.log(error)
+        this.props.dispatch({ type: 'LOGOUT' });
+      })
+  }
+  render(){
+    return (
+      <div>
+      <ModalHeader>
+        <div style={{paddingBottom:'0.5em'}}>
+          Did anyone help resolve this request?
+        </div>
+        <ButtonGroup>
+          <Button color="primary" outline={!this.state.show_users}
+            onClick={()=>{
+              this.setState({
+                show_users: !this.state.show_users
+              })
+            }}>
+            Select Helpers
+          </Button>
+          <Button color="success" onClick={()=>{
+            this.resolveRequest(this.props.post_id)
+            }}>
+            {this.state.show_users ? 'Selected, ' : 'No, '} 
+            Mark as Resolved
+          </Button>
+        </ButtonGroup>
+      </ModalHeader>
+      <ModalBody>
+
+        <Collapse isOpen={this.state.show_users}>
+        <ButtonGroup vertical>
+          {Object.keys(Object.keys(this.props.group_users_map))
+            .map(function(key){
+              //{(Object.keys(props.group_users_map))[key]}
+              if ((Object.keys(this.props.group_users_map))[key] 
+                === this.props.username){
+                return (null);
+              }
+                
+              return (
+                <div key={key}>
+                <Button style={{display:'flex', justifyContent:'left',
+                  color: this.state.chosenResolvers[key] ? '#007BFF'
+                    : 'black'}}
+                  color={this.state.chosenResolvers[key] ? "link" : "link"} 
+                  size="sm"
+                  onClick={()=>{this.toggleChooseResolver(key)}}>
+                  {(Object.keys(this.props.group_users_map))[key]}
+                  {this.state.chosenResolvers[key] ? 
+                    <IoIosCheckmarkCircle 
+                      style={{marginTop: '0.35em', 
+                        marginLeft:'0.2em'}}/> 
+                      : null }
+                </Button>
+
+                <Collapse isOpen={this.state.chosenResolvers[key]}
+                  style={{paddingLeft: '0.7em'}}>
+                  <span style={{color:'#007BFF', fontSize:'14px'}}>
+                    Rating:{' '}</span>
+                  <ButtonGroup>
+                   
+                  <Button color={this.state.chosenResolversRatings[key] >= 1 ?
+                    "primary":"link"} size="sm"
+                    onClick={()=>{this.chooseResolverRating(key, 1)}}>
+                    <img src={this.state.chosenResolversRatings[key] >= 1 ?
+                      CivitasLogoSmallWhite : CivitasLogoSmall} 
+                      width='10em'/>
+                  </Button>
+                  
+                  <Button color={this.state.chosenResolversRatings[key] >= 2 ?
+                    "primary":"link"} size="sm"
+                    onClick={()=>{this.chooseResolverRating(key, 2)}}>
+                    <img src={this.state.chosenResolversRatings[key] >= 2 ?
+                      CivitasLogoSmallWhite :CivitasLogoSmall} 
+                      width='10em'/>
+                  </Button>
+
+                  <Button color={this.state.chosenResolversRatings[key] >= 3 ?
+                    "primary":"link"} size="sm"
+                    onClick={()=>{this.chooseResolverRating(key, 3)}}>
+                    <img src={this.state.chosenResolversRatings[key] >= 3 ?
+                      CivitasLogoSmallWhite :CivitasLogoSmall} 
+                      width='10em'/>
+                  </Button>
+
+                  <Button color={this.state.chosenResolversRatings[key] >= 4 ?
+                    "primary":"link"} size="sm"
+                    onClick={()=>{this.chooseResolverRating(key, 4)}}>
+                    <img src={this.state.chosenResolversRatings[key] >= 4 ?
+                      CivitasLogoSmallWhite :CivitasLogoSmall} 
+                      width='10em'/>
+                  </Button>
+
+                  <Button color={this.state.chosenResolversRatings[key] == 5 ?
+                    "primary":"link"} size="sm"
+                    onClick={()=>{this.chooseResolverRating(key, 5)}}>
+                    <img src={this.state.chosenResolversRatings[key] == 5 ?
+                      CivitasLogoSmallWhite :CivitasLogoSmall} 
+                      width='10em'/>
+                  </Button>
+                  <Button 
+                    color={this.state.chosenResolversRatings[key] >= 4 ?
+                    "success":
+                    this.state.chosenResolversRatings[key] >= 2 ?
+                    "warning" : "danger"} size="sm"
+                    onClick={()=>{
+                      this.state.chosenResolversRatings[key] == 5 ?
+                      this.chooseResolverRating(key, 1) 
+                      : this.chooseResolverRating(key, 
+                      (this.state.chosenResolversRatings[key] + 1)
+                      )
+                    }}
+                    >
+                    {this.state.chosenResolversRatings[key]}
+                  </Button>
+
+                  </ButtonGroup>
+
+                </Collapse> 
+                </div>
+              );
+          }.bind(this))}
+        </ButtonGroup>
+        </Collapse>
+      </ModalBody>
+    </div>
+    )
+  }
+}
+
+const Post = (props) => {
+  // if post: status is post
+  // if request: status can be: open, closed, resolved
+  const status = props.post.is_request ? props.post.request_status : 'post';
+  const toastBGColor = 
+    props.post.is_request ? 
+      props.post.request_status  === 'open' ? 'white'
+      : props.post.request_status === 'resolved' ? '#92E89C'
+      : '#D60606'
+    : 'white';
+  const titleToastHeaderBGColor = 
+    props.post.is_request ? 
+      props.post.request_status  === 'open' ? '#2D70CE'
+      : props.post.request_status === 'resolved' ? '#92E89C'
+      : '#D60606'
+    : '#FCFCFD';
+  const requestBadgeColor =
+    props.post.is_request ? 
+      props.post.request_status  === 'open' ? 'warning'
+      : props.post.request_status === 'resolved' ? 'success'
+      : 'danger'
+    :'warning';
+  const authorBadgeColor =
+    props.post.is_request ? 
+      props.post.request_status  === 'open' ? 'light'
+      : props.post.request_status === 'resolved' ? 'success'
+      : 'danger'
+    : 'primary';
+  const titleColor =
+    props.post.is_request ? 
+      props.post.request_status  === 'open' ? 'white'
+      : props.post.request_status === 'resolved' ? '#28A745'
+      : '#3F0F14'
+    : 'black';
+  const bodyToastBGColor =
+    props.post.is_request ? 
+      props.post.request_status  === 'open' ? 'white'
+      : props.post.request_status === 'resolved' ? '#70C182'
+      : '#C1303E'
+    :'white';
 
   const [likeChanged, setLikeChanged] = useState(false);
   const [liked, setLiked] = 
@@ -120,8 +345,14 @@ const Post = (props) => {
 
     console.log('posts change_status (' + status_param  + ') endpoint:', 
       endpoint)
-    authorizeUser(token, endpoint, 
-      {post_id: post_id}, 'patch')
+    let req_body = {
+      'post_id': post_id,
+      'group_id': props.group_id,
+      'resolvers_ids': [],
+      'resolvers_usernames': [],
+      'ratings': []
+    }
+    authorizeUser(token, endpoint, req_body, 'patch')
       .then(result => {
         console.log("result resolve post:",result)
         if (result){ window.location.reload(false);}
@@ -140,6 +371,10 @@ const Post = (props) => {
     setLikeList(!likeList);
     console.log(props.post.like_ids)
   }
+  const [resolveModal, setResolveModal] = useState(false);
+  const toggleResolveModal = async () => {
+    setResolveModal(!resolveModal);
+  }
   const [submitting_like, setSubmitting] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState(false);
   const [moreOptions, setMoreOptions] = useState(false);
@@ -152,7 +387,7 @@ const Post = (props) => {
       <b style={{color: titleColor}}>
         { props.post.title }</b>{' '}
       {props.post.is_request ? 
-      <Badge pill  color={badgeColor}>
+      <Badge pill  color={requestBadgeColor}>
       Request {' '}
       {status === 'closed' ? <AiOutlineStop/> :
       status === 'resolved' ? 
@@ -168,13 +403,6 @@ const Post = (props) => {
       </Badge>:null}
 
       {props.is_post_owner || props.is_supervisor ? 
-      <Button style={{padding:'0', paddingBottom:'0.4em', 
-      color:props.post.is_request ? 'white' : 'black'}} 
-      onClick={()=>{setMoreOptions(!moreOptions)}}
-      disabled={deleteConfirm} color="link"><MdMoreHoriz/>
-      </Button>: null}
-
-      {props.is_post_owner || props.is_supervisor ? 
       <Button onClick={()=>{setDeleteConfirm(!deleteConfirm)}} 
         disabled={moreOptions}
         style={{padding:'0',paddingBottom:'0.3em',
@@ -185,6 +413,13 @@ const Post = (props) => {
         style={{padding:'0',paddingBottom:'0.3em',
         color: 'white'}} size="lg" color="link">
         {unhide ? <AiFillEye/> : <AiFillEyeInvisible/>}
+      </Button>: null}
+
+      {props.is_post_owner || props.is_supervisor ? 
+      <Button style={{padding:'0', paddingBottom:'0.4em', 
+      color:props.post.is_request ? 'white' : 'black'}} 
+      onClick={()=>{setMoreOptions(!moreOptions)}}
+      disabled={deleteConfirm} color="link"><MdMoreHoriz/>
       </Button>: null}
 
       {props.is_post_owner || props.is_supervisor ? 
@@ -216,9 +451,9 @@ const Post = (props) => {
         : <Button size="sm" /* Regular Post options */
         color="primary">Add more options here</Button>) : null}
         {moreOptions && status === 'open' ? 
-        <Button size="sm" onClick={()=>{
-          changeRequestStatus(props.post._id, 'resolved')}}
-        color="success">Resolve</Button> : null }
+        //changeRequestStatus(props.post._id, 'resolved')}}
+        <Button size="sm" onClick={toggleResolveModal}
+          color="success">Resolve</Button> : null }
         {moreOptions && status === 'open' ? 
         <Button size="sm" onClick={()=>{
           changeRequestStatus(props.post._id, 'closed')}}
@@ -228,12 +463,44 @@ const Post = (props) => {
       : null}
 
       </h5 >
-      
+      <div>
+        <Button color="link" style={{padding:'0'}}>
+          {Object.keys(props.post.tags_info).map(function(key) {
+            return (
+              <Badge key={key} color="info" style={{margin:'0.1em'}}>
+                {props.post.tags_info[key].tag_name}
+              </Badge>
+            );
+          })}
+        </Button>
+      </div>
       <Button color="link" style={{padding:'0'}}>
-        <Badge color={(props.post.is_request ? 'light' : 'primary')}>
-        @{ props.post.author }</Badge>
+        <Badge color={authorBadgeColor}>
+        @{ props.post.author } {' '}
+        {props.group_users_loading ? null :
+          
+          <Badge pill color={(props.post.is_request ? 'primary' : 'light')}
+            style={{marginTop:'0.2em'}}>
+            <span style={{color:props.post.is_request ? 'white':'#007BFF'}}>
+            { typeof (props.group_users_map) !== 'object' ? null 
+              : props.group_users_map[props.post.author].total_points ?
+              props.group_users_map[props.post.author].total_points
+              : 0
+            }
+            </span>
+            
+            <img src={props.post.is_request ? 
+                CivitasLogoSmallWhite : CivitasLogoSmall } 
+              width='10em'style={{marginBottom:'0.15em'}}/>
+          </Badge>
+        }
+        </Badge>
+
       </Button>
-      {'  '}<div>
+      {'  '}
+
+
+      <div>
       <small style={{justifyContent:"right", marginTop:'1em',
       color: (props.post.is_request ? 'white' : 'black')}}>
         {props.post.created ? props.post.created.slice(0,10) 
@@ -258,6 +525,17 @@ const Post = (props) => {
               );
             })}
           </ModalBody>
+        </Modal>
+        <Modal isOpen={resolveModal} toggle={toggleResolveModal}>
+          <ResolveModal username={props.username}
+            group_users_map={props.group_users_map}
+            group_users_loading={props.group_users_loading}
+            title={props.post.title}
+            post_id={props.post._id}
+            group_id={props.group_id}
+            deleteConfirm={deleteConfirm}
+            cookies={props.cookies}
+            dispatch={props.dispatch}/>
         </Modal>
         <Button style={{padding:'0'}}  
           color="link" onClick={toggleLikeList}>
@@ -303,11 +581,9 @@ const Post = (props) => {
   )
 }
 
-
 const Posts = (props) =>  {
   let posts = props.posts;
-  console.log(posts);
-
+  console.log(props.group_users_map)
   if (Object.keys(props.user_info).length === 0){
     return (null)
   }
@@ -316,30 +592,34 @@ const Posts = (props) =>  {
       <div id="Posts">
         { Object.keys(posts).map(function(key) {
           return (
-            <div key={key}  style={{paddingTop:"2em"}}>
+            <div key={key} style={{paddingTop:"2em"}}>
               <Post email={props.user_info.email}
                 is_supervisor={props.user_info.is_supervisor}
                 is_post_owner={props.username === posts[key].author}
-                post={posts[key]} 
+                post={posts[key]}
                 cookies={props.cookies}
                 dispatch={props.dispatch}
                 group_id={props.group_id}
-                username={props.username}>
+                username={props.username}
+                group_users_map={props.group_users_map}
+                group_users_loading={props.group_users_loading}
+                >
                   <Comments cookies={props.cookies}/>
               </Post>
             </div>
           );
         }.bind(this))}
-        { Object.keys(posts).length === 0 ? <EmptyPosts />: null}
+        { Object.keys(props.posts).length === 0 ? <EmptyPosts />: null}
       </div>
     </div>
   );
-
 }
 
 
 const mapStateToProps = (state) => ({
   user_info: state.user_info,
+  group_users_map: state.group_users_map,
+  group_users_loading: state.group_users_loading
 });
 
 export default connect(mapStateToProps, null)(Posts);

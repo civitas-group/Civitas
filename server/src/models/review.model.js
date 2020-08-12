@@ -12,9 +12,13 @@ const reviewSchema = new mongoose.Schema({
         ref: "Group",
         required:true
     },
-    requester:{
+    requester_id:{
         type: mongoose.ObjectId,
         ref: "Account",
+        required:true
+    },
+    requester_username:{
+        type: String,
         required:true
     },
     resolvers_ids: [{

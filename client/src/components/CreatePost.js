@@ -1,9 +1,11 @@
 import React, { Component } from 'react';
-import { Button, Badge, Row, CustomInput, Collapse,
+import { Button, Badge, Row, Col, CustomInput, Collapse,
   Modal, ModalHeader, ModalBody, Form, FormGroup,
-  Input, Alert } from 'reactstrap';
+  Input, Alert, DropdownToggle, Dropdown, 
+  DropdownMenu, DropdownItem } from 'reactstrap';
 import authorizeUser from '../Auth';
 import { RiShoppingBasketLine } from 'react-icons/ri';
+import { IoIosCheckmarkCircle } from 'react-icons/io';
 import TextField from '@material-ui/core/TextField';
 
 class CreatePost extends Component {
@@ -15,7 +17,7 @@ class CreatePost extends Component {
   
   constructor(props){
     super(props);
-    this.state ={
+    this.state = {
       modal: false,
       alertOpen: false,
       body_error: false,
@@ -28,7 +30,9 @@ class CreatePost extends Component {
       date: "2020-07-23",
       time: "15:00",
       is_timed: false,
-      expires_on: ""
+      expires_on: "",
+      tags_dropdown: false,
+      chosen_tags: []
     };
   }
   // validate if time has already passed
@@ -80,7 +84,6 @@ class CreatePost extends Component {
         console.log(this.dateParse(this.state.date, this.state.time))
       }
     }
-
   };
 
   async submitForm(e) {
@@ -124,6 +127,17 @@ class CreatePost extends Component {
       } 
     }
 
+    let tags_info = [];
+    for (let i = 0; i < this.props.tags.length; ++i){
+      if (this.state.chosen_tags[i]){
+        console.log('YES')
+        tags_info.push({
+          'tag_name': this.props.tags[i].key,
+          'author': this.props.username,
+        })
+      } 
+    }
+
     let req_body = {
       'title':this.state.title, 
       'body': this.state.body,
@@ -131,6 +145,7 @@ class CreatePost extends Component {
       'group_id': this.props.group_id,
       'is_request': this.props.is_request,
       'is_timed': this.state.is_timed,
+      'tags_info': tags_info
     };
     if (this.state.is_timed) {
       req_body = Object.assign(req_body, { 
@@ -159,6 +174,17 @@ class CreatePost extends Component {
 
   toggle = () => this.setState({modal: !this.state.modal});
   DismissAlert = () => this.setState({alertOpen: !this.state.alertOpen})
+  toggleChooseTag = async (index) => {
+    if (this.state.chosen_tags.length !== this.props.tags.length){
+      await this.setState({ chosen_tags: 
+        Array.from({length: this.props.tags.length}).map(x => false) })
+    }
+    let temp_chosen_tags = this.state.chosen_tags;
+    temp_chosen_tags[index] = !temp_chosen_tags[index];
+    await this.setState({ chosen_tags: temp_chosen_tags })
+    
+  } 
+
   render(){
     return (
       <div style={{paddingLeft: this.props.is_request ? '0.5em' :'0'}}> 
@@ -236,6 +262,37 @@ class CreatePost extends Component {
                   />
                 </Row>
               </Collapse>
+
+              <Dropdown isOpen={this.state.tags_dropdown} 
+                toggle={()=> {this.setState({ 
+                  tags_dropdown: !this.state.tags_dropdown
+                })}}>
+                <DropdownToggle caret color="info">
+                  Select Tags
+                </DropdownToggle>
+                <DropdownMenu >
+                  
+                  { Object.keys(this.props.tags).map(function(key) {
+                    return (
+                      <DropdownItem toggle={false} key={key} 
+                        onClick={()=>{this.toggleChooseTag(key)}}>
+                        <Row>
+                          <Col style={{display:'flex', justifyContent:'left'}}>
+                            {this.props.tags[key].key}
+                          </Col>
+                          <Col style={{display:'flex', justifyContent:'right'}}>
+                            {this.state.chosen_tags[key] ? 
+                            <IoIosCheckmarkCircle style={{marginTop:'0.3em'}}/> 
+                            : <div style={{margin:'0.5em'}}/> }
+                          </Col>
+                        </Row>
+                        
+                      </DropdownItem>
+                    );
+                  }.bind(this))}
+                </DropdownMenu>
+                </Dropdown>
+              <br />
               <Button color="link" disabled={this.state.submit_loading} 
                 onClick={this.toggle}>Cancel</Button>
               <Button color="primary" disabled={this.state.submit_loading} 

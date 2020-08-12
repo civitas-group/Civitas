@@ -59,6 +59,7 @@ postRouter.post("/", authMiddleware, (req, res, next) => {
       time_left: -1
     },
     likes: 0,
+    tags_info: req.body.tags_info,
     created: Date.now(),
   };
   if (req.body.is_request) {
@@ -247,7 +248,8 @@ postRouter.patch("/change_status", authMiddleware, (req, res, next) => {
                   let newReview ={
                     post_id:req.body.post_id,
                     group_id: req.body.group_id,
-                    requester: user._id,
+                    requester_id: user._id,
+                    requester_username: user.username,
                     resolvers_ids: req.body.resolvers_ids,
                     resolvers_usernames:req.body.resolvers_usernames,
                     ratings: req.body.ratings,
