@@ -370,7 +370,10 @@ groupRouter.post("/:group_id", authMiddleware, (req, res) => {
             cosupervisor_ids: group.cosupervisor_ids,
             user_ids: group.user_ids,
             invited_user_ids: group.invited_user_ids,
-            requested_to_join_user_ids: group.requested_to_join_user_ids
+            requested_to_join_user_ids: group.requested_to_join_user_ids,
+            tags: group.tags,
+            pending_reviews: group.pending_reviews,
+            completed_reviews: group.completed_reviews 
           })
 
           // Get all posts in group
@@ -436,6 +439,61 @@ groupRouter.post("/:group_id", authMiddleware, (req, res) => {
   })
 });
 
+function getUserInfo(user_id){
+  return new Promise((resolve, reject) => {
+    Account.findById(user_id, function(accountErr, user){
+      if(accountErr || !user){
+        reject('error')
+        return;
+      } else {
+        resolve({
+          'username': user.username,
+          'total_points': user.total_points,
+          'id': user._id
+        })
+        return;
+      }
+    })
+  })
+}
+
+// Get user info for all users in a group as map (username -> info)
+// Currently retrieves: total_points
+/* 
+  body {
+    user_ids: [string]
+  }
+*/
+groupRouter.post("/:group_id/users", authMiddleware, async (req, res) => { 
+  let user_ids = req.body.user_ids;
+  let users = {};
+  let user;
+  // Find account based on username
+  for (let i = 0; i < user_ids.length; ++i){
+    //user_info = await getAccountInfo(user_ids[i]);
+    //users.push(user_info)
+    try {
+      user = await getUserInfo(user_ids[i]);
+      if (user === 'error') throw 'error';
+      else {
+        users[user.username] = {
+          'total_points': user.total_points,
+          'id': user.id
+        }
+      }
+    } catch(error) {
+      res.status(400).send({
+        success: false,
+        error: 'Error finding user information for user_id: ' + user_ids[i]
+      });
+      return;
+    }
+  }
+  return res.status(200).send({
+    success: true,
+    users: users
+  });
+});
 
 ////////////////////////////////////////////////////////////////////////////////
 // Below is all for group invites
