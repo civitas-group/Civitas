@@ -1,0 +1,50 @@
+@media only screen 
+  and (min-device-width: 375px) 
+  and (max-device-width: 812px) 
+  and (-webkit-min-device-pixel-ratio: 3) { 
+      #main-media {
+          display: inline;
+          justify-content: center;
+      }
+
+      #logo-media {
+          padding-left: 0em;
+      }
+
+      #guide-media {
+          display: inherit;
+          text-align: center;
+      }
+
+      #house-graphic {
+          max-width: 30em;
+          margin-top: 27em;
+      }
+}
+
+@media screen 
+  and (min-device-width: 1200px) 
+  and (max-device-width: 1600px) 
+  and (-webkit-min-device-pixel-ratio: 1) { 
+    #main-media {
+        display: flex;
+        justify-content: center;
+    }
+
+    #logo-media {
+        padding-left: 3.75em;
+    }
+
+    #guide-media {
+        display: flex;
+        justify-content: center;
+    }
+
+    #house-graphic {
+        max-width: 84em;
+    }
+}
+
+#main-jumbo {
+    padding-bottom: 0px;
+}
