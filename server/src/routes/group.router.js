@@ -339,7 +339,7 @@ groupRouter.post("/:group_id", authMiddleware, (req, res) => {
   var group_criteria = {_id: req.params.group_id}
 
   // Find account based on username
-  Account.findOne(criteria, function(accountErr, user){
+  Account.findOne(criteria, async function(accountErr, user){
     if(accountErr || !user){
       res.status(400).send({
         success:false,
@@ -349,7 +349,7 @@ groupRouter.post("/:group_id", authMiddleware, (req, res) => {
     } else {
 
       // Add user's group IDs to response 
-      let full = helper.addUserInfo(user, decoded);
+      let full = await helper.addUserInfo(user, decoded);
       
       // Find group based on specified group_id
       Group.findOne(group_criteria, function(err, group){

@@ -1,24 +1,38 @@
 @media only screen 
-  and (min-device-width: 375px) 
-  and (max-device-width: 812px) 
-  and (-webkit-min-device-pixel-ratio: 3) { 
+  and (min-device-width: 320px) 
+  and (max-device-width: 812px)  { 
       #main-media {
           display: inline;
           justify-content: center;
       }
 
       #logo-media {
-          padding-left: 0em;
+        padding-top: 3em;
+        padding-left: 0em;
+        padding-bottom: 3.6em;
       }
-
       #guide-media {
           display: inherit;
           text-align: center;
+          padding-bottom: 2.57em;
       }
 
       #house-graphic {
           max-width: 30em;
-          margin-top: 27em;
+      }
+      #guide-text {
+        display: flex;
+        justify-content: center;
+        text-align:center;
+        font-size: 12px;
+      }
+      #guide-heading {
+        display: flex;
+        justify-content: center;
+        font-size: 16px;
+    }
+      #info-jumbo {
+        max-width: 20em;
       }
 }
 
@@ -30,21 +44,27 @@
         display: flex;
         justify-content: center;
     }
-
     #logo-media {
-        padding-left: 3.75em;
+        padding-left: 0em;
+        padding-bottom: 2.57em;
     }
-
     #guide-media {
         display: flex;
         justify-content: center;
     }
-
     #house-graphic {
         max-width: 84em;
     }
+    #guide-text {
+        display: flex;
+        justify-content: left;
+        text-align: center;
+    }
+    #guide-heading {
+        display: flex;
+        justify-content: center;
+    }
 }
-
 #main-jumbo {
     padding-bottom: 0px;
 }

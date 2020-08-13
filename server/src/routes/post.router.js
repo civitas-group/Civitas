@@ -279,14 +279,24 @@ postRouter.patch("/change_status", authMiddleware, (req, res, next) => {
                           }
                           else{
                             // sending notifications to group_admins
-                            for (i = 0; i < req.body.resolvers_ids.length; i++){
+                            let resolvers_usernames_string;
+                            if (req.body.resolvers_ids.length > 0){
+                              resolvers_usernames_string = '';
+                              for (let i = 0; i < req.body.resolvers_usernames.length; ++i){
+                                if (i !== 0) resolvers_usernames_string += ', ';
+                                resolvers_usernames_string += req.body.resolvers_usernames[i]
+                              }
                               await helper.pushNotificationToSupervisors(groupUpdateResult, 
-                                decoded.username +' creates a review for users '
-                                +req.body.resolvers_usernames.toString() + ' for a new resolved request.')
+                                'Please approve ' +  decoded.username + 
+                                "'s review for their helper"
+                                + (req.body.resolvers_ids.length > 1 ? 's' : '') + 
+                                ' (' + resolvers_usernames_string + ') ' 
+                                + 'that helped resolve their request.')
                             }
                             res.status(200).send({
                               success: true,
-                              msg:"Review created successfully, waiting for group admin's approval."
+                              msg: "Review created successfully, "
+                              + "waiting for group admin's approval."
                             });
                             return;
                           }

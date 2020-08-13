@@ -33,7 +33,7 @@ class PublicHome extends Component {
       register_hover: false,
       houses_hover: false,
       show_info: false,
-      show_resident_info: false,
+      show_resident_info: true,
       show_register_info: false,
       logo_hover: false,
       modal: false,
@@ -90,7 +90,37 @@ class PublicHome extends Component {
       register_form: formData
     });
   }
+  regularGuide() {
+    return(
+      <div id="guide-text">
+        <span>
+          After you register as a regular user,<br/><u>
+          you can search for your group. </u>{' '}
+          <br/><br/>
+          If you have already been invited, you can {' '}
+          <u>join directly.</u>{' '}
+          Otherwise, you will have to <u>request to join.</u><br/>
+          Once you join, you're ready to go!
+        </span>
+      </div>
+    )
+  }
+  managerGuide() {
+    return(
+      <div id="guide-text">
+        <span>
 
+          After you register as an administrator,
+          you will need to either <br/> <u>create your group</u> or {' '}
+          <u>join an existing group</u> as a group admin.<br/><br/>
+          This will require you to <br/><u>upload proof of your
+          administrative status</u> with documents. 
+          
+          Once you are approved, you're ready to go!
+        </span>
+      </div>
+    )
+  }
   componentDidMount() {
     document.body.style.overflow = 'hidden';
 
@@ -138,11 +168,12 @@ class PublicHome extends Component {
         <Media id="main-media">
 
           { this.state.show_info ? 
-          <Jumbotron id="info-jumbo" style={{paddingLeft:'5em',paddingTop:'2em',
+          <Jumbotron id="info-jumbo" style={{paddingTop:'2em',
             width:'35em'}}>
-            <h5 style={{display:'flex', 
-              justifyContent:'center'}}>Are you an apartment &nbsp;<b>
-              {this.state.show_resident_info ? 'resident' : 'manager'}</b>?&nbsp;
+            <h5 id="guide-heading">
+              <span> Are you an apartment <b>
+              {this.state.show_resident_info ? 'resident' : 'manager'}</b>?
+              </span>
               <Button color="link" style={{padding:'0'}}
                 onClick={()=>{
                   this.setState({show_resident_info: 
@@ -150,6 +181,8 @@ class PublicHome extends Component {
               <Badge color="secondary" size="sm">{'other'}</Badge>
               </Button>
             </h5>
+            {this.state.show_resident_info ? 
+              this.regularGuide() : this.managerGuide()}
           </Jumbotron> 
           :
           <Media left top id="logo-media">
@@ -160,16 +193,16 @@ class PublicHome extends Component {
               rendererSettings: {
                 preserveAspectRatio: 'xMidYMid slice'
               }}}
-              width={this.isMobile ? 300 : 800}/>
+              width={this.isMobile ? 300 : 600}/>
           </Media>}
         </Media>
-        <Media id="guide-media">
+        <div id="guide-media">
           <Button onClick={() => {
             this.setState({show_info: !this.state.show_info})}} 
             color="link">Guide 
             <AiTwotoneHome style={{paddingBottom:'0.2em'}}/>
           </Button>
-        </Media>
+        </div>
 
         <Media
           className="mt-1" 

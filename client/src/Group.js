@@ -25,6 +25,7 @@ class Group extends Component {
     search_text: '',
     tags_dropdown: false,
     chosen_tags: [],
+    chosen_tags_count: 0,
     no_tags_selected: true,
     supervisor_id: '',
     user_ids: [],
@@ -190,8 +191,13 @@ class Group extends Component {
     }
     let temp_chosen_tags = this.state.chosen_tags;
     temp_chosen_tags[index] = !temp_chosen_tags[index];
-    await this.setState({ chosen_tags: temp_chosen_tags })
-    if (this.state.chosen_tags.indexOf(true) === -1){
+    let new_count = (temp_chosen_tags[index] ? 
+      this.state.chosen_tags_count + 1 : 
+      this.state.chosen_tags_count - 1) 
+
+    await this.setState({ chosen_tags: temp_chosen_tags,
+      chosen_tags_count: new_count })
+    if (new_count === 0){
       if (!this.state.no_tags_selected){
         await this.setState({ no_tags_selected: true })
       }
@@ -213,7 +219,7 @@ class Group extends Component {
     }
     else {
       return (
-        <div>
+        <div style={{paddingLeft:'14em'}}>
           <Jumbotron style={{paddingTop:'0'}}>
             <h1 className="display-5">{this.state.group_name}</h1>
             <p><Badge color="primary" pill>Private</Badge></p>
@@ -252,7 +258,7 @@ class Group extends Component {
             
             <Row style={{paddingLeft:'0.9em'}}>
             <Input type="text" name="search_text" 
-              style={{width:'36.2em', backgroundColor: '#E9ECEF'}}
+              style={{width:'34.8em', backgroundColor: '#E9ECEF'}}
               placeholder="Search Posts"
               onChange={(e) => { this.handleSearch(e) }}/>
             
@@ -261,7 +267,7 @@ class Group extends Component {
                 tags_dropdown: !this.state.tags_dropdown
               })}}>
               <DropdownToggle caret color="info">
-                Search Tags
+                Search Tags ({this.state.chosen_tags_count})
               </DropdownToggle>
               <DropdownMenu right>
                 
@@ -288,10 +294,10 @@ class Group extends Component {
               user_info_map: this.state.user_info_map,
               cookies: this.props.cookies
             })}
-          </Jumbotron>
-          {this.state.can_show_more_posts ? 
-            <div style={{display:'flex', justifyContent:'center', 
-              paddingTop:'0.5em', paddingBottom: '4em'}}>
+            {this.state.can_show_more_posts ? 
+            <div style={{display:'flex', justifyContent:'left', 
+              paddingTop:'0.5em', paddingBottom: '4em',
+              paddingLeft:'18em'}}>
               <Button color="light" size="sm" onClick={this.showMorePosts}>
                 See More...
               </Button>
@@ -302,6 +308,8 @@ class Group extends Component {
               <h4>No more posts to show!</h4>
             </div>
           }
+          </Jumbotron>
+
           
         </div>
       );

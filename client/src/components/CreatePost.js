@@ -32,7 +32,8 @@ class CreatePost extends Component {
       is_timed: false,
       expires_on: "",
       tags_dropdown: false,
-      chosen_tags: []
+      chosen_tags: [],
+      chosen_tags_count: 0
     };
   }
   // validate if time has already passed
@@ -172,7 +173,12 @@ class CreatePost extends Component {
       })
   }
 
-  toggle = () => this.setState({modal: !this.state.modal});
+  toggle = () => {
+    if (!this.state.modal) {
+      this.setState({ chosen_tags: [], chosen_tags_count: 0 })
+    }
+    this.setState({modal: !this.state.modal})
+  };
   DismissAlert = () => this.setState({alertOpen: !this.state.alertOpen})
   toggleChooseTag = async (index) => {
     if (this.state.chosen_tags.length !== this.props.tags.length){
@@ -181,7 +187,11 @@ class CreatePost extends Component {
     }
     let temp_chosen_tags = this.state.chosen_tags;
     temp_chosen_tags[index] = !temp_chosen_tags[index];
-    await this.setState({ chosen_tags: temp_chosen_tags })
+    let new_count = (temp_chosen_tags[index] ? 
+      this.state.chosen_tags_count + 1 : 
+      this.state.chosen_tags_count - 1) 
+    await this.setState({ chosen_tags: temp_chosen_tags,
+      chosen_tags_count: new_count  })
     
   } 
 
@@ -268,7 +278,7 @@ class CreatePost extends Component {
                   tags_dropdown: !this.state.tags_dropdown
                 })}}>
                 <DropdownToggle caret color="info">
-                  Select Tags
+                  Select Tags ({this.state.chosen_tags_count.toString()})
                 </DropdownToggle>
                 <DropdownMenu >
                   

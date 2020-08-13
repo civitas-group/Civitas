@@ -67,11 +67,8 @@ class App extends Component {
         <Route exact path="/superadminconsole">
           <SuperAdminConsole cookies={this.props.cookies}/>
         </Route>
-        <Route exact path="/user-profile">
+        <Route exact path="/profile">
           <UserProfile cookies={this.props.cookies}/>
-        </Route>
-        <Route exact path="/account-deleted">
-          <AccountDeleted/>
         </Route>
         <Route component={PageNotFound}/>
       </Switch>
