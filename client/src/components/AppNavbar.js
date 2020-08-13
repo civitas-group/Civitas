@@ -11,6 +11,8 @@ import Login from '../Login'
 import LogoImg from '../img/NavbarLogo2.png';
 import LogoHoverImg from '../img/NavbarLogoHover.png';
 import { IoMdNotifications } from 'react-icons/io';
+import '../css/AppNavbar.css';
+import '../css/Fonts.css';
 
 const AppNavbar = (props) => {
 
@@ -62,12 +64,12 @@ const AppNavbar = (props) => {
             toggle={toggleNotifications} >
             <DropdownToggle color="primary">
               <IoMdNotifications style={{marginBottom:'0.2em'}}/>
-              <a style={{fontSize:'14px'}}>
+              <a className="Small-med-font" style={{fontSize:'14px'}}>
                 {props.unread_notifications_count > 0 ?
                   props.unread_notifications_count : null}
               </a>
             </DropdownToggle>
-            <DropdownMenu size="sm" style={{backgroundColor:'lightgray',
+            <DropdownMenu size="sm" className="no-padding lightgray-bg" style={{backgroundColor:'lightgray',
               paddingTop:'0', paddingBottom:'0'}}
               onMouseEnter={()=>{setKeepNotifsOpen(true)}}>
               {Object.keys(props.notifications).reverse().map(function(key) {
@@ -76,9 +78,9 @@ const AppNavbar = (props) => {
                   key >= props.notifications.length - 5)
                   || props.notifications.length <= 5 ? 
                   <DropdownItem toggle={false}
-                    key={key} style={{fontSize:'12px', paddingLeft:'0',
+                    key={key} className="Small no-padding" style={{fontSize:'12px', paddingLeft:'0',
                       backgroundColor: props.notifications[key].read ? 
-                      'lightgray':'white', paddingBottom:'0'}}>
+                      'lightgray':'white'}}>
                     <Notification token={props.token}
                       dispatch={props.dispatch} index={key} 
                       read={props.notifications[key].read}
@@ -88,7 +90,7 @@ const AppNavbar = (props) => {
                   </DropdownItem> : null
                 )
               })}
-              <DropdownItem style={{fontSize:'12px'}}>
+              <DropdownItem className="Small-font" style={{fontSize:'12px'}}>
                 <Row>
                   <p style={{maxWidth: '23em', margin: '0', 
                     paddingLeft: '0.5em'}}>
@@ -144,9 +146,8 @@ const AppNavbar = (props) => {
       </ButtonGroup>)
   }
   return (
-    <div id="AppNavbar" style={{height: '54px',minHeight: '100%'}}> 
-      <Navbar color="#2D70CE" dark expand="lg" className="mb-5" 
-        style={{width:'100%',float: 'left'}}>
+    <div id="AppNavbar"> 
+      <Navbar id="navbar-main" color="#2D70CE" dark expand="lg" className="mb-5" >
           <Container>
           <Link to={"/"} >
           <Media
@@ -156,7 +157,7 @@ const AppNavbar = (props) => {
           object src={logoHover ? LogoHoverImg: LogoImg} 
           alt="Civitas Logo"/>
           </Link>
-          <div style={{marginLeft:'40em'}}>
+          <div id="navbar-button-margin-left">
           {props.logged_in ? 
           <NavButtonsLoggedIn
             token={props.cookies.get('token')}
@@ -165,7 +166,7 @@ const AppNavbar = (props) => {
             notifications={props.user_info.notifications}/> 
           : <NavButtonsLoggedOut /> }
           </div>
-          </Container> 
+          </Container>
 
 
         <Modal isOpen={modal && !props.logged_in} toggle={toggle} style={{opacity:"0.9"}}>

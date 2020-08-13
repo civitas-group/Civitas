@@ -1,0 +1,39 @@
+#AppNavbar {
+    height: 3.375em;
+    min-height: 100%;
+}
+
+.lightgray-bg {
+    background-color: lightgray;
+}
+
+.no-padding {
+    padding: 0px 0px 0px 0px;
+}
+
+@media only screen 
+  and (min-device-width: 375px) 
+  and (max-device-width: 812px)  { 
+      #navbar-main {
+          width: fit-content;
+          float: left;
+      }
+
+      #navbar-button-margin-left {
+          margin-left: 6em;
+      }
+}
+
+@media screen 
+  and (min-device-width: 1200px) 
+  and (max-device-width: 1600px) 
+  and (-webkit-min-device-pixel-ratio: 1) { 
+      #navbar-main {
+          width: 100%;
+          float: left;
+      }
+
+      #navbar-button-margin-left {
+          margin-left: 40em;
+    }
+}
