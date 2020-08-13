@@ -1,6 +1,7 @@
 const express  = require('express');
 const authRouter = express.Router();
 var Account = require('../models/account.model');
+var Group = require('../models/group.model');
 // After the user logins, a JWT token is signed to grant user access.
 const jwt = require('jsonwebtoken');
 var jwt_decode = require('jwt-decode');
@@ -8,31 +9,32 @@ const bcrypt = require('bcryptjs');
 const helper = require('./helper.js')
 
 authRouter.post('/', verifyToken, (req, res) => {  
-    jwt.verify(req.token, process.env.JWT_SECRET, (err, authData) => {
-      if(err) {
-        res.sendStatus(403);
-      } else {
+  jwt.verify(req.token, process.env.JWT_SECRET, (err, authData) => {
+    if(err) {
+      res.sendStatus(403);
+    } else {
 
-        var decoded = jwt_decode(req.token);
-        var criteria = {username: decoded.username}
-        
-        // Find account based on username
-        Account.findOne(criteria, function(accountErr, user){
-          if(accountErr || !user){
-            res.status(400).send({
-              success:false,
-              error: JSON.stringify(accountErr),
-            });
-            return;
-          } else {
+      var decoded = jwt_decode(req.token);
+      var criteria = {username: decoded.username}
+      
+      // Find account based on username
+      Account.findOne(criteria, async function(accountErr, user){
+        if(accountErr || !user){
+          res.status(400).send({
+            success:false,
+            error: JSON.stringify(accountErr),
+          });
+          return;
+        } else {
+          
+          // Add user's group IDs to response
+          res.json(await helper.addUserInfo(user, decoded));
 
-            // Add user's group IDs to response 
-            res.json(helper.addUserInfo(user, decoded));
-          }
-        });
+        }
+      });
 
-      }
-    });
+    }
+  });
   });
   
   

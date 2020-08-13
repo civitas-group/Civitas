@@ -6,6 +6,8 @@ const Post = require('../models/post.model'); // post model
 const Group = require('../models/group.model');
 const Comment = require('../models/comment.model');
 var Account = require('../models/account.model');
+const Review = require('../models/review.model');
+const helper = require('./helper.js');
 var jwt_decode = require('jwt-decode');
 // test the authentication middleware
 const authMiddleware = require('../middleware/auth');
@@ -57,6 +59,7 @@ postRouter.post("/", authMiddleware, (req, res, next) => {
       time_left: -1
     },
     likes: 0,
+    tags_info: req.body.tags_info,
     created: Date.now(),
   };
   if (req.body.is_request) {
@@ -154,10 +157,18 @@ postRouter.patch("/:post_id/like", authMiddleware, (req, res, next) => {
   });
 });
 
-/* Resolve/Unresolve Single Post */
+/* Resolve/Unresolve Single Post 
 // Requires:
 // query: ?status=string ('open', 'resolved', 'closed')
-// body: { post_id: string }
+// body: 
+  { post_id: id of the post
+    group_id: id of the Group
+    // For optional use case, resolvers_ids, resolvers_usernames and ratings may be []
+    resolvers_ids: [ ids of accounts that participate to resolve the request]
+    resolvers_usernames:[username of resolvers]
+    ratings: [rating score for each resolver]
+  }
+*/
 postRouter.patch("/change_status", authMiddleware, (req, res, next) => {
   // if resolve, resolve will be set to 1; if unresolve, will be set to -1
   let post_id = req.body.post_id;
@@ -222,11 +233,86 @@ postRouter.patch("/change_status", authMiddleware, (req, res, next) => {
                 });
               return;
             }
-            res.status(200).send({
-              success: true,
-              data: result,
-              message: "Post updated successfully"
-            });
+            else if (req.body.resolvers_ids.length > 0) {
+               // create a review in Review
+               // update Group
+               Group.findOne({_id:req.body.group_id}, function(groupFindErr, groupFind){
+                if(groupFindErr || !groupFind){
+                  res.status(400).send({
+                    success:false,
+                    error: 'The group does not exist',
+                  });
+                  return;
+                } 
+                else{
+                  let newReview ={
+                    post_id:req.body.post_id,
+                    group_id: req.body.group_id,
+                    requester_id: user._id,
+                    requester_username: user.username,
+                    resolvers_ids: req.body.resolvers_ids,
+                    resolvers_usernames:req.body.resolvers_usernames,
+                    ratings: req.body.ratings,
+                    verification_status:'pending'
+                  };
+                  Review.create(newReview, (reviewErr, newReview) => {
+                    if(reviewErr){
+                      res.status(400).send({
+                        success: false,
+                        error: 'review creation failed'
+                      });
+                      return;
+                    }
+                    else{
+                      let new_pending_reviews = groupFind.pending_reviews
+                      new_pending_reviews.push(newReview._id)
+                      let fieldsToUpdate = {'$set':{"pending_reviews":new_pending_reviews}};
+                      Group.findByIdAndUpdate(req.body.group_id,
+                        fieldsToUpdate, { useFindAndModify: false },
+                        async function (groupUpdateErr, groupUpdateResult) {
+                          if(groupUpdateErr || !groupUpdateResult){
+                            res.status(400).send({
+                              success: false,
+                              error: 'Updating pending_reviews failed'
+                            });
+                            return;
+                          }
+                          else{
+                            // sending notifications to group_admins
+                            let resolvers_usernames_string;
+                            if (req.body.resolvers_ids.length > 0){
+                              resolvers_usernames_string = '';
+                              for (let i = 0; i < req.body.resolvers_usernames.length; ++i){
+                                if (i !== 0) resolvers_usernames_string += ', ';
+                                resolvers_usernames_string += req.body.resolvers_usernames[i]
+                              }
+                              await helper.pushNotificationToSupervisors(groupUpdateResult, 
+                                'Please approve ' +  decoded.username + 
+                                "'s review for their helper"
+                                + (req.body.resolvers_ids.length > 1 ? 's' : '') + 
+                                ' (' + resolvers_usernames_string + ') ' 
+                                + 'that helped resolve their request.')
+                            }
+                            res.status(200).send({
+                              success: true,
+                              msg: "Review created successfully, "
+                              + "waiting for group admin's approval."
+                            });
+                            return;
+                          }
+                      });
+                    }
+                  })
+                }
+               });
+            }
+            else {
+              res.status(200).send({
+                success: true,
+                data: result,
+                message: "Post updated successfully"
+              });
+          }
         });
       });
     }

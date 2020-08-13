@@ -13,11 +13,14 @@ const postRouter = require('./src/routes/post.router');
 const commentRouter = require('./src/routes/comment.router');
 const signUpRouter = require('./src/routes/signup.router');
 const authRouter = require('./src/routes/auth.router');
+const accountRouter = require('./src/routes/account.router');
 const groupRouter = require('./src/routes/group.router');
 const devRouter = require('./src/routes/dev.router');
 const announcementRouter = require('./src/routes/announcement.router');
 const notificationRouter = require('./src/routes/notification.router');
 const userRouter = require('./src/routes/user.router');
+const tagRouter = require('./src/routes/tag.router');
+const reviewRouter = require('./src/routes/review.router');
 
 const SESSION_DURATION = 1000 * 60 * 60// 1 hour
 
@@ -41,9 +44,12 @@ app.use('/api/announcements', announcementRouter);
 app.use('/api/posts', postRouter);
 app.use('/api/comments', commentRouter);
 app.use('/api/signup', signUpRouter);
+app.use('/api/account', accountRouter);
 app.use('/api/authorize',authRouter);
 app.use('/api/group', groupRouter);
 app.use('/api/dev', devRouter);
+app.use('/api/tag', tagRouter);
+app.use('/api/review', reviewRouter);
 
 // listen
 app.listen(PORT, function () {

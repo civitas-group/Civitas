@@ -17,6 +17,7 @@ class Home extends Component {
       lock: false
     }
   }
+  isMobile = window.innerWidth < 500;
   async componentDidMount() {
     console.log('home mounted')
     this.props.dispatch({ type: 'LOADING' });
@@ -27,7 +28,6 @@ class Home extends Component {
       .then(result => {
         console.log("result home:",result)
         if (result){
-
           this.props.dispatch({ 
             type: 'HOMEPAGE_ACCESS',
             payload: result.data });
@@ -70,12 +70,7 @@ class Home extends Component {
         
         <Collapse isOpen={!this.state.searching}>
         <div style={{paddingTop:'1em'}}>
-        <h6>Username: {this.props.user_info.username}, 
-        Email: {this.props.user_info.email},
-        
-        {this.props.user_info.is_super_admin ? ' Super Admin':
-          this.props.user_info.is_supervisor ? 
-          ' Supervisor' : ' Regular User' }</h6>
+
         {this.props.user_info.is_super_admin ? 
         <Button color="primary" href="/superadminconsole">
           Super Admin Console</Button>
@@ -83,7 +78,8 @@ class Home extends Component {
         
         <h4>{'group_ids' || 
           'managed_group_ids' in this.props.user_info ? 
-          <UserHomeOptions cookies={this.props.cookies} 
+          <UserHomeOptions isMobile={this.isMobile}
+            cookies={this.props.cookies} 
             info={this.props.user_info}/> : null}</h4>
 
         </div>

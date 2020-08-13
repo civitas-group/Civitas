@@ -51,3 +51,8 @@ html, body {
     transform: rotate(360deg);
   }
 }
+
+.Main-div {
+  background-color: #E9ECEF;
+  height: 100%;
+}

@@ -4,6 +4,7 @@ import { Button, Modal, ModalHeader, ModalBody, Media,Row,
   DropdownItem, DropdownToggle, DropdownMenu } from 'reactstrap';
 import { connect } from 'react-redux'
 import { withCookies } from 'react-cookie';
+import { Redirect } from 'react-router';
 import { Link } from 'react-router-dom'
 import Register from '../Register'
 import Notification from './Notification';
@@ -11,9 +12,13 @@ import Login from '../Login'
 import LogoImg from '../img/NavbarLogo2.png';
 import LogoHoverImg from '../img/NavbarLogoHover.png';
 import { IoMdNotifications } from 'react-icons/io';
+import '../css/AppNavbar.css';
+import '../css/Fonts.css';
 
 const AppNavbar = (props) => {
-
+  const isMobile = window.innerWidth < 500;
+  const buttonSize = isMobile ? 'sm': 'md';
+  const [mobileNotifRedirect, setMobileNotifRedirect] = useState(false);
   const [modal, setModal] = useState(false);
   const [logoutModal, setLogoutModal] = useState(false);
   const [dropdownOpen, setDropdown] = useState(false);
@@ -56,73 +61,80 @@ const AppNavbar = (props) => {
   }
   function NavButtonsLoggedIn(props) {
     return (
-        <ButtonGroup onMouseLeave={()=>{setKeepNotifsOpen(false)}}> 
-          {props.notifications ? 
-          <ButtonDropdown isOpen={notificationsOpen || keepNotifsOpen} 
-            toggle={toggleNotifications} >
-            <DropdownToggle color="primary">
-              <IoMdNotifications style={{marginBottom:'0.2em'}}/>
-              <a style={{fontSize:'14px'}}>
-                {props.unread_notifications_count > 0 ?
-                  props.unread_notifications_count : null}
-              </a>
-            </DropdownToggle>
-            <DropdownMenu size="sm" style={{backgroundColor:'lightgray',
-              paddingTop:'0', paddingBottom:'0'}}
-              onMouseEnter={()=>{setKeepNotifsOpen(true)}}>
-              {Object.keys(props.notifications).reverse().map(function(key) {
-                return(
-                  (props.notifications.length > 5 && 
-                  key >= props.notifications.length - 5)
-                  || props.notifications.length <= 5 ? 
-                  <DropdownItem toggle={false}
-                    key={key} style={{fontSize:'12px', paddingLeft:'0',
-                      backgroundColor: props.notifications[key].read ? 
-                      'lightgray':'white', paddingBottom:'0'}}>
-                    <Notification token={props.token}
-                      dispatch={props.dispatch} index={key} 
-                      read={props.notifications[key].read}
-                      content={props.notifications[key].content}/>
-                    <hr className="my-6" 
-                      style={{marginTop:'0.3em', marginBottom:'0'}}/>
-                  </DropdownItem> : null
-                )
-              })}
-              <DropdownItem style={{fontSize:'12px'}}>
-                <Row>
-                  <p style={{maxWidth: '23em', margin: '0', 
-                    paddingLeft: '0.5em'}}>
-                    <Link to="/notifications">
-                      See all Notifications</Link></p>
-                </Row>
-              </DropdownItem>
-            </DropdownMenu>
-          </ButtonDropdown> : null }
-          {props.notifications && (notificationsOpen || keepNotifsOpen) ? 
-          <ButtonDropdown isOpen={false}>
-            <DropdownToggle color="primary">
-              <Link to="/notifications" style={{color:'white'}}>
-                Notifications
-              </Link>
-            </DropdownToggle>
-          </ButtonDropdown>
-          :null}
-          
-          <Button color="primary">
-            <Link to="/groups" style={{color:'white'}}>
-              Groups
-            </Link>
-          </Button> 
-          <ButtonDropdown isOpen={dropdownOpen} toggle={toggleDropdown}>
-          <DropdownToggle color="primary" caret>
-            Settings
+      <ButtonGroup onMouseLeave={()=>{setKeepNotifsOpen(false)}}> 
+        {props.notifications ? 
+        <ButtonDropdown isOpen={notificationsOpen || keepNotifsOpen} 
+          toggle={()=>{
+            isMobile ? setMobileNotifRedirect(true) : toggleNotifications()
+          }} >
+          <DropdownToggle color="primary" size={buttonSize}>
+            <IoMdNotifications style={{marginBottom:'0.2em'}}/>
+            <a className="Small-med-font" style={{fontSize:'14px'}}>
+              {props.unread_notifications_count > 0 ?
+                props.unread_notifications_count : null}
+            </a>
           </DropdownToggle>
-          <DropdownMenu right>
-            <DropdownItem>Profile</DropdownItem>
-            <DropdownItem onClick={toggleLogoutModal}>Logout</DropdownItem>
+          <DropdownMenu size="sm" className="no-padding lightgray-bg" 
+            style={{backgroundColor:'lightgray',
+            paddingTop:'0', paddingBottom:'0'}}
+            onMouseEnter={()=>{setKeepNotifsOpen(true)}}>
+            {Object.keys(props.notifications).reverse().map(function(key) {
+              return(
+                (props.notifications.length > 5 && 
+                key >= props.notifications.length - 5)
+                || props.notifications.length <= 5 ? 
+                <DropdownItem toggle={false}
+                  key={key} className="Small no-padding" style={{fontSize:'12px', paddingLeft:'0',
+                    backgroundColor: props.notifications[key].read ? 
+                    'lightgray':'white'}}>
+                  <Notification token={props.token}
+                    dispatch={props.dispatch} index={key} 
+                    read={props.notifications[key].read}
+                    content={props.notifications[key].content}/>
+                  <hr className="my-6" 
+                    style={{marginTop:'0.3em', marginBottom:'0'}}/>
+                </DropdownItem> : null
+              )
+            })}
+            <DropdownItem className="Small-font" style={{fontSize:'12px'}}>
+              <Row>
+                <p style={{maxWidth: '23em', margin: '0', 
+                  paddingLeft: '0.5em'}}>
+                  <Link to="/notifications">
+                    See all Notifications</Link></p>
+              </Row>
+            </DropdownItem>
           </DropdownMenu>
+        </ButtonDropdown> : null }
+        {props.notifications && (notificationsOpen || keepNotifsOpen) ? 
+        <ButtonDropdown isOpen={false} size={buttonSize}>
+          <DropdownToggle color="primary">
+            <Link to="/notifications" style={{color:'white'}}>
+              Notifications
+            </Link>
+          </DropdownToggle>
         </ButtonDropdown>
-        </ButtonGroup>)
+        :null}
+        
+        <Button color="primary" size={buttonSize}>
+          <Link to="/groups" style={{color:'white'}}>
+            Groups
+          </Link>
+        </Button> 
+        <ButtonDropdown size={buttonSize} isOpen={dropdownOpen} toggle={toggleDropdown}>
+        <DropdownToggle color="primary" caret >
+          Settings
+        </DropdownToggle>
+        <DropdownMenu right>
+          <Link to="/profile" style={{color:'white'}}>
+            <DropdownItem>
+              Profile
+            </DropdownItem>
+          </Link>
+          <DropdownItem onClick={toggleLogoutModal}>Logout</DropdownItem>
+        </DropdownMenu>
+      </ButtonDropdown>
+      </ButtonGroup>)
   }
   function NavButtonsLoggedOut() {
     return (
@@ -139,30 +151,31 @@ const AppNavbar = (props) => {
         </ButtonDropdown>
       </ButtonGroup>)
   }
+  if (mobileNotifRedirect){
+    return (<Redirect to="/notifications" />);
+  }
   return (
-    <div id="AppNavbar" style={{height: '54px',minHeight: '100%'}}> 
-      <Navbar color="#2D70CE" dark expand="lg" className="mb-5" 
-        style={{width:'100%',float: 'left'}}>
-          <Container>
+    <div id="AppNavbar"> 
+      <Navbar id="navbar-main" color="#2D70CE" dark expand="lg" className="mb-5" >
+        <Container>      
           <Link to={"/"} >
-          <Media
-          onMouseLeave={()=>{setLogoHover(false)}} 
-          onMouseEnter={()=>{setLogoHover(true)}}
-          style={{width:'5em'}} 
-          object src={logoHover ? LogoHoverImg: LogoImg} 
-          alt="Civitas Logo"/>
+            <Media
+            onMouseLeave={()=>{setLogoHover(false)}} 
+            onMouseEnter={()=>{setLogoHover(true)}}
+            style={{width:'5em'}} 
+            object src={logoHover ? LogoHoverImg: LogoImg} 
+            alt="Civitas Logo"/>
           </Link>
-          <div style={{marginLeft:'40em'}}>
-          {props.logged_in ? 
-          <NavButtonsLoggedIn
-            token={props.cookies.get('token')}
-            dispatch={props.dispatch}
-            unread_notifications_count={props.user_info.unread_notifications_count}
-            notifications={props.user_info.notifications}/> 
-          : <NavButtonsLoggedOut /> }
+          <div id="navbar-button-margin-left">
+            {props.logged_in ? 
+            <NavButtonsLoggedIn
+              token={props.cookies.get('token')}
+              dispatch={props.dispatch}
+              unread_notifications_count={props.user_info.unread_notifications_count}
+              notifications={props.user_info.notifications}/> 
+            : <NavButtonsLoggedOut /> }
           </div>
-          </Container> 
-
+        </Container>
 
         <Modal isOpen={modal && !props.logged_in} toggle={toggle} style={{opacity:"0.9"}}>
           <ModalHeader toggle={toggle}>{typeText}</ModalHeader>

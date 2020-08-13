@@ -339,7 +339,7 @@ groupRouter.post("/:group_id", authMiddleware, (req, res) => {
   var group_criteria = {_id: req.params.group_id}
 
   // Find account based on username
-  Account.findOne(criteria, function(accountErr, user){
+  Account.findOne(criteria, async function(accountErr, user){
     if(accountErr || !user){
       res.status(400).send({
         success:false,
@@ -349,7 +349,7 @@ groupRouter.post("/:group_id", authMiddleware, (req, res) => {
     } else {
 
       // Add user's group IDs to response 
-      let full = helper.addUserInfo(user, decoded);
+      let full = await helper.addUserInfo(user, decoded);
       
       // Find group based on specified group_id
       Group.findOne(group_criteria, function(err, group){
@@ -370,7 +370,10 @@ groupRouter.post("/:group_id", authMiddleware, (req, res) => {
             cosupervisor_ids: group.cosupervisor_ids,
             user_ids: group.user_ids,
             invited_user_ids: group.invited_user_ids,
-            requested_to_join_user_ids: group.requested_to_join_user_ids
+            requested_to_join_user_ids: group.requested_to_join_user_ids,
+            tags: group.tags,
+            pending_reviews: group.pending_reviews,
+            completed_reviews: group.completed_reviews 
           })
 
           // Get all posts in group
@@ -436,6 +439,61 @@ groupRouter.post("/:group_id", authMiddleware, (req, res) => {
   })
 });
 
+function getUserInfo(user_id){
+  return new Promise((resolve, reject) => {
+    Account.findById(user_id, function(accountErr, user){
+      if(accountErr || !user){
+        reject('error')
+        return;
+      } else {
+        resolve({
+          'username': user.username,
+          'total_points': user.total_points,
+          'id': user._id
+        })
+        return;
+      }
+    })
+  })
+}
+
+// Get user info for all users in a group as map (username -> info)
+// Currently retrieves: total_points
+/* 
+  body {
+    user_ids: [string]
+  }
+*/
+groupRouter.post("/:group_id/users", authMiddleware, async (req, res) => { 
+  let user_ids = req.body.user_ids;
+  let users = {};
+  let user;
+  // Find account based on username
+  for (let i = 0; i < user_ids.length; ++i){
+    //user_info = await getAccountInfo(user_ids[i]);
+    //users.push(user_info)
+    try {
+      user = await getUserInfo(user_ids[i]);
+      if (user === 'error') throw 'error';
+      else {
+        users[user.username] = {
+          'total_points': user.total_points,
+          'id': user.id
+        }
+      }
+    } catch(error) {
+      res.status(400).send({
+        success: false,
+        error: 'Error finding user information for user_id: ' + user_ids[i]
+      });
+      return;
+    }
+  }
+  return res.status(200).send({
+    success: true,
+    users: users
+  });
+});
 
 ////////////////////////////////////////////////////////////////////////////////
 // Below is all for group invites
@@ -1124,26 +1182,4 @@ groupRouter.patch("/deny_user_request/:group_id", authMiddleware, (req, res, nex
     });
   }
 });
-// set the denied field to true.
-
-/* add new apis
-// combined api for user_request and join
-
-// delete from requested_to_join_groups_ids, add to groups_ids in account.model
-// delete from requested_to_join_user_ids add to user_ids in group.model
-// send notification
-groupRouter.patch("/accept_user_request/:group_id", authMiddleware, (req, res, next)
-
-// delete from requested_to_join_groups_ids, delete from requested_to_join_user_ids
-// send notification
-groupRouter.patch("/deny_user_request/:group_id", authMiddleware, (req, res, next)
-// set the denied field to true.
-
-/*
-  For the notification system:
-  admin: user's join group request, user is accepted/rejected for request (creating group approved)
-  user: get invited to join a group, admin's responce for joining group request
-
-  // new comment for post????
-*/
 module.exports = groupRouter;

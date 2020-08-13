@@ -10,11 +10,13 @@ import AdminConsole from './AdminConsole';
 import SuperAdminConsole from './SuperAdminConsole/SuperAdminConsole';
 import CreateGroup from './CreateGroup';
 import PageNotFound from './PageNotFound';
+import AccountDeleted from './AccountDeleted';
 import Notifications from './Notifications';
 import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css'
 import './css/App.css';
 import authorizeUser from './Auth';
+import UserProfile from './UserProfile';
 
 class App extends Component {
   async componentDidMount() {
@@ -42,7 +44,7 @@ class App extends Component {
 
   render() {
     return (
-      <div style={{ backgroundColor: '#E9ECEF', height: "100%"}}> 
+      <div className="Main-div"> 
       <Router>
       <AppNavbar cookies={this.props.cookies}/>
       <Switch>
@@ -64,6 +66,9 @@ class App extends Component {
           render={() => (<Notifications cookies={this.props.cookies}/>)} />
         <Route exact path="/superadminconsole">
           <SuperAdminConsole cookies={this.props.cookies}/>
+        </Route>
+        <Route exact path="/profile">
+          <UserProfile cookies={this.props.cookies}/>
         </Route>
         <Route component={PageNotFound}/>
       </Switch>

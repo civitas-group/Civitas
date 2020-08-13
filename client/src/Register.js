@@ -66,10 +66,10 @@ class Register extends Component {
   }
 
   validatePass(e) {
-    const passwordRex = /[\s~`!@#$%\^&*+=\-\[\]\\';,/{}|\\":<>\?()\._]/g;
+    const passwordRex = /(?=.*[0-9])(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{8,20}/g;
     const { validate } = this.state;
 
-    if (passwordRex.test(e.target.value) || e.target.value === '' || e.target.value.length < 8){
+    if (!passwordRex.test(e.target.value) || e.target.value === '' || e.target.value.length < 8){
       validate.passState = 'has-danger';
     } else {
       validate.passState = 'has-success';
@@ -270,7 +270,7 @@ class Register extends Component {
                 }}
               />
               <FormFeedback valid>Valid Password</FormFeedback>
-              <FormFeedback>Password must be at least 8 characters, cannot contain special characters</FormFeedback>
+              <FormFeedback>Password must be at least 8 characters, must contain 1 number and one special character (!@#$%^&*)</FormFeedback>
             </FormGroup>
           </Col>
           <Col>
